@@ -1,0 +1,106 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Threading;
+using LamMotCham.Core.Logging;
+using LamMotCham.Presentation.Services;
+using LamMotCham.Presentation.ViewModels;
+
+namespace LamMotCham.App;
+
+[SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Application không dùng IDisposable; mutex và MainViewModel được giải phóng trong OnExit.")]
+public partial class App : Application, IUiPlatform
+{
+    private Mutex? _singleInstance;
+    private AppServices? _services;
+    private MainViewModel? _main;
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        // Chỉ một bản chạy tại một thời điểm để không có hai hàng đợi cài đặt chạy chồng.
+        _singleInstance = new Mutex(true, @"Local\LamMotCham.SingleInstance", out var created);
+        if (!created)
+        {
+            var waitForPrevious = e.Args.Contains("--after-elevate");
+            bool acquired;
+            try
+            {
+                acquired = waitForPrevious && _singleInstance.WaitOne(TimeSpan.FromSeconds(10));
+            }
+            catch (AbandonedMutexException)
+            {
+                acquired = true;
+            }
+
+            if (!acquired)
+            {
+                MessageBox.Show("Làm 1 Chạm đang chạy. Hãy dùng cửa sổ đang mở.", "Làm 1 Chạm", MessageBoxButton.OK, MessageBoxImage.Information);
+                _singleInstance.Dispose();
+                _singleInstance = null;
+                Shutdown();
+                return;
+            }
+        }
+
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException += (_, args) =>
+        {
+            _services?.Log.Error("Lỗi nền không được xử lý: " + args.Exception.GetBaseException().Message);
+            args.SetObserved();
+        };
+
+        _services = AppServices.Create();
+        _main = new MainViewModel(_services, this);
+        var window = new MainWindow { DataContext = _main };
+        MainWindow = window;
+        window.Show();
+        _main.StartTicker();
+        window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _main.Machine.CheckCommand.Execute(null));
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _main?.Dispose();
+        if (_singleInstance is not null)
+        {
+            try
+            {
+                _singleInstance.ReleaseMutex();
+            }
+            catch (ApplicationException)
+            {
+                // Mutex không thuộc luồng này.
+            }
+
+            _singleInstance.Dispose();
+        }
+
+        base.OnExit(e);
+    }
+
+    void IUiPlatform.Shutdown() => Shutdown();
+
+    void IUiPlatform.SetClipboard(string text)
+    {
+        try
+        {
+            Clipboard.SetText(text);
+        }
+        catch (COMException)
+        {
+            // Clipboard đang bị ứng dụng khác giữ.
+        }
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        _services?.Log.Error("Lỗi giao diện không được xử lý: " + e.Exception);
+        MessageBox.Show(
+            "Có lỗi không mong đợi: " + e.Exception.Message + Environment.NewLine + Environment.NewLine +
+            "Thao tác vừa rồi có thể chưa hoàn tất. Chi tiết đã được ghi vào log.",
+            "Làm 1 Chạm", MessageBoxButton.OK, MessageBoxImage.Warning);
+        e.Handled = true;
+    }
+}

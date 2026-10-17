@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <NeutralLanguage>vi-VN</NeutralLanguage>
+    <Company>Làm 1 Chạm</Company>
+    <Product>Làm 1 Chạm</Product>
+    <Version>0.1.0</Version>
+    <InformationalVersion>0.1.0-thu-nghiem</InformationalVersion>
+    <!-- Khóa phiên bản gói khi restore (tài liệu 06: pin dependency). -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <!-- Chỉ khóa khi lock file đã được commit; lần restore đầu tiên sẽ tạo lock file. -->
+    <RestoreLockedMode Condition="Exists('$(MSBuildProjectDirectory)\packages.lock.json')">true</RestoreLockedMode>
+  </PropertyGroup>
+</Project>

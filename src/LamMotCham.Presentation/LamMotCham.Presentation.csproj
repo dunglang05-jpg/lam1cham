@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    ViewModel và dịch vụ không phụ thuộc WPF để build, phân tích và test được trên mọi agent.
+    Phần WPF (XAML, converter, control) nằm trong LamMotCham.App.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>LamMotCham.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>windows10.0.19041</_Parameter1>
+    </AssemblyAttribute>
+    <InternalsVisibleTo Include="LamMotCham.Presentation.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LamMotCham.Core\LamMotCham.Core.csproj" />
+    <ProjectReference Include="..\LamMotCham.Windows\LamMotCham.Windows.csproj" />
+  </ItemGroup>
+</Project>

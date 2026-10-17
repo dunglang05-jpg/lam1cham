@@ -1,0 +1,42 @@
+<UserControl x:Class="LamMotCham.App.Views.Dialogs.ListDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
+             xmlns:c="clr-namespace:LamMotCham.App.Controls">
+    <StackPanel>
+        <DockPanel Margin="0,0,0,14">
+            <Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,12,0">
+                <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="24" Height="24" Style="{StaticResource IconImage}" />
+            </Border>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource H2}" VerticalAlignment="Center" />
+        </DockPanel>
+        <TextBlock Text="{Binding Lead}" Style="{StaticResource Body}" TextWrapping="Wrap" Margin="0,0,0,12"
+                   Visibility="{Binding Lead, Converter={StaticResource NotEmpty}}" />
+        <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="8"
+                Visibility="{Binding IsEmpty, Converter={StaticResource Vis}, ConverterParameter=invert}">
+            <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:DialogItem}">
+                            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="12,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Secondary}" TextWrapping="Wrap" Visibility="{Binding Subtitle, Converter={StaticResource NotEmpty}}" />
+                                    </StackPanel>
+                                    <c:StatusChip Grid.Column="1" State="{Binding StateKey}" Text="{Binding StateText}" Margin="8,0,0,0"
+                                                  Visibility="{Binding StateKey, Converter={StaticResource NotEmpty}}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+        <Button Style="{StaticResource PrimaryButton}" Content="Đóng" Command="{Binding CloseCommand}" IsCancel="True" IsDefault="True" HorizontalAlignment="Right" Margin="0,16,0,0" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,141 @@
+<UserControl x:Class="LamMotCham.App.Views.Pages.DiskPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
+             xmlns:c="clr-namespace:LamMotCham.App.Controls">
+    <StackPanel>
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Ổ đĩa và tài khoản" Style="{StaticResource H1}" />
+            <TextBlock Text="Chỉ đọc thông tin ổ đĩa. Làm 1 Chạm không tự chia ổ, định dạng, giải mã BitLocker hay xóa tài khoản." Style="{StaticResource Body}" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Border Style="{StaticResource CardFlush}" Margin="0,0,0,16">
+            <StackPanel>
+                <DockPanel Margin="16,14">
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=disk}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                    <TextBlock Text="Ổ đĩa" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock Text="Chưa đọc thông tin ổ đĩa. Bấm “Kiểm tra máy” ở trang Tổng quan." Style="{StaticResource Secondary}" Margin="16,0,16,16"
+                           Visibility="{Binding HasDrives, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                <ItemsControl ItemsSource="{Binding Drives}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:DriveRow}">
+                            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="16,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="56" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="42" Height="42" CornerRadius="10" Background="{StaticResource SubtleBrush}" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Letter}" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Type}" Style="{StaticResource Secondary}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="12,0">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Size}" Style="{StaticResource Meta}" />
+                                            <TextBlock Text="{Binding Free}" FontSize="13" />
+                                        </DockPanel>
+                                        <ProgressBar Style="{StaticResource MeterBar}" Value="{Binding UsedPercent, Mode=OneWay}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                        <c:StatusChip State="{Binding HealthKey}" Text="{Binding HealthText}" />
+                                        <c:StatusChip State="{Binding EncryptionKey}" Text="{Binding EncryptionText}" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Margin="0,0,16,0">
+                <!-- Đổi tên máy -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,12">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                            <TextBlock Text="Tên máy" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <TextBlock Style="{StaticResource Secondary}">
+                            <Run Text="Tên hiện tại:" /> <Run Text="{Binding CurrentName, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                        </TextBlock>
+                        <TextBlock Text="Tên mới" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,6" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" MaxLength="15" CharacterCasing="Upper" AutomationProperties.Name="Tên máy mới" />
+                            <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Command="{Binding RenameCommand}" Content="Đổi tên…" Margin="10,0,0,0" />
+                        </Grid>
+                        <TextBlock Text="{Binding NameHint}" Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                   Visibility="{Binding NameInvalid, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                        <TextBlock Text="{Binding NameHint}" FontSize="13" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                   Visibility="{Binding NameInvalid, Converter={StaticResource Vis}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Tài khoản -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <DockPanel Margin="0,0,0,12">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=user}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                            <TextBlock Text="Tài khoản" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding Account}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:InfoRow}">
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="190" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Label}" FontSize="13" Foreground="{StaticResource Text2Brush}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Style="{StaticResource Secondary}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Tạo, xóa hoặc đổi mật khẩu tài khoản không nằm trong phạm vi tự động. Hãy làm trong Settings › Accounts nếu cần." />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- BitLocker -->
+            <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=lock}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                        <c:StatusChip DockPanel.Dock="Right" State="{Binding EncryptionKey}" Text="{Binding EncryptionText}" />
+                        <TextBlock Text="Mã hóa ổ đĩa (BitLocker)" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Text="{Binding EncryptionDetail}" Style="{StaticResource SecondaryDark}" TextWrapping="Wrap"
+                               Visibility="{Binding EncryptionDetail, Converter={StaticResource NotEmpty}}" />
+                    <Border Background="{StaticResource InfoTintBrush}" CornerRadius="8" Padding="14,10" Margin="0,12,0,0">
+                        <TextBlock FontSize="13" Foreground="{StaticResource InfoTextBrush}" TextWrapping="Wrap"
+                                   Text="Nếu BitLocker đang bật, hãy chắc chắn khách hàng biết nơi lưu khóa khôi phục (thường là tài khoản Microsoft) trước khi bàn giao. Làm 1 Chạm không đọc, hiển thị hay ghi log khóa khôi phục." />
+                    </Border>
+                    <Button Style="{StaticResource SecondaryButton}" Command="{Binding RecoveryHelpCommand}" HorizontalAlignment="Left" Margin="0,12,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=external}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                            <TextBlock Text="Hướng dẫn tìm khóa khôi phục" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </StackPanel>
+</UserControl>

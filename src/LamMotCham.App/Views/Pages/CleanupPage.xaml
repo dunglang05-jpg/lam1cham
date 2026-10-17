@@ -1,0 +1,104 @@
+<UserControl x:Class="LamMotCham.App.Views.Pages.CleanupPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
+             xmlns:c="clr-namespace:LamMotCham.App.Controls">
+    <StackPanel>
+        <Grid Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Dọn dẹp" Style="{StaticResource H1}" />
+                <TextBlock Text="Quét trước để xem dung lượng. Chỉ xóa trong các thư mục tạm đã liệt kê; tài liệu của người dùng không bị đụng tới." Style="{StaticResource Body}" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap" />
+            </StackPanel>
+            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Command="{Binding ScanCommand}" VerticalAlignment="Bottom">
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                    <TextBlock Text="{Binding ScanLabel}" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <Border Style="{StaticResource CardFlush}">
+            <StackPanel>
+                <Border Background="{StaticResource SubtleBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="16,8" CornerRadius="12,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36" />
+                            <ColumnDefinition Width="44" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="150" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="2" Text="MỤC" Style="{StaticResource ColumnHeader}" />
+                        <TextBlock Grid.Column="3" Text="MỨC AN TOÀN" Style="{StaticResource ColumnHeader}" />
+                        <TextBlock Grid.Column="4" Text="SỐ FILE" Style="{StaticResource ColumnHeader}" />
+                        <TextBlock Grid.Column="5" Text="DUNG LƯỢNG" Style="{StaticResource ColumnHeader}" />
+                        <TextBlock Grid.Column="6" Text="KẾT QUẢ" Style="{StaticResource ColumnHeader}" />
+                    </Grid>
+                </Border>
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:CleanupItemViewModel}">
+                            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="16,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="36" />
+                                        <ColumnDefinition Width="44" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="110" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox IsChecked="{Binding Row.IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
+                                    <Image Grid.Column="1" Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="24" Height="24" Style="{StaticResource IconImage}" HorizontalAlignment="Left" />
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Scope}" Style="{StaticResource Secondary}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Note}" FontSize="12" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap"
+                                                   Visibility="{Binding Note, Converter={StaticResource NotEmpty}}" />
+                                    </StackPanel>
+                                    <c:StatusChip Grid.Column="3" State="{Binding SafetyKey}" />
+                                    <TextBlock Grid.Column="4" Text="{Binding Files}" FontSize="13" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="5" Text="{Binding Size}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="6" VerticalAlignment="Center">
+                                        <c:StatusChip State="{Binding Row.StateKey}" Text="{Binding Row.StateText}" Visibility="{Binding Row.HasRun, Converter={StaticResource Vis}}" />
+                                        <TextBlock Text="—" Foreground="{StaticResource Text2Brush}" Visibility="{Binding Row.HasRun, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid Margin="16,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Chưa quét. Bấm “Quét và xem trước” để biết dung lượng có thể giải phóng." Style="{StaticResource Secondary}"
+                                   Visibility="{Binding NotScanned, Converter={StaticResource Vis}}" />
+                        <StackPanel Visibility="{Binding Scanned, Converter={StaticResource Vis}}">
+                            <TextBlock FontSize="14">
+                                <Run Text="Có thể giải phóng" /> <Run Text="{Binding TotalText, Mode=OneWay}" FontWeight="SemiBold" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding ScannedAt}" Style="{StaticResource Meta}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Command="{Binding CleanCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=broom}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding CleanLabel}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

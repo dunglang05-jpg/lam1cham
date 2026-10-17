@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Target net10.0 (không phải net10.0-windows) để thư viện build và phân tích được trên mọi agent CI.
+    Toàn bộ assembly được đánh dấu chỉ hỗ trợ Windows; analyzer CA1416 chặn việc gọi nhầm từ nền tảng khác.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>LamMotCham.Windows</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>windows10.0.19041</_Parameter1>
+    </AssemblyAttribute>
+    <InternalsVisibleTo Include="LamMotCham.Windows.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LamMotCham.Core\LamMotCham.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,24 @@
+<UserControl x:Class="LamMotCham.App.Views.Dialogs.RestartDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:LamMotCham.App.Controls">
+    <StackPanel>
+        <DockPanel Margin="0,0,0,14">
+            <Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource WarningTintBrush}" Margin="0,0,12,0">
+                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=power}" Width="24" Height="24" Style="{StaticResource IconImage}" />
+            </Border>
+            <c:StatusChip DockPanel.Dock="Right" State="reboot" />
+            <TextBlock Text="Cần khởi động lại" Style="{StaticResource H2}" VerticalAlignment="Center" />
+        </DockPanel>
+        <TextBlock Text="{Binding Reason}" Style="{StaticResource Body}" TextWrapping="Wrap" Margin="0,0,0,10" />
+        <TextBlock Text="{Binding Remaining}" Style="{StaticResource SecondaryDark}" TextWrapping="Wrap" Margin="0,0,0,12" />
+        <Border Background="{StaticResource InfoTintBrush}" CornerRadius="8" Padding="14,10" Margin="0,0,0,12">
+            <TextBlock FontSize="13" Foreground="{StaticResource InfoTextBrush}" TextWrapping="Wrap"
+                       Text="Hãy lưu và đóng các tài liệu đang mở trước. Máy sẽ khởi động lại sau 5 giây kể từ khi bạn bấm “Khởi động lại ngay”." />
+        </Border>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Style="{StaticResource SecondaryButton}" Content="Để sau" Command="{Binding CloseCommand}" IsCancel="True" Margin="0,0,10,0" />
+            <Button Style="{StaticResource PrimaryButton}" Content="Khởi động lại ngay" Command="{Binding RestartCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

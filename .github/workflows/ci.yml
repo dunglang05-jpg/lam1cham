@@ -1,0 +1,79 @@
+# CI cho Làm 1 Chạm (tài liệu 06): build, test, kiểm tra định dạng và đóng gói EXE portable.
+# Không ký số trên PR. Ký số và phát hành chính thức là bước riêng, cần phê duyệt.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build, test và đóng gói (win-x64)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Cài .NET SDK theo global.json
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore LamMotCham.sln
+
+      - name: Build (Release, cảnh báo = lỗi)
+        run: dotnet build LamMotCham.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test LamMotCham.sln -c Release --no-build --logger "trx" --results-directory artifacts/test-results
+
+      - name: Kiểm tra định dạng mã
+        continue-on-error: true
+        run: dotnet format LamMotCham.sln --verify-no-changes --no-restore
+
+      - name: Đóng gói EXE portable
+        run: dotnet publish src/LamMotCham.App/LamMotCham.App.csproj -p:PublishProfile=win-x64
+
+      - name: Tính SHA-256
+        shell: pwsh
+        run: |
+          $exe = "artifacts/publish/win-x64/LamMotCham.exe"
+          if (-not (Test-Path $exe)) { throw "Không tìm thấy $exe" }
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  LamMotCham.exe" | Out-File -Encoding ascii artifacts/publish/win-x64/LamMotCham.exe.sha256
+          "SHA-256: $hash" >> $env:GITHUB_STEP_SUMMARY
+          "Kích thước: {0:N1} MB" -f ((Get-Item $exe).Length / 1MB) >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Tải lên EXE
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: LamMotCham-win-x64
+          path: |
+            artifacts/publish/win-x64/LamMotCham.exe
+            artifacts/publish/win-x64/LamMotCham.exe.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Tải lên kết quả test
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results
+          path: artifacts/test-results
+          if-no-files-found: ignore
+          retention-days: 14

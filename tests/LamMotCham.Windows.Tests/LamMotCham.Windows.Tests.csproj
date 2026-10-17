@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>LamMotCham.Windows.Tests</RootNamespace>
+    <NoWarn>$(NoWarn);CA1707;CA2201;CA1861</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1031;xUnit2012;xUnit2013;xUnit2017</WarningsNotAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Test phần logic thuần của lớp Windows; CI chạy trên Windows. -->
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>windows10.0.19041</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LamMotCham.Windows\LamMotCham.Windows.csproj" />
+  </ItemGroup>
+</Project>

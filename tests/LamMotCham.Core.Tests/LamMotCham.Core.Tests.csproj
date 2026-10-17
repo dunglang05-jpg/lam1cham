@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>LamMotCham.Core.Tests</RootNamespace>
+    <!-- Tên test viết theo câu mô tả; không áp quy tắc đặt tên cho test. -->
+    <NoWarn>$(NoWarn);CA1707;CA2201;CA1861</NoWarn>
+    <!-- Gợi ý phong cách của xUnit analyzer không chặn build. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1031;xUnit2012;xUnit2013;xUnit2017</WarningsNotAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LamMotCham.Core\LamMotCham.Core.csproj" />
+  </ItemGroup>
+</Project>
