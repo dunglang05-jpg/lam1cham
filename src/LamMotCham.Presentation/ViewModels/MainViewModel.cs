@@ -20,6 +20,7 @@ public enum Page
     Disk,
     Cleanup,
     Handover,
+    Modules,
 }
 
 public sealed class NavItem(MainViewModel owner, Page page, string label, string iconKey) : ObservableObject
@@ -74,6 +75,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private int _runTotal;
     private int _runDone;
     private bool _cancelRequested;
+    private double _runPercent;
+    private int _doneSuccess;
+    private int _doneSkipped;
+    private int _doneProblems;
 
     public MainViewModel(AppServices services, IUiPlatform ui)
     {
@@ -86,10 +91,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         [
             new(this, Page.Overview, "Tổng quan", "home"),
             new(this, Page.Software, "Phần mềm thiết yếu", "download"),
-            new(this, Page.Windows, "Tối ưu Windows", "gear"),
-            new(this, Page.Disk, "Ổ đĩa & tài khoản", "disk"),
-            new(this, Page.Cleanup, "Dọn dẹp & hiệu năng", "sparkle"),
-            new(this, Page.Handover, "Kiểm tra & bàn giao", "clipboard"),
+            new(this, Page.Windows, "Cài đặt & Tối ưu", "gear"),
+            new(this, Page.Disk, "Ổ đĩa & Tài khoản", "disk"),
+            new(this, Page.Cleanup, "Dọn dẹp & Hiệu năng", "sparkle"),
+            new(this, Page.Handover, "Kiểm tra & Bàn giao", "clipboard"),
         ];
 
         Machine = new MachineViewModel(this);
@@ -99,7 +104,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Disk = new DiskViewModel(this);
         Cleanup = new CleanupViewModel(this);
         Handover = new HandoverViewModel(this);
+        Modules = new ModulesViewModel(this);
 
+        GoModulesCommand = new RelayCommand(() => CurrentPage = Page.Modules);
+        OpenRunReportCommand = new RelayCommand(() => ShellActions.OpenFile(LastRunReportPath ?? ""), () => LastRunReportPath is not null && !IsRunning);
         NavigateCommand = new RelayCommand(p =>
         {
             if (p is Page page)
@@ -153,6 +161,54 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public HandoverViewModel Handover { get; }
 
+    public ModulesViewModel Modules { get; }
+
+    public RelayCommand GoModulesCommand { get; }
+
+    public RelayCommand OpenRunReportCommand { get; }
+
+    public bool ModulesSelected => _page == Page.Modules;
+
+    public string ModuleCountText { get; } = $"{LamMotCham.Presentation.Modules.ModuleCatalog.CodeModuleCount} mô-đun";
+
+    /// <summary>Các tác vụ của lượt chạy hiện tại (hộp Đang thực hiện).</summary>
+    public ObservableCollection<TaskRowViewModel> RunRows { get; } = [];
+
+    public double RunPercent
+    {
+        get => _runPercent;
+        private set
+        {
+            if (Set(ref _runPercent, value))
+            {
+                OnPropertyChanged(nameof(RunPercentText));
+            }
+        }
+    }
+
+    public string RunPercentText => RunPercent.ToString("0", CultureInfo.InvariantCulture) + "%";
+
+    public int DoneSuccess { get => _doneSuccess; private set => Set(ref _doneSuccess, value); }
+
+    public int DoneSkipped { get => _doneSkipped; private set => Set(ref _doneSkipped, value); }
+
+    public int DoneProblems
+    {
+        get => _doneProblems;
+        private set
+        {
+            if (Set(ref _doneProblems, value))
+            {
+                OnPropertyChanged(nameof(DoneClean));
+                OnPropertyChanged(nameof(DoneHeadline));
+            }
+        }
+    }
+
+    public bool DoneClean => _doneProblems == 0;
+
+    public string DoneHeadline => _doneProblems == 0 ? "Đã hoàn tất!" : "Đã xong — có mục cần xem";
+
     public RelayCommand NavigateCommand { get; }
 
     public RelayCommand ElevateCommand { get; }
@@ -185,6 +241,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             if (Set(ref _page, value))
             {
                 OnPropertyChanged(nameof(CurrentPageViewModel));
+                OnPropertyChanged(nameof(ModulesSelected));
                 foreach (var n in Nav)
                 {
                     n.Refresh();
@@ -200,6 +257,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Page.Disk => Disk,
         Page.Cleanup => Cleanup,
         Page.Handover => Handover,
+        Page.Modules => Modules,
         _ => Overview,
     };
 
@@ -306,7 +364,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Chạy các task đã chọn qua orchestrator. Trả về báo cáo, hoặc null nếu đang có lượt khác.
     /// </summary>
-    public async Task<RunReport?> RunAsync(IReadOnlyList<TaskRowViewModel> rows, string title)
+    /// <param name="rows">Các task cần chạy.</param>
+    /// <param name="title">Tên lượt chạy.</param>
+    /// <param name="quiet">true: tự đóng hộp kết quả nếu mọi tác vụ ổn (dùng cho lượt chỉ đọc như Kiểm tra máy).</param>
+    public async Task<RunReport?> RunAsync(IReadOnlyList<TaskRowViewModel> rows, string title, bool quiet = false)
     {
         ArgumentNullException.ThrowIfNull(rows);
         if (IsRunning || rows.Count == 0)
@@ -324,9 +385,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         DockTitle = title;
         DockSummary = "";
         DockStep = $"Bước 1/{_runTotal}";
+        RunPercent = 0;
+        DoneSuccess = 0;
+        DoneSkipped = 0;
+        DoneProblems = 0;
+        RunRows.Clear();
         foreach (var r in rows)
         {
             r.ResetForRun();
+            RunRows.Add(r);
         }
 
         S.Inventory.Invalidate();
@@ -346,6 +413,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             else if (u.State.IsTerminal())
             {
                 _runDone = rows.Count(x => x.State is { } s && s.IsTerminal());
+                RunPercent = _runDone * 100.0 / _runTotal;
             }
 
             DockStep = $"Bước {Math.Min(_runDone + 1, _runTotal)}/{_runTotal}";
@@ -368,6 +436,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             LastRunReportPath = WriteReport(report, "lượt chạy");
             AddRecent(report);
             DockSummary = Summarize(report);
+            RunPercent = 100;
+            DoneSuccess = report.Count(TaskState.Success);
+            DoneSkipped = report.Count(TaskState.Skipped);
+            DoneProblems = report.Count(TaskState.Failed) + report.Count(TaskState.NeedsAttention);
         }
         catch (QueueValidationException ex)
         {
@@ -384,6 +456,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             RefreshLog();
             Handover.Refresh();
             Software.RefreshQueue();
+        }
+
+        if (quiet && report is not null && report.HaltReason == RunHaltReason.None && DoneProblems == 0)
+        {
+            DockVisible = false;
         }
 
         if (report?.HaltReason == RunHaltReason.RebootRequired)

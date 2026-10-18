@@ -140,6 +140,20 @@ public sealed class EmptyToCollapsedConverter : IValueConverter
         throw new NotSupportedException();
 }
 
+/// <summary>true → <see cref="TrueBrush"/>, ngược lại → <see cref="FalseBrush"/>.</summary>
+public sealed class BoolToBrushConverter : IValueConverter
+{
+    public Brush TrueBrush { get; set; } = Brushes.Transparent;
+
+    public Brush FalseBrush { get; set; } = Brushes.Transparent;
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true ? TrueBrush : FalseBrush;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
 /// <summary>true → <see cref="TrueText"/>, ngược lại → <see cref="FalseText"/>.</summary>
 public sealed class BoolToTextConverter : IValueConverter
 {

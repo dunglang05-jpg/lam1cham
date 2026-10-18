@@ -38,4 +38,15 @@ Bản EXE self-contained đóng gói .NET Runtime và Windows Desktop Runtime c�
 
 ## Phần mềm được cài qua WinGet
 
-Làm 1 Chạm không đóng gói và không phân phối lại các ứng dụng trong danh mục (Chrome, Brave, UniKey, 7-Zip, Adobe Acrobat Reader, SumatraPDF, VLC, Microsoft 365, Zalo, Zoom). WinGet tải chúng từ nguồn của nhà phát hành; mỗi ứng dụng có điều khoản riêng mà người dùng chấp nhận khi xác nhận cài đặt. Riêng logo của Brave và icon của 7-Zip được đóng gói trong ứng dụng để hiển thị nhận diện, lấy từ kho mã nguồn chính thức: `brave/brave-core` (app/theme/brave/product_logo_256.png) và `ip7z/7zip` (CPP/7zip/UI/FileManager/FM.ico). Logo là nhãn hiệu của chủ sở hữu tương ứng, chỉ dùng để nhận diện sản phẩm. Các gói còn lại dùng icon theo danh mục cho đến khi có logo được xác minh nguồn.
+Làm 1 Chạm không đóng gói và không phân phối lại các ứng dụng trong danh mục (Chrome, Brave, UniKey, 7-Zip, Adobe Acrobat Reader, SumatraPDF, VLC, Microsoft 365, Zalo, Zoom). WinGet tải chúng từ nguồn của nhà phát hành; mỗi ứng dụng có điều khoản riêng mà người dùng chấp nhận khi xác nhận cài đặt. ## Logo ứng dụng (`src/LamMotCham.App/Assets/Logos`)
+
+Logo được đóng gói chỉ để nhận diện ứng dụng trong danh mục. Mọi logo là nhãn hiệu của chủ sở hữu tương ứng; Làm 1 Chạm không liên kết với và không được các chủ sở hữu này bảo trợ. Ảnh PNG 96 px được tạo lại từ các nguồn sau:
+
+| File | Nguồn | Giấy phép của nguồn |
+|---|---|---|
+| `brave.png` | `brave/brave-core` — app/theme/brave/product_logo_256.png | MPL-2.0 (mã nguồn); logo là nhãn hiệu của Brave Software |
+| `7zip.png` | `ip7z/7zip` — CPP/7zip/UI/FileManager/FM.ico (ảnh 48 px phóng to) | LGPL; icon của 7-Zip |
+| `chrome.png`, `zoom.png` | Iconify, bộ `logos` (`chrome`, `zoom-icon`) — npm `@iconify-json/logos` | CC0-1.0 |
+| `acrobat.png`, `vlc.png`, `m365.png`, `zalo.png` | Iconify, bộ `simple-icons` (`adobeacrobatreader`, `vlcmediaplayer`, `microsoftoffice`, `zalo`) — npm `@iconify-json/simple-icons`, tô màu thương hiệu | CC0-1.0 |
+
+UniKey và SumatraPDF chưa có logo đã xác minh nguồn nên dùng icon theo danh mục.

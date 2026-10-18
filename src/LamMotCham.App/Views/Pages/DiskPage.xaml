@@ -4,10 +4,9 @@
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <StackPanel>
-        <StackPanel Margin="0,0,0,16">
-            <TextBlock Text="Ổ đĩa và tài khoản" Style="{StaticResource H1}" />
-            <TextBlock Text="Chỉ đọc thông tin ổ đĩa. Làm 1 Chạm không tự chia ổ, định dạng, giải mã BitLocker hay xóa tài khoản." Style="{StaticResource Body}" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap" />
-        </StackPanel>
+        <!-- Mô-đun "disk" (QĐ-002) -->
+        <c:PageHeader IconKey="disk" Heading="Ổ đĩa &amp; Tài khoản" ModuleLabel="{Binding Module.Label}"
+                      Description="Chỉ đọc thông tin ổ đĩa. Làm 1 Chạm không tự chia ổ, định dạng, giải mã BitLocker hay xóa tài khoản." />
 
         <Border Style="{StaticResource CardFlush}" Margin="0,0,0,16">
             <StackPanel>

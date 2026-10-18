@@ -25,6 +25,9 @@ public sealed class ConditionViewModel(string title) : ObservableObject
 /// </summary>
 public sealed class HandoverViewModel : ObservableObject
 {
+    /// <summary>Mô-đun của trang này (QĐ-002).</summary>
+    public LamMotCham.Presentation.Modules.AppModule Module { get; } = LamMotCham.Presentation.Modules.ModuleCatalog.Handover;
+
     private static readonly string[] GuardIds = ["check.security", "check.firewall", "win.update"];
 
     private readonly MainViewModel _main;

@@ -6,10 +6,41 @@ using LamMotCham.Windows.Software;
 
 namespace LamMotCham.Presentation.ViewModels;
 
+/// <summary>Chip lọc theo nhóm ứng dụng (thiết kế v3).</summary>
+public sealed class CategoryChip : ObservableObject
+{
+    private readonly SoftwareViewModel _owner;
+
+    internal CategoryChip(SoftwareViewModel owner, string label)
+    {
+        _owner = owner;
+        Label = label;
+    }
+
+    public string Label { get; }
+
+    public bool IsSelected
+    {
+        get => string.Equals(_owner.Category, Label, StringComparison.Ordinal);
+        set
+        {
+            if (value)
+            {
+                _owner.Category = Label;
+            }
+        }
+    }
+
+    internal void Refresh() => OnPropertyChanged(nameof(IsSelected));
+}
+
 /// <summary>Màn hình B — Phần mềm thiết yếu (UI/UX Handoff mục 8).</summary>
 public sealed class SoftwareViewModel : ObservableObject
 {
-    public const string AllCategories = "Tất cả danh mục";
+    /// <summary>Mô-đun của trang này (QĐ-002).</summary>
+    public LamMotCham.Presentation.Modules.AppModule Module { get; } = LamMotCham.Presentation.Modules.ModuleCatalog.Software;
+
+    public const string AllCategories = "Tất cả";
 
     private readonly MainViewModel _main;
     private readonly List<TaskRowViewModel> _all;
@@ -22,11 +53,12 @@ public sealed class SoftwareViewModel : ObservableObject
         _main = main;
         _all = [.. main.RowsIn(TaskCategory.Software)];
         Categories = [AllCategories, .. SoftwareCatalog.Categories];
+        CategoryChips = [.. Categories.Select(c => new CategoryChip(this, c))];
         foreach (var r in _all)
         {
             r.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(TaskRowViewModel.IsSelected))
+                if (e.PropertyName is nameof(TaskRowViewModel.IsSelected) or nameof(TaskRowViewModel.CurrentText))
                 {
                     OnSelectionChanged();
                 }
@@ -60,11 +92,30 @@ public sealed class SoftwareViewModel : ObservableObject
             }
         };
         ApplyFilter();
+        RebuildSelected();
     }
 
     public MainViewModel Main => _main;
 
     public IReadOnlyList<string> Categories { get; }
+
+    public IReadOnlyList<CategoryChip> CategoryChips { get; }
+
+    /// <summary>Ứng dụng đang chọn (hiện logo ở khung bên phải).</summary>
+    public ObservableCollection<TaskRowViewModel> SelectedRows { get; } = [];
+
+    public string SelectedCountText => $"{SelectedCount} ứng dụng";
+
+    public string SkipNote
+    {
+        get
+        {
+            var installed = _all.Count(r => r.IsSelected && r.CurrentText == "Đã cài");
+            return SelectedCount == 0
+                ? "Chưa chọn ứng dụng nào."
+                : installed > 0 ? $"{installed} ứng dụng đã có sẵn sẽ được bỏ qua" : "Ứng dụng đã có trên máy sẽ được bỏ qua";
+        }
+    }
 
     public ObservableCollection<TaskRowViewModel> Visible { get; } = [];
 
@@ -112,6 +163,10 @@ public sealed class SoftwareViewModel : ObservableObject
             if (Set(ref _category, value ?? AllCategories))
             {
                 ApplyFilter();
+                foreach (var chip in CategoryChips)
+                {
+                    chip.Refresh();
+                }
             }
         }
     }
@@ -238,8 +293,20 @@ public sealed class SoftwareViewModel : ObservableObject
         OnPropertyChanged(nameof(NoResults));
     }
 
+    private void RebuildSelected()
+    {
+        SelectedRows.Clear();
+        foreach (var r in _all.Where(r => r.IsSelected))
+        {
+            SelectedRows.Add(r);
+        }
+    }
+
     private void OnSelectionChanged()
     {
+        RebuildSelected();
+        OnPropertyChanged(nameof(SelectedCountText));
+        OnPropertyChanged(nameof(SkipNote));
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(RecommendedSelected));
         OnPropertyChanged(nameof(CanInstall));

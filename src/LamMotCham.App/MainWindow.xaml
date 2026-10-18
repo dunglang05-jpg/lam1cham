@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
-        xmlns:c="clr-namespace:LamMotCham.App.Controls"
+        xmlns:views="clr-namespace:LamMotCham.App.Views"
         xmlns:pages="clr-namespace:LamMotCham.App.Views.Pages"
         xmlns:dialogs="clr-namespace:LamMotCham.App.Views.Dialogs"
         Title="Làm 1 Chạm"
@@ -14,6 +14,7 @@
         Foreground="{StaticResource TextBrush}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True">
+    <!-- Mô-đun "shell" (QĐ-002): khung ứng dụng. Nội dung mỗi trang là một mô-đun riêng trong Views/Pages. -->
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:OverviewViewModel}"><pages:OverviewPage /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SoftwareViewModel}"><pages:SoftwarePage /></DataTemplate>
@@ -21,6 +22,7 @@
         <DataTemplate DataType="{x:Type vm:DiskViewModel}"><pages:DiskPage /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:CleanupViewModel}"><pages:CleanupPage /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:HandoverViewModel}"><pages:HandoverPage /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ModulesViewModel}"><pages:ModulesPage /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ConfirmDialogViewModel}"><dialogs:ConfirmDialog /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ErrorDialogViewModel}"><dialogs:ErrorDialog /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:RestartDialogViewModel}"><dialogs:RestartDialog /></DataTemplate>
@@ -29,52 +31,49 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="60" />
+            <RowDefinition Height="64" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- TOPBAR -->
+        <!-- THANH TIÊU ĐỀ -->
         <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1">
             <DockPanel Margin="20,0,16,0" LastChildFill="False">
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="pack://application:,,,/Assets/logo.png" Width="32" Height="32" Style="{StaticResource IconImage}" />
+                    <Image Source="pack://application:,,,/Assets/logo.png" Width="38" Height="38" Style="{StaticResource IconImage}" />
                     <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="Làm 1 Chạm" FontSize="16" FontWeight="SemiBold" />
-                        <TextBlock Text="Một chạm — Sẵn sàng sử dụng" Style="{StaticResource Meta}" />
-                    </StackPanel>
-                    <Border Margin="14,0,0,0" Padding="8,2" CornerRadius="6" Background="{StaticResource LineSoftBrush}" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding AppVersion}" FontSize="11" FontWeight="SemiBold" Foreground="#3F4A5C" />
-                    </Border>
-                    <Border Width="1" Height="24" Margin="14,0" Background="{StaticResource LineBrush}" />
-                    <TextBlock Text="{Binding WindowsLabel}" FontSize="13" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
-                    <Border Margin="14,0,0,0" Height="26" Padding="10,0" CornerRadius="13" Background="{StaticResource InfoTintBrush}"
-                            Visibility="{Binding IsElevated, Converter={StaticResource Vis}}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource Glyph}" Text="&#xEA18;" FontSize="12" Foreground="{StaticResource InfoTextBrush}" Margin="0,0,6,0" />
-                            <TextBlock Text="Đang chạy quyền quản trị" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource InfoTextBrush}" VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Làm 1 Chạm" FontSize="18" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
+                            <Border Margin="8,0,0,0" Padding="7,1" CornerRadius="6" Background="{StaticResource PrimaryTintBrush}" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding AppVersion}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" />
+                            </Border>
                         </StackPanel>
-                    </Border>
-                    <StackPanel Orientation="Horizontal" Margin="14,0,0,0" Visibility="{Binding IsElevated, Converter={StaticResource Vis}, ConverterParameter=invert}">
-                        <Border Height="26" Padding="10,0" CornerRadius="13" Background="{StaticResource LineSoftBrush}">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource Glyph}" Text="&#xE77B;" FontSize="12" Foreground="#3F4A5C" Margin="0,0,6,0" />
-                                <TextBlock Text="Đang chạy quyền người dùng" FontSize="12" FontWeight="SemiBold" Foreground="#3F4A5C" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                        <Button Style="{StaticResource TertiaryButton}" Content="Nâng quyền…" Margin="6,0,0,0" Command="{Binding ElevateCommand}"
-                                ToolTip="Mở lại ứng dụng với quyền quản trị (Windows sẽ hỏi UAC)" />
+                        <TextBlock Text="Một chạm – Sẵn sàng sử dụng" FontSize="11" Foreground="{StaticResource Text2Brush}" />
                     </StackPanel>
                 </StackPanel>
+
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Height="28" Padding="10,0,12,0" CornerRadius="14" Background="{StaticResource SuccessTintBrush}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
+                            <TextBlock Text="Chạy trực tiếp – Không cần cài đặt" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SuccessTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="10,0,0,0" Height="28" Padding="10,0,12,0" CornerRadius="14" Background="{StaticResource PrimaryTintBrush}"
+                            Visibility="{Binding IsElevated, Converter={StaticResource Vis}}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
+                            <TextBlock Text="Quyền quản trị" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <Button Style="{StaticResource SecondaryButton}" MinHeight="32" FontSize="12" Padding="10,0" Margin="10,0,0,0" Content="Nâng quyền quản trị…"
+                            Command="{Binding ElevateCommand}" ToolTip="Mở lại ứng dụng với quyền quản trị (Windows sẽ hỏi UAC)"
+                            Visibility="{Binding IsElevated, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                    <Border Width="1" Height="22" Margin="12,0,6,0" Background="{StaticResource LineBrush}" />
                     <Button Style="{StaticResource QuietButton}" Command="{Binding HelpCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=info}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=info}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
                             <TextBlock Text="Trợ giúp" VerticalAlignment="Center" />
                         </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource QuietButton}" Command="{Binding OpenReportsCommand}" ToolTip="Mở thư mục báo cáo" Margin="4,0,0,0"
-                            AutomationProperties.Name="Mở thư mục báo cáo">
-                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=gear}" Width="22" Height="22" Style="{StaticResource IconImage}" />
                     </Button>
                 </StackPanel>
             </DockPanel>
@@ -82,36 +81,62 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="224" />
+                <ColumnDefinition Width="232" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- SIDEBAR -->
+            <!-- THANH BÊN -->
             <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,1,0">
-                <DockPanel Margin="12,16">
+                <DockPanel Margin="14,18">
                     <StackPanel DockPanel.Dock="Bottom">
-                        <Border Style="{StaticResource Divider}" Background="{StaticResource LineBrush}" Margin="0,0,0,10" />
-                        <Button Style="{StaticResource QuietButton}" HorizontalContentAlignment="Left" Command="{Binding OpenLogsCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=terminal}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                                <TextBlock Text="Mở thư mục log" FontWeight="Normal" VerticalAlignment="Center" />
+                        <Button Command="{Binding GoModulesCommand}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}"
+                                AutomationProperties.Name="Mô-đun và cập nhật">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{Binding ModulesSelected, Converter={StaticResource ActiveSoftBg}}"
+                                            BorderBrush="{Binding ModulesSelected, Converter={StaticResource ActiveBorder}}"
+                                            BorderThickness="1.5" CornerRadius="12" Padding="14,12">
+                                        <ContentPresenter />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                                    <TextBlock Text="Mô-đun &amp; Cập nhật" FontSize="13" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="Phiên bản" FontSize="12" Foreground="{StaticResource Text2Brush}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding AppVersion}" FontSize="12" Foreground="{StaticResource Text3Brush}" />
+                                    <TextBlock Grid.Row="1" Text="Mô-đun" FontSize="12" Foreground="{StaticResource Text2Brush}" Margin="0,3,0,0" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ModuleCountText}" FontSize="12" Foreground="{StaticResource Text3Brush}" Margin="0,3,0,0" />
+                                </Grid>
                             </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource QuietButton}" HorizontalContentAlignment="Left" Command="{Binding OpenReportsCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=folder}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                                <TextBlock Text="Mở thư mục báo cáo" FontWeight="Normal" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                        <TextBlock Text="Bản chạy trực tiếp · không cần cài đặt" Style="{StaticResource Meta}" Margin="12,6,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="4,10,0,0">
+                            <Button Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="30" Content="Mở log" Command="{Binding OpenLogsCommand}" />
+                            <Button Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="30" Content="Mở báo cáo" Command="{Binding OpenReportsCommand}" />
+                        </StackPanel>
                     </StackPanel>
+
                     <ItemsControl ItemsSource="{Binding Nav}" KeyboardNavigation.TabNavigation="Once">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type vm:NavItem}">
                                 <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                              AutomationProperties.Name="{Binding Label}">
                                     <StackPanel Orientation="Horizontal">
-                                        <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                                        <Border Width="28" Height="28" CornerRadius="7" Margin="0,0,12,0"
+                                                Background="{Binding IsSelected, Converter={StaticResource NavTileBg}}">
+                                            <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" />
+                                        </Border>
                                         <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
@@ -121,66 +146,18 @@
                 </DockPanel>
             </Border>
 
-            <!-- NỘI DUNG + PANEL TÁC VỤ -->
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-                    <ContentControl Content="{Binding CurrentPageViewModel}" Margin="24" Focusable="False" />
-                </ScrollViewer>
-
-                <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0"
-                        Visibility="{Binding DockVisible, Converter={StaticResource Vis}}" AutomationProperties.Name="Tác vụ đang chạy">
-                    <StackPanel>
-                        <Grid Margin="24,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Image Grid.Column="0" Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="32" Height="32"
-                                   Style="{StaticResource IconImage}" Margin="0,0,14,0" VerticalAlignment="Top" />
-                            <StackPanel Grid.Column="1">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding DockTitle}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding DockStep}" Style="{StaticResource Secondary}" Margin="10,0" VerticalAlignment="Center" />
-                                    <c:StatusChip State="running" Visibility="{Binding IsRunning, Converter={StaticResource Vis}}" />
-                                </StackPanel>
-                                <ProgressBar Style="{StaticResource ThinProgress}" IsIndeterminate="{Binding IsRunning}" Margin="0,8,0,6"
-                                             Visibility="{Binding IsRunning, Converter={StaticResource Vis}}"
-                                             AutomationProperties.Name="Đang chạy, chưa xác định được phần trăm" />
-                                <TextBlock Text="{Binding DockSummary}" Style="{StaticResource SecondaryDark}" Visibility="{Binding DockSummary, Converter={StaticResource NotEmpty}}" Margin="0,4,0,0" />
-                                <TextBlock Text="Hủy sẽ dừng sau bước hiện tại. Trình cài đặt đang chạy không bị cưỡng chế dừng." Style="{StaticResource Meta}"
-                                           Visibility="{Binding IsRunning, Converter={StaticResource Vis}}" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                                <Button Style="{StaticResource TertiaryButton}" Command="{Binding ToggleLogCommand}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE756;" FontSize="14" Margin="0,0,6,0" />
-                                        <TextBlock Text="Xem log" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource SecondaryButton}" Content="Hủy…" Margin="8,0,0,0" Command="{Binding CancelRunCommand}"
-                                        Visibility="{Binding IsRunning, Converter={StaticResource Vis}}" />
-                                <Button Style="{StaticResource SecondaryButton}" Content="Đóng" Margin="8,0,0,0" Command="{Binding HideDockCommand}"
-                                        Visibility="{Binding IsRunning, Converter={StaticResource Vis}, ConverterParameter=invert}" />
-                            </StackPanel>
-                        </Grid>
-                        <TextBox Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True" Margin="24,0,24,12" Height="160" MinHeight="0"
-                                 VerticalContentAlignment="Top" Padding="10,8" TextWrapping="NoWrap"
-                                 FontFamily="{StaticResource MonoFont}" FontSize="12" Background="#F2F4F7"
-                                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                                 Visibility="{Binding LogOpen, Converter={StaticResource Vis}}" AutomationProperties.Name="Nhật ký" />
-                    </StackPanel>
-                </Border>
-            </Grid>
+            <!-- KHU VỰC MÔ-ĐUN -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                <ContentControl Content="{Binding CurrentPageViewModel}" Margin="28,24" Focusable="False" />
+            </ScrollViewer>
         </Grid>
 
-        <!-- HỘP THOẠI -->
+        <!-- ĐANG THỰC HIỆN / KẾT QUẢ -->
+        <views:RunOverlay Grid.RowSpan="2" Visibility="{Binding DockVisible, Converter={StaticResource Vis}}" />
+
+        <!-- HỘP THOẠI (nằm trên cùng, kể cả khi đang chạy) -->
         <Grid Grid.RowSpan="2" Background="{StaticResource OverlayBrush}" Visibility="{Binding HasDialog, Converter={StaticResource Vis}}">
-            <Border Width="600" MaxHeight="760" Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="24"
+            <Border Width="600" MaxHeight="760" Background="{StaticResource SurfaceBrush}" CornerRadius="16" Padding="24"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="40" ShadowDepth="8" Opacity="0.25" Color="#101828" />

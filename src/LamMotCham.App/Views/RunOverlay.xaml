@@ -1,0 +1,215 @@
+<UserControl x:Class="LamMotCham.App.Views.RunOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
+             xmlns:c="clr-namespace:LamMotCham.App.Controls">
+    <!-- DataContext: MainViewModel. Đang chạy: tiến độ + tài nguyên. Xong: kết quả + báo cáo. -->
+    <Grid Background="{StaticResource OverlayBrush}">
+        <Border Width="640" MaxHeight="780" Background="{StaticResource SurfaceBrush}" CornerRadius="16" Padding="26,24"
+                HorizontalAlignment="Center" VerticalAlignment="Center" AutomationProperties.Name="Tiến độ thực hiện">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="48" ShadowDepth="10" Opacity="0.28" Color="#10213F" />
+            </Border.Effect>
+            <DockPanel>
+                <!-- Đầu hộp -->
+                <StackPanel DockPanel.Dock="Top">
+                    <!-- Đang chạy -->
+                    <StackPanel Visibility="{Binding IsRunning, Converter={StaticResource Vis}}">
+                        <TextBlock Text="Đang thực hiện…" FontSize="20" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
+                        <Grid Margin="0,4,0,0">
+                            <TextBlock FontSize="13" Foreground="{StaticResource Text3Brush}" TextTrimming="CharacterEllipsis" Margin="0,0,60,0">
+                                <Run Text="{Binding DockStep, Mode=OneWay}" /> <Run Text="–" /> <Run Text="{Binding DockTitle, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding RunPercentText}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" HorizontalAlignment="Right" />
+                        </Grid>
+                        <ProgressBar Style="{StaticResource ThinProgress}" Value="{Binding RunPercent, Mode=OneWay}" Maximum="100" Margin="0,8,0,0"
+                                     AutomationProperties.Name="Tiến độ" />
+                    </StackPanel>
+
+                    <!-- Xong, không có lỗi -->
+                    <Border Background="{StaticResource SuccessTintBrush}" BorderBrush="{StaticResource SuccessLineBrush}" BorderThickness="1" CornerRadius="12" Padding="18,16">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsRunning}" Value="False" />
+                                            <Condition Binding="{Binding DoneClean}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="52" Height="52" CornerRadius="12" Background="White" Margin="0,0,16,0">
+                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="38" Height="38" Style="{StaticResource IconImage}" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DoneHeadline}" FontSize="22" FontWeight="Bold" Foreground="#125E30" />
+                                <TextBlock Text="{Binding DockSummary}" FontSize="13" Foreground="#1F6B3B" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Xong, có mục cần xem -->
+                    <Border Background="{StaticResource WarningTintBrush}" BorderBrush="#F0D9A8" BorderThickness="1" CornerRadius="12" Padding="18,16">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsRunning}" Value="False" />
+                                            <Condition Binding="{Binding DoneClean}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="52" Height="52" CornerRadius="12" Background="White" Margin="0,0,16,0">
+                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=alert}" Width="36" Height="36" Style="{StaticResource IconImage}" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding DoneHeadline}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource WarningTextBrush}" />
+                                <TextBlock Text="{Binding DockSummary}" FontSize="13" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Số liệu khi xong -->
+                    <UniformGrid Columns="3" Margin="0,14,0,0" Visibility="{Binding IsRunning, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                        <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,8,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DoneSuccess}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource SuccessTextBrush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Thành công" FontSize="12" Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="4,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DoneSkipped}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource Text3Brush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Bỏ qua" FontSize="12" Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="12" Padding="12" Margin="8,0,0,0">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding DoneProblems}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource Text3Brush}" HorizontalAlignment="Center" />
+                                <TextBlock Text="Lỗi / cần xem" FontSize="12" Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                </StackPanel>
+
+                <!-- Nút -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="0,14,0,0">
+                    <Grid Visibility="{Binding IsRunning, Converter={StaticResource Vis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Dừng sẽ hoàn tất bước đang chạy trước. Trình cài đặt không bị ép tắt." FontSize="12" Foreground="{StaticResource Text2Brush}"
+                                   TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Content="Xem log" Command="{Binding ToggleLogCommand}" Margin="0,0,8,0" />
+                        <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Content="Dừng sau bước này" Command="{Binding CancelRunCommand}" />
+                    </Grid>
+                    <Grid Visibility="{Binding IsRunning, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button Style="{StaticResource SecondaryButton}" Content="Xem log" Command="{Binding ToggleLogCommand}" Margin="0,0,8,0" MinHeight="44" />
+                        <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Command="{Binding OpenRunReportCommand}" Margin="0,0,8,0" MinHeight="44">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource WhiteIconChip}">
+                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="20" Height="20" Style="{StaticResource IconImage}" />
+                                </Border>
+                                <TextBlock Text="Mở báo cáo" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="2" Style="{StaticResource SecondaryButton}" Content="Đóng" Command="{Binding HideDockCommand}" MinHeight="44" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Tài nguyên khi đang chạy -->
+                <UniformGrid DockPanel.Dock="Bottom" Columns="3" Margin="0,14,0,0" Visibility="{Binding IsRunning, Converter={StaticResource Vis}}">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock FontSize="12" Foreground="{StaticResource Text3Brush}">
+                            <Run Text="CPU" /> <Run Text="{Binding Machine.Cpu.Value, Mode=OneWay}" /><Run Text="{Binding Machine.Cpu.Unit, Mode=OneWay}" />
+                        </TextBlock>
+                        <ProgressBar Style="{StaticResource GreenMeter}" Value="{Binding Machine.Cpu.Percent, Mode=OneWay}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <StackPanel Margin="5,0">
+                        <TextBlock FontSize="12" Foreground="{StaticResource Text3Brush}">
+                            <Run Text="RAM trống" /> <Run Text="{Binding Machine.Ram.Value, Mode=OneWay}" /> <Run Text="{Binding Machine.Ram.Unit, Mode=OneWay}" />
+                        </TextBlock>
+                        <ProgressBar Style="{StaticResource GreenMeter}" Value="{Binding Machine.Ram.Percent, Mode=OneWay}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <StackPanel Margin="10,0,0,0">
+                        <TextBlock FontSize="12" Foreground="{StaticResource Text3Brush}">
+                            <Run Text="Ổ hệ thống trống" /> <Run Text="{Binding Machine.SystemDisk.Value, Mode=OneWay}" /> <Run Text="{Binding Machine.SystemDisk.Unit, Mode=OneWay}" />
+                        </TextBlock>
+                        <ProgressBar Style="{StaticResource GreenMeter}" Value="{Binding Machine.SystemDisk.Percent, Mode=OneWay}" Margin="0,4,0,0" />
+                    </StackPanel>
+                </UniformGrid>
+
+                <!-- Nhật ký -->
+                <TextBox DockPanel.Dock="Bottom" Text="{Binding LogText, Mode=OneWay}" IsReadOnly="True" Margin="0,14,0,0" Height="150" MinHeight="0"
+                         VerticalContentAlignment="Top" Padding="10,8" TextWrapping="NoWrap"
+                         FontFamily="{StaticResource MonoFont}" FontSize="12" Background="#F2F4F7"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                         Visibility="{Binding LogOpen, Converter={StaticResource Vis}}" AutomationProperties.Name="Nhật ký" />
+
+                <!-- Danh sách tác vụ -->
+                <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="12" Padding="14,4" Margin="0,14,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding RunRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
+                                    <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="34" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Image Width="24" Height="24" Style="{StaticResource IconImage}" HorizontalAlignment="Left">
+                                                <Image.Source>
+                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                        <Binding Path="LogoKey" />
+                                                        <Binding Path="IconKey" />
+                                                    </MultiBinding>
+                                                </Image.Source>
+                                            </Image>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Message}" Style="{StaticResource Secondary}" TextWrapping="Wrap"
+                                                           Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                            </StackPanel>
+                                            <c:StatusChip Grid.Column="2" State="{Binding StateKey}" Text="{Binding StateText}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding MetaText}" FontSize="12" Foreground="{StaticResource Text2Brush}"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0" MinWidth="40" TextAlignment="Right" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

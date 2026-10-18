@@ -33,30 +33,21 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <Grid Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="Kiểm tra bàn giao" Style="{StaticResource H1}" />
-                <TextBlock Text="Máy chỉ sẵn sàng bàn giao khi các điều kiện dưới đây đạt. Phần cứng cần kỹ thuật viên thử tay và xác nhận." Style="{StaticResource Body}" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                <Button Style="{StaticResource SecondaryButton}" Command="{Binding RecheckCommand}" Margin="0,0,10,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE72C;" FontSize="14" Margin="0,0,8,0" />
-                        <TextBlock Text="Kiểm tra lại tất cả" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
+        <!-- Mô-đun "handover" (QĐ-002) -->
+        <c:PageHeader IconKey="clipboard" Heading="Kiểm tra &amp; Bàn giao" ModuleLabel="{Binding Module.Label}"
+                      Description="Máy chỉ sẵn sàng bàn giao khi các điều kiện dưới đây đạt. Phần cứng cần thử tay rồi xác nhận.">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding RecheckCommand}" Content="Kiểm tra lại tất cả" Margin="0,0,10,0" />
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding CreateReportCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE9F9;" FontSize="14" Margin="0,0,8,0" />
+                        <Border Style="{StaticResource WhiteIconChip}" Width="24" Height="24" Margin="0,0,8,0">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="18" Height="18" Style="{StaticResource IconImage}" />
+                        </Border>
                         <TextBlock Text="Tạo báo cáo bàn giao" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </StackPanel>
-        </Grid>
+        </c:PageHeader>
 
         <!-- Tóm tắt -->
         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">

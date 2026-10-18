@@ -13,6 +13,9 @@
             <conv:BoolToVisibilityConverter x:Key="Vis" />
             <conv:EmptyToCollapsedConverter x:Key="NotEmpty" />
             <conv:BoolToTextConverter x:Key="ReadOnlyVerb" TrueText="Kiểm tra" FalseText="Áp dụng" />
+            <conv:BoolToBrushConverter x:Key="NavTileBg" TrueBrush="White" FalseBrush="Transparent" />
+            <conv:BoolToBrushConverter x:Key="ActiveBorder" TrueBrush="#1F63F0" FalseBrush="#E4EAF3" />
+            <conv:BoolToBrushConverter x:Key="ActiveSoftBg" TrueBrush="#F3F7FF" FalseBrush="#F7F9FD" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

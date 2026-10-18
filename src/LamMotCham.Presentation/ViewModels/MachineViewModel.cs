@@ -156,7 +156,7 @@ public sealed class MachineViewModel : ObservableObject
 
         // Chạy toàn bộ kiểm tra chỉ đọc (dùng chung dữ liệu vừa thu thập) và đọc trạng thái hiện tại.
         var checks = _main.Rows.Values.Where(r => r.IsReadOnly).ToList();
-        await _main.RunAsync(checks, "Kiểm tra máy");
+        await _main.RunAsync(checks, "Kiểm tra máy", quiet: true);
         await RefreshCurrentStatesAsync();
     }
 

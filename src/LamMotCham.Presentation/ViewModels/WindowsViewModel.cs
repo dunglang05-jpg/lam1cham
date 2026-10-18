@@ -10,6 +10,9 @@ public sealed record SettingGroup(string Title, string Description, string IconK
 /// <summary>Màn hình C — Tối ưu Windows (UI/UX Handoff mục 9).</summary>
 public sealed class WindowsViewModel : ObservableObject
 {
+    /// <summary>Mô-đun của trang này (QĐ-002).</summary>
+    public LamMotCham.Presentation.Modules.AppModule Module { get; } = LamMotCham.Presentation.Modules.ModuleCatalog.Windows;
+
     private readonly MainViewModel _main;
     private readonly List<TaskRowViewModel> _rows;
 

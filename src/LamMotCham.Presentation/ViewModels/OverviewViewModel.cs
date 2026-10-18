@@ -7,6 +7,55 @@ namespace LamMotCham.Presentation.ViewModels;
 
 public sealed record PackOption(TaskPack Pack, string Label);
 
+/// <summary>Thẻ gói thiết lập nhanh trên Tổng quan (thiết kế v3).</summary>
+public sealed class PackCardViewModel : ObservableObject
+{
+    private readonly OverviewViewModel _owner;
+
+    internal PackCardViewModel(OverviewViewModel owner, PackOption option, string description, string tag, string iconKey,
+        IReadOnlyList<TaskRowViewModel> apps, string extra)
+    {
+        _owner = owner;
+        Option = option;
+        Description = description;
+        Tag = tag;
+        IconKey = iconKey;
+        Apps = apps;
+        Extra = extra;
+    }
+
+    public PackOption Option { get; }
+
+    public string Title => Option.Label;
+
+    public string Description { get; }
+
+    public string Tag { get; }
+
+    public string IconKey { get; }
+
+    /// <summary>Ứng dụng thuộc gói (hiện logo).</summary>
+    public IReadOnlyList<TaskRowViewModel> Apps { get; }
+
+    public bool HasApps => Apps.Count > 0;
+
+    public string Extra { get; }
+
+    public bool IsSelected
+    {
+        get => ReferenceEquals(_owner.SelectedPack, Option);
+        set
+        {
+            if (value)
+            {
+                _owner.SelectedPack = Option;
+            }
+        }
+    }
+
+    internal void Refresh() => OnPropertyChanged(nameof(IsSelected));
+}
+
 public sealed class StepViewModel(string number, string title, Page target) : ObservableObject
 {
     private string _desc = "";
@@ -29,6 +78,9 @@ public sealed class StepViewModel(string number, string title, Page target) : Ob
 /// <summary>Màn hình A — Tổng quan (UI/UX Handoff mục 7).</summary>
 public sealed class OverviewViewModel : ObservableObject
 {
+    /// <summary>Mô-đun của trang này (QĐ-002).</summary>
+    public LamMotCham.Presentation.Modules.AppModule Module { get; } = LamMotCham.Presentation.Modules.ModuleCatalog.Overview;
+
     private readonly MainViewModel _main;
     private PackOption _pack;
 
@@ -37,6 +89,7 @@ public sealed class OverviewViewModel : ObservableObject
         _main = main;
         Packs = [.. Enum.GetValues<TaskPack>().Select(p => new PackOption(p, p.DisplayName()))];
         _pack = Packs[0];
+        PackCards = [.. Packs.Select(BuildCard)];
         Steps =
         [
             new("1", "Kiểm tra máy", Page.Overview),
@@ -77,6 +130,22 @@ public sealed class OverviewViewModel : ObservableObject
 
     public IReadOnlyList<PackOption> Packs { get; }
 
+    public IReadOnlyList<PackCardViewModel> PackCards { get; }
+
+    public PackCardViewModel SelectedCard => PackCards.First(c => ReferenceEquals(c.Option, _pack));
+
+    /// <summary>Dòng chú thích dưới nút Bắt đầu.</summary>
+    public string StartNote
+    {
+        get
+        {
+            var n = _main.Rows.Values.Count(r => r.IsSelected);
+            return n == 0
+                ? "Chưa chọn tác vụ nào. Chọn gói hoặc chọn ở từng trang."
+                : $"{n} tác vụ chạy lần lượt theo thứ tự an toàn, xác minh từng bước.";
+        }
+    }
+
     public ObservableCollection<StepViewModel> Steps { get; }
 
     public RelayCommand StartPackCommand { get; }
@@ -92,16 +161,40 @@ public sealed class OverviewViewModel : ObservableObject
         {
             if (value is not null && Set(ref _pack, value))
             {
-                OnPropertyChanged(nameof(StartLabel));
+                OnPropertyChanged(nameof(SelectedCard));
                 foreach (var row in _main.Rows.Values)
                 {
                     row.IsSelected = row.Entry.IsInPack(value.Pack);
+                }
+
+                foreach (var card in PackCards)
+                {
+                    card.Refresh();
                 }
             }
         }
     }
 
-    public string StartLabel => "Bắt đầu: " + _pack.Label;
+    public string StartLabel { get; } = "Bắt đầu thực hiện (1 chạm)";
+
+    private PackCardViewModel BuildCard(PackOption option)
+    {
+        var rows = _main.Rows.Values.Where(r => r.Entry.IsInPack(option.Pack)).ToList();
+        var apps = rows.Where(r => r.Entry.Category == TaskCategory.Software).ToList();
+        var changes = rows.Count(r => !r.IsReadOnly && r.Entry.Category is TaskCategory.WindowsSettings or TaskCategory.Cleanup);
+        var checks = rows.Count(r => r.IsReadOnly);
+        return option.Pack switch
+        {
+            TaskPack.FullSetup => new(this, option, "Phần mềm + tối ưu Windows + kiểm tra", "Phù hợp laptop mới", "bolt", apps,
+                $"+ {changes} thiết lập Windows + {checks} mục kiểm tra"),
+            TaskPack.SoftwareOnly => new(this, option, "Cài các ứng dụng cơ bản qua WinGet", "Khi máy đã ổn định", "download", apps,
+                "Ứng dụng đã có trên máy sẽ được bỏ qua"),
+            TaskPack.WindowsOnly => new(this, option, "Cấu hình hệ thống và dọn dẹp", "Khi đã cài sẵn phần mềm", "gear", apps,
+                $"{changes} thiết lập và dọn dẹp — thiết lập lưu giá trị cũ để hoàn tác"),
+            _ => new(this, option, "Kiểm tra và lập báo cáo bàn giao", "Trước khi giao máy", "clipboard", apps,
+                $"{checks} mục chỉ đọc, không thay đổi gì trên máy"),
+        };
+    }
 
     private void AskStartPack()
     {
@@ -154,6 +247,7 @@ public sealed class OverviewViewModel : ObservableObject
         Steps[3].StateKey = Aggregate(win);
         Steps[4].Description = ho.Count == 0 ? "Checklist và báo cáo" : $"{ho.Count(r => r.StateKey == "pass")}/{ho.Count} mục đạt";
         Steps[4].StateKey = Aggregate(ho);
+        OnPropertyChanged(nameof(StartNote));
         Commands.InvalidateAll();
     }
 

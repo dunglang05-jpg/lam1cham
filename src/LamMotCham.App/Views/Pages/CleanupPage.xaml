@@ -4,26 +4,20 @@
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <StackPanel>
-        <Grid Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="Dọn dẹp" Style="{StaticResource H1}" />
-                <TextBlock Text="Quét trước để xem dung lượng. Chỉ xóa trong các thư mục tạm đã liệt kê; tài liệu của người dùng không bị đụng tới." Style="{StaticResource Body}" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap" />
-            </StackPanel>
-            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Command="{Binding ScanCommand}" VerticalAlignment="Bottom">
+        <!-- Mô-đun "cleanup" (QĐ-002) -->
+        <c:PageHeader IconKey="sparkle" Heading="Dọn dẹp &amp; Hiệu năng" ModuleLabel="{Binding Module.Label}"
+                      Description="Quét để xem dung lượng trước khi xóa. Chỉ xóa trong các thư mục tạm đã liệt kê; tài liệu của người dùng không bị đụng tới.">
+            <Button Style="{StaticResource SecondaryButton}" Command="{Binding ScanCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
                     <TextBlock Text="{Binding ScanLabel}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
-        </Grid>
+        </c:PageHeader>
 
         <Border Style="{StaticResource CardFlush}">
             <StackPanel>
-                <Border Background="{StaticResource SubtleBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="16,8" CornerRadius="12,12,0,0">
+                <Border Background="{StaticResource SubtleBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="16,8" CornerRadius="14,14,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="36" />

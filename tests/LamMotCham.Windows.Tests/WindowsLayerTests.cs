@@ -30,6 +30,20 @@ public sealed class CatalogTests
     }
 
     [Fact]
+    public void Software_entries_carry_logo_keys_only_for_bundled_logos()
+    {
+        var sw = Catalog().Where(e => e.Category == TaskCategory.Software).ToList();
+        var logos = sw.Where(e => e.LogoKey is not null).Select(e => e.LogoKey!).ToList();
+
+        Assert.Equal(8, logos.Count);
+        Assert.Equal(logos.Count, logos.Distinct(StringComparer.Ordinal).Count());
+        Assert.Null(SoftwareCatalog.LogoKeyFor("unikey"));
+        Assert.Null(SoftwareCatalog.LogoKeyFor("sumatra"));
+        Assert.Equal("chrome", SoftwareCatalog.LogoKeyFor("chrome"));
+        Assert.Matches(@"^\d{4}\.\d{2}\.\d{2}$", SoftwareCatalog.DataVersion);
+    }
+
+    [Fact]
     public void Every_windows_change_explains_six_points()
     {
         var changes = Catalog().Where(e => e.Category == TaskCategory.WindowsSettings && !e.IsReadOnly).ToList();

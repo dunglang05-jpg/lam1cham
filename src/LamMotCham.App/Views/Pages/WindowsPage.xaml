@@ -4,30 +4,21 @@
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <StackPanel>
-        <Grid Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="Thiết lập Windows" Style="{StaticResource H1}" />
-                <TextBlock Text="Các thay đổi có thể hoàn tác được lưu lại trước khi áp dụng. Defender, Tường lửa và Windows Update không bị tắt." Style="{StaticResource Body}" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Margin="0,0,10,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE7A7;" FontSize="14" Margin="0,0,8,0" />
-                        <TextBlock Text="Hoàn tác thay đổi" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
+        <!-- Mô-đun "windows" (QĐ-002) -->
+        <c:PageHeader IconKey="gear" Heading="Cài đặt &amp; Tối ưu Windows" ModuleLabel="{Binding Module.Label}"
+                      Description="Giá trị cũ được lưu lại trước khi đổi để hoàn tác. Defender, Tường lửa và Windows Update không bị tắt.">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Content="Hoàn tác thay đổi" Margin="0,0,10,0" />
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource Glyph}" Text="&#xE73E;" FontSize="14" Margin="0,0,8,0" />
+                        <Border Style="{StaticResource WhiteIconChip}" Width="24" Height="24" Margin="0,0,8,0">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=gear}" Width="18" Height="18" Style="{StaticResource IconImage}" />
+                        </Border>
                         <TextBlock Text="{Binding ApplyLabel}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </StackPanel>
-        </Grid>
+        </c:PageHeader>
 
         <ItemsControl ItemsSource="{Binding Groups}">
             <ItemsControl.ItemTemplate>

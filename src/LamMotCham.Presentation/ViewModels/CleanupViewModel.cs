@@ -36,6 +36,9 @@ public sealed class CleanupItemViewModel(TaskRowViewModel row, CleanupGroup grou
 /// <summary>Màn hình E — Dọn dẹp và hiệu năng (UI/UX Handoff mục 11). Luôn quét và xem trước trước khi xóa.</summary>
 public sealed class CleanupViewModel : ObservableObject
 {
+    /// <summary>Mô-đun của trang này (QĐ-002).</summary>
+    public LamMotCham.Presentation.Modules.AppModule Module { get; } = LamMotCham.Presentation.Modules.ModuleCatalog.Cleanup;
+
     private readonly MainViewModel _main;
     private bool _scanned;
     private bool _scanning;

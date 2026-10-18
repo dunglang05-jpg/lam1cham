@@ -20,6 +20,9 @@ public sealed record SoftwarePackage(
 /// </summary>
 public static partial class SoftwareCatalog
 {
+    /// <summary>Phiên bản dữ liệu của danh mục (mô-đun dữ liệu "catalog", QĐ-002). Đổi khi thêm/bớt gói hoặc logo.</summary>
+    public const string DataVersion = "2026.10.18";
+
     public static IReadOnlyList<SoftwarePackage> All { get; } =
     [
         new("chrome", "Google Chrome", "Trình duyệt web", "Trình duyệt", "Google.Chrome", "Google LLC", true, "globe", true),
@@ -43,7 +46,10 @@ public static partial class SoftwareCatalog
     /// Logo thật đã đóng gói trong ứng dụng (App/Assets/Logos/{key}.png), lấy từ kho mã nguồn chính thức của nhà phát hành.
     /// Gói chưa có logo trả về null và giao diện dùng icon theo danh mục.
     /// </summary>
-    private static readonly HashSet<string> BundledLogos = new(StringComparer.Ordinal) { "brave", "7zip" };
+    private static readonly HashSet<string> BundledLogos = new(StringComparer.Ordinal)
+    {
+        "chrome", "brave", "acrobat", "7zip", "vlc", "m365", "zalo", "zoom",
+    };
 
     public static string? LogoKeyFor(string packageKey) => BundledLogos.Contains(packageKey) ? packageKey : null;
 

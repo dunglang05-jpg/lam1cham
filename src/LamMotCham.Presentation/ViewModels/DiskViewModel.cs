@@ -14,6 +14,9 @@ public sealed record DriveRow(string Letter, string Label, string Type, string S
 /// <summary>Màn hình D — Ổ đĩa và tài khoản (UI/UX Handoff mục 10). Chỉ đọc, trừ đổi tên máy.</summary>
 public sealed class DiskViewModel : ObservableObject
 {
+    /// <summary>Mô-đun của trang này (QĐ-002).</summary>
+    public LamMotCham.Presentation.Modules.AppModule Module { get; } = LamMotCham.Presentation.Modules.ModuleCatalog.Disk;
+
     private readonly MainViewModel _main;
     private string _newName = "";
     private string _encryptionKey = "unchecked";
