@@ -21,86 +21,54 @@
             </StackPanel>
         </c:PageHeader>
 
-        <ItemsControl ItemsSource="{Binding Groups}">
+        <!-- Gọn như bản mẫu: mỗi nhóm một thẻ (2 cột), mỗi thiết lập một dòng. Mô tả và 6 điểm chi tiết ở tooltip. -->
+        <ItemsControl ItemsSource="{Binding Groups}" Focusable="False">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <c:AdaptiveGrid MinItemWidth="400" MaxColumns="2" Gap="14" RowGap="14" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:SettingGroup}">
-                    <Border Style="{StaticResource CardFlush}" Margin="0,0,0,12">
+                    <Border Style="{StaticResource Card}" Padding="16,12,16,10">
                         <StackPanel>
-                            <Grid Margin="16,8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Border Width="30" Height="30" CornerRadius="8" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,10,0">
-                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" />
-                                </Border>
-                                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" Style="{StaticResource H3}" Margin="0,0,10,0" />
-                                    <TextBlock Text="{Binding Description}" Style="{StaticResource Secondary}" VerticalAlignment="Center" />
-                                </WrapPanel>
-                            </Grid>
-                            <ItemsControl ItemsSource="{Binding Rows}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                                <TextBlock Text="{Binding Title}" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding Rows}" Focusable="False">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                        <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="16,6">
-                                            <StackPanel>
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="36" />
-                                                        <ColumnDefinition Width="36" />
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="170" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="36" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsSelectable}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
-                                                    <Image Grid.Column="1" Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" HorizontalAlignment="Left" />
-                                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                                            <c:StatusChip State="{Binding ImpactKey}" Margin="8,0,0,0" Height="20" />
-                                                        </StackPanel>
-                                                        <TextBlock Text="{Binding Description}" Style="{StaticResource Secondary}" TextWrapping="Wrap" />
-                                                        <TextBlock Text="{Binding Message}" Style="{StaticResource SecondaryDark}" TextWrapping="Wrap" Margin="0,2,0,0"
-                                                                   Visibility="{Binding HasRun, Converter={StaticResource Vis}}" />
-                                                    </StackPanel>
-                                                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                                                        <TextBlock Text="HIỆN TẠI" Style="{StaticResource ColumnHeader}" />
-                                                        <TextBlock Text="{Binding CurrentText}" FontSize="13" TextWrapping="Wrap" />
-                                                    </StackPanel>
-                                                    <c:StatusChip Grid.Column="4" State="{Binding StateKey}" Text="{Binding StateText}" Margin="12,0" />
-                                                    <StackPanel Grid.Column="5" Orientation="Horizontal">
-                                                        <Button Style="{StaticResource TertiaryButton}" Content="Xem lỗi"
-                                                                Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                                Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                                                        <Button Style="{StaticResource TertiaryButton}" Content="{Binding IsReadOnly, Converter={StaticResource ReadOnlyVerb}}"
-                                                                Command="{Binding DataContext.ApplyOneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                                    </StackPanel>
-                                                    <Button Grid.Column="6" Style="{StaticResource QuietButton}" Width="32" Command="{Binding ToggleExpandCommand}"
-                                                            Visibility="{Binding HasDetails, Converter={StaticResource Vis}}" AutomationProperties.Name="Chi tiết">
-                                                        <TextBlock Style="{StaticResource Glyph}" Text="{Binding ChevronGlyph}" FontSize="12" />
-                                                    </Button>
-                                                </Grid>
-                                                <Border Background="{StaticResource SubtleBrush}" CornerRadius="8" Padding="14,10" Margin="72,10,36,0"
-                                                        Visibility="{Binding IsExpanded, Converter={StaticResource Vis}}">
-                                                    <ItemsControl ItemsSource="{Binding Details}">
+                                        <DockPanel MinHeight="30" Background="Transparent">
+                                            <DockPanel.ToolTip>
+                                                <StackPanel MaxWidth="420">
+                                                    <TextBlock Text="{Binding Description}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding CurrentText}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                    <ItemsControl ItemsSource="{Binding Details}" Margin="0,6,0,0">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="{x:Type vm:DetailItem}">
-                                                                <Grid Margin="0,3">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="150" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <TextBlock Text="{Binding Label}" FontSize="13" Foreground="{StaticResource Text2Brush}" />
-                                                                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13" TextWrapping="Wrap" />
-                                                                </Grid>
+                                                                <TextBlock TextWrapping="Wrap" Margin="0,1">
+                                                                    <Run Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=": " /><Run Text="{Binding Value, Mode=OneWay}" />
+                                                                </TextBlock>
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
                                                     </ItemsControl>
-                                                </Border>
+                                                </StackPanel>
+                                            </DockPanel.ToolTip>
+                                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsSelectable}" VerticalAlignment="Center"
+                                                      Margin="0,0,10,0" AutomationProperties.Name="{Binding Name}" />
+                                            <!-- Chỉ hiện kết quả sau khi chạy -->
+                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Style="{StaticResource TertiaryButton}" Content="Xem lỗi" FontSize="12" MinHeight="24" Padding="6,0"
+                                                        Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                                <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22"
+                                                              Visibility="{Binding HasRun, Converter={StaticResource Vis}}" />
+                                                <TextBlock Text="chỉ kiểm tra" FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" Margin="8,0,0,0"
+                                                           Visibility="{Binding IsReadOnly, Converter={StaticResource Vis}}" />
                                             </StackPanel>
-                                        </Border>
+                                            <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        </DockPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

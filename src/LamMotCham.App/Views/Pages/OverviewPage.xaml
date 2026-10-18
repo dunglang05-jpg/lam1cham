@@ -5,7 +5,7 @@
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <!-- Mô-đun "overview" (QĐ-002). Kích cỡ gọn để vừa laptop 1280×720 (150%) mà không cần cuộn. -->
     <StackPanel>
-        <c:SplitPanel SideWidth="580" StackBelow="900" Gap="14" Margin="0,0,0,10">
+        <c:SplitPanel SideWidth="330" StackBelow="800" Gap="14" Margin="0,0,0,10">
 
             <!-- Thẻ giới thiệu -->
             <Border CornerRadius="14" BorderBrush="#DCE6F7" BorderThickness="1" Padding="24,14">
@@ -78,14 +78,14 @@
                         <ItemsControl ItemsSource="{Binding Machine.Status}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <c:AdaptiveGrid MinItemWidth="240" MaxColumns="2" Gap="20" RowGap="0" />
+                                    <c:AdaptiveGrid MinItemWidth="270" MaxColumns="3" Gap="24" RowGap="2" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:InfoRow}">
                                     <Grid Margin="0,0,0,1" ToolTip="{Binding Value}">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="76" />
+                                            <ColumnDefinition Width="84" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding Label}" FontSize="13" Foreground="{StaticResource Text2Brush}" />

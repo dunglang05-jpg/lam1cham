@@ -6,29 +6,20 @@
     <UserControl.Resources>
         <!-- Một dòng kiểm tra: icon, tên, bằng chứng, trạng thái, hành động. -->
         <DataTemplate x:Key="CheckRow" DataType="{x:Type vm:TaskRowViewModel}">
-            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="16,10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="40" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="24" Height="24" Style="{StaticResource IconImage}" HorizontalAlignment="Left" />
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding Evidence}" Style="{StaticResource SecondaryDark}" TextWrapping="Wrap" Visibility="{Binding Evidence, Converter={StaticResource NotEmpty}}" />
-                    </StackPanel>
-                    <c:StatusChip Grid.Column="2" State="{Binding StateKey}" Text="{Binding StateText}" Margin="0,0,8,0" />
-                    <StackPanel Grid.Column="3" Orientation="Horizontal">
-                        <Button Style="{StaticResource TertiaryButton}" Content="Xem lỗi"
-                                Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                        <Button Style="{StaticResource OutlinePrimaryButton}" Content="{Binding ManualButtonText}" Command="{Binding ToggleManualCommand}"
-                                Visibility="{Binding ShowManualButton, Converter={StaticResource Vis}}" />
-                    </StackPanel>
-                </Grid>
-            </Border>
+            <DockPanel MinHeight="32" Background="Transparent" ToolTip="{Binding Evidence}">
+                <Image DockPanel.Dock="Left" Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource TertiaryButton}" Content="Xem lỗi" FontSize="12" MinHeight="24" Padding="6,0"
+                            Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                            Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                    <Button Style="{StaticResource OutlinePrimaryButton}" Content="{Binding ManualButtonText}" Command="{Binding ToggleManualCommand}" FontSize="12" MinHeight="26" Padding="10,0" Margin="0,0,6,0"
+                            Visibility="{Binding ShowManualButton, Converter={StaticResource Vis}}" />
+                    <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22" />
+                </StackPanel>
+                <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="13">
+                    <Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="  " /><Run Text="{Binding Evidence, Mode=OneWay}" Foreground="{StaticResource Text2Brush}" FontSize="12" />
+                </TextBlock>
+            </DockPanel>
         </DataTemplate>
     </UserControl.Resources>
 
@@ -55,61 +46,59 @@
         </c:PageHeader>
 
         <!-- Tóm tắt -->
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
             <c:StatusChip State="pass" Text="{Binding SummaryPass}" Margin="0,0,8,0" />
             <c:StatusChip State="attention" Text="{Binding SummaryAttention}" Margin="0,0,8,0" />
             <c:StatusChip State="unchecked" Text="{Binding SummaryUnchecked}" />
         </StackPanel>
 
-        <Border Style="{StaticResource CardFlush}" Margin="0,0,0,16">
+        <!-- Gọn như bản mẫu: mỗi mục một dòng, bằng chứng ngắn bên cạnh (đầy đủ ở tooltip) -->
+        <Border Style="{StaticResource Card}" Padding="16,12,16,10" Margin="0,0,0,14">
             <StackPanel>
-                <DockPanel Margin="16,14">
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=clipboard}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=clipboard}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
                     <TextBlock Text="Điều kiện bàn giao" Style="{StaticResource H3}" VerticalAlignment="Center" />
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding Conditions}">
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Conditions}" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <c:AdaptiveGrid MinItemWidth="400" MaxColumns="2" Gap="28" RowGap="0" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:ConditionViewModel}">
-                            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="16,10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding Evidence}" Style="{StaticResource SecondaryDark}" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <c:StatusChip Grid.Column="1" State="{Binding StateKey}" Margin="12,0,8,0" />
-                                    <Button Grid.Column="2" Style="{StaticResource TertiaryButton}" Content="Xem các mục"
+                            <DockPanel MinHeight="30" Background="Transparent" ToolTip="{Binding Evidence}">
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource TertiaryButton}" Content="Xem" FontSize="12" MinHeight="24" Padding="6,0"
                                             Command="{Binding DataContext.ReviewIssuesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             Visibility="{Binding CanReview, Converter={StaticResource Vis}}" />
-                                </Grid>
-                            </Border>
+                                    <c:StatusChip State="{Binding StateKey}" Height="22" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Title}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
         </Border>
 
-        <c:SplitPanel SideWidth="0" StackBelow="820" Gap="16">
-            <Border Style="{StaticResource CardFlush}" VerticalAlignment="Top">
+        <c:SplitPanel SideWidth="0" StackBelow="820" Gap="14">
+            <Border Style="{StaticResource Card}" Padding="16,12,16,10" VerticalAlignment="Top">
                 <StackPanel>
-                    <DockPanel Margin="16,14">
-                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
                         <TextBlock Text="Hệ thống" Style="{StaticResource H3}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding SystemChecks}" ItemTemplate="{StaticResource CheckRow}" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding SystemChecks}" ItemTemplate="{StaticResource CheckRow}" Focusable="False" />
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource CardFlush}" VerticalAlignment="Top">
+            <Border Style="{StaticResource Card}" Padding="16,12,16,10" VerticalAlignment="Top">
                 <StackPanel>
-                    <DockPanel Margin="16,14">
-                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=chip}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                        <TextBlock Text="Phần cứng" Style="{StaticResource H3}" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Hardware}" ItemTemplate="{StaticResource CheckRow}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=chip}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                        <TextBlock Text="Phần cứng (thử tay)" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Hardware}" ItemTemplate="{StaticResource CheckRow}" Focusable="False" />
                 </StackPanel>
             </Border>
         </c:SplitPanel>

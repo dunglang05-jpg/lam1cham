@@ -2,10 +2,10 @@ using System.Windows;
 
 namespace LamMotCham.App;
 
-/// <summary>Khung ứng dụng (mô-đun "shell"): chọn kích thước theo màn hình; cửa sổ hẹp thì tab mô-đun chỉ hiện biểu tượng.</summary>
+/// <summary>Khung ứng dụng (mô-đun "shell"): chọn kích thước theo màn hình và thu gọn thanh bên khi cửa sổ hẹp.</summary>
 public partial class MainWindow : Window
 {
-    /// <summary>Cửa sổ hẹp hơn mức này thì tab mô-đun chỉ còn icon.</summary>
+    /// <summary>Cửa sổ hẹp hơn mức này thì thanh bên chỉ còn icon.</summary>
     public const double CompactBelowWidth = 1200;
 
     /// <summary>Dưới chiều cao này (DIP) dùng lề trên/dưới nhỏ.</summary>
@@ -25,7 +25,7 @@ public partial class MainWindow : Window
         UpdateCompact();
     }
 
-    /// <summary>true khi cửa sổ hẹp: tab mô-đun chỉ hiện icon, lề nhỏ hơn.</summary>
+    /// <summary>true khi cửa sổ hẹp: thanh bên thu gọn, lề nhỏ hơn.</summary>
     public bool IsCompact
     {
         get => (bool)GetValue(IsCompactProperty);
@@ -58,8 +58,8 @@ public partial class MainWindow : Window
         var compact = width < CompactBelowWidth;
         if (compact != IsCompact)
         {
-            // Hẹp: tab mô-đun chỉ hiện biểu tượng (tên ở tooltip).
             IsCompact = compact;
+            SidebarColumn.Width = new GridLength(compact ? 76 : 232);
         }
 
         // Màn hình thấp (laptop 1366×768 hoặc 1920×1080 phóng 150%): lề trên/dưới nhỏ để trang vừa một màn hình.

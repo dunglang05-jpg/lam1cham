@@ -2,6 +2,26 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.10.0 — 18/10/2026
+
+Theo bản mẫu PO: **gọn như thiết kế gốc** — menu dọc bên trái, mỗi mục một dòng, nhóm xếp thành thẻ 2 cột. Bỏ mô tả dài, cột "Hiện tại" và chip trạng thái khi chưa chạy; thông tin chi tiết chuyển vào tooltip (rê chuột).
+
+**Khung ứng dụng (`shell`) 0.6.0**
+- Trả lại menu dọc bên trái như 0.8.1 (bỏ thanh tab ngang của 0.9.0). "Mở log", "Mở báo cáo" về lại cuối menu.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.5.0**
+- 4 nhóm thành 4 thẻ (2 cột). Mỗi thiết lập một dòng: ô chọn + tên. Kết quả (Thành công/Lỗi, Xem lỗi) chỉ hiện sau khi chạy.
+- Rê chuột vào dòng: mô tả, giá trị hiện tại và 6 điểm chi tiết. Bỏ nút "Áp dụng" từng dòng; dùng "Áp dụng n thay đổi" ở trên.
+
+**Ổ đĩa & Tài khoản (`disk`) 0.4.0**
+- Bố cục 2×2: Thông tin ổ đĩa (kèm dòng BitLocker) | Chia ổ đĩa (3 ô nhập trên một hàng, xem trước gọn) — Tài khoản người dùng | Tên máy tính.
+
+**Kiểm tra & Bàn giao (`handover`) 0.4.0**
+- Điều kiện bàn giao chia 2 cột, mỗi điều kiện một dòng. Hệ thống | Phần cứng (thử tay) mỗi mục một dòng: tên, bằng chứng ngắn, trạng thái.
+
+**Tổng quan (`overview`) 0.5.3**
+- Trở lại bố cục 0.8.1 (Thông tin máy 1 cột) do có lại menu bên trái.
+
 ## 0.9.0 — 18/10/2026
 
 Theo PO: **mỗi mô-đun một tab ngang**, bỏ tab con trong từng trang, nội dung gọn hơn.
