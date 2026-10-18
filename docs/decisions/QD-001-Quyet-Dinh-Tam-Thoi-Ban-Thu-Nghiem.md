@@ -27,3 +27,11 @@
 - Không ghi mật khẩu, token, khóa khôi phục BitLocker, product key vào log.
 - Hủy không ép tắt trình cài đặt bên ngoài.
 - EXE thử nghiệm **chưa ký số** (Q-06 còn mở). Không phân phối ra ngoài nhóm thử nghiệm.
+
+## Cập nhật 18/10/2026 — Không áp dụng tài liệu 06
+
+PO quyết định: từ nay **không áp dụng tài liệu 06 (QA, CI/CD và phát hành)**.
+
+- Không còn bắt buộc: ghim phiên bản/lock file, kiểm tra định dạng chặn build, ký số, SBOM, quy trình phê duyệt phát hành.
+- Vẫn giữ: workflow GitHub Actions như công cụ build EXE tiện lợi, kèm test tự động để bắt lỗi sớm.
+- Các tài liệu 00–05 vẫn áp dụng, gồm các nguyên tắc an toàn: không tắt Defender/Tường lửa/Windows Update; không tự chia ổ, định dạng, giải mã BitLocker, xóa tài khoản hay khởi động lại khi chưa xác nhận; chỉ báo thành công sau khi xác minh; không ghi dữ liệu nhạy cảm vào log.
