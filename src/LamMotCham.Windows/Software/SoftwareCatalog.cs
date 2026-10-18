@@ -39,6 +39,14 @@ public static partial class SoftwareCatalog
     /// <summary>Package ID chỉ gồm ký tự an toàn; không bao giờ chứa khoảng trắng hay ký tự shell.</summary>
     public static bool IsSafeId(string? id) => id is not null && SafeIdRegex().IsMatch(id);
 
+    /// <summary>
+    /// Logo thật đã đóng gói trong ứng dụng (App/Assets/Logos/{key}.png), lấy từ kho mã nguồn chính thức của nhà phát hành.
+    /// Gói chưa có logo trả về null và giao diện dùng icon theo danh mục.
+    /// </summary>
+    private static readonly HashSet<string> BundledLogos = new(StringComparer.Ordinal) { "brave", "7zip" };
+
+    public static string? LogoKeyFor(string packageKey) => BundledLogos.Contains(packageKey) ? packageKey : null;
+
     public static SoftwarePackage? Find(string winGetId) =>
         All.FirstOrDefault(p => string.Equals(p.WinGetId, winGetId, StringComparison.Ordinal));
 

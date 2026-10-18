@@ -57,6 +57,9 @@ public sealed record TaskCatalogEntry
     /// <summary>Khóa icon dùng chung với bản thiết kế (ví dụ "globe", "wifi").</summary>
     public string IconKey { get; init; } = "check";
 
+    /// <summary>Khóa logo thật của ứng dụng (file trong Assets/Logos). Null nếu chưa có logo — khi đó dùng IconKey.</summary>
+    public string? LogoKey { get; init; }
+
     /// <summary>Mục kiểm tra cần kỹ thuật viên thử thật (loa, micro, camera...).</summary>
     public bool RequiresManualConfirmation { get; init; }
 

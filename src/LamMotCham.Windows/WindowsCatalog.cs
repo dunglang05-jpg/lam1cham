@@ -60,6 +60,7 @@ public static class WindowsCatalog
             Impact = TaskImpact.Medium,
             SelectedByDefault = p.Recommended,
             IconKey = p.IconKey,
+            LogoKey = SoftwareCatalog.LogoKeyFor(p.Key),
         });
 
     private static IEnumerable<TaskCatalogEntry> WindowsSettings(CatalogServices s)

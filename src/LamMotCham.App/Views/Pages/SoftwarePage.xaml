@@ -106,7 +106,14 @@
                                         </Grid.ColumnDefinitions>
                                         <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
                                         <Border Grid.Column="1" Width="34" Height="34" CornerRadius="8" Background="{StaticResource SubtleBrush}" HorizontalAlignment="Left">
-                                            <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" />
+                                            <Image Width="24" Height="24" Style="{StaticResource IconImage}" RenderOptions.BitmapScalingMode="HighQuality">
+                                                <Image.Source>
+                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                        <Binding Path="LogoKey" />
+                                                        <Binding Path="IconKey" />
+                                                    </MultiBinding>
+                                                </Image.Source>
+                                            </Image>
                                         </Border>
                                         <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
                                             <StackPanel Orientation="Horizontal">
@@ -167,7 +174,14 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                                        <Image Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                    <Binding Path="LogoKey" />
+                                                    <Binding Path="IconKey" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
                                         <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         <c:StatusChip Grid.Column="2" State="{Binding StateKey}" Margin="8,0,0,0" />
                                     </Grid>

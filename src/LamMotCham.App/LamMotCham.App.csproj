@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\Icons\png\*.png" />
+    <Resource Include="Assets\Logos\*.png" />
     <Resource Include="Assets\logo.png" />
     <Resource Include="Assets\app.ico" />
   </ItemGroup>

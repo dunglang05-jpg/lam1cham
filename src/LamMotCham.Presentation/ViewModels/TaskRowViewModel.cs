@@ -46,6 +46,8 @@ public sealed class TaskRowViewModel : ObservableObject
 
     public string IconKey => Entry.IconKey;
 
+    public string? LogoKey => Entry.LogoKey;
+
     public string? Group => Entry.Group;
 
     /// <summary>Package ID WinGet (chỉ có với task cài phần mềm).</summary>

@@ -9,6 +9,7 @@
                 <ResourceDictionary Source="Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <conv:IconConverter x:Key="Icon" />
+            <conv:LogoOrIconConverter x:Key="LogoOrIcon" />
             <conv:BoolToVisibilityConverter x:Key="Vis" />
             <conv:EmptyToCollapsedConverter x:Key="NotEmpty" />
             <conv:BoolToTextConverter x:Key="ReadOnlyVerb" TrueText="Kiểm tra" FalseText="Áp dụng" />
