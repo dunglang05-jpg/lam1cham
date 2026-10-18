@@ -1,7 +1,7 @@
 # QĐ-002 — Cấu trúc mô-đun và quy tắc cập nhật
 
 - Trạng thái: **Đang áp dụng** từ 18/10/2026 (bản 0.2.0).
-- Căn cứ: PO yêu cầu thiết kế theo mô-đun riêng để sau này cập nhật từng phần, và mỗi khi có tính năng mới thì cập nhật đúng mô-đun. Giao diện tham chiếu: canvas thiết kế v3.
+- Căn cứ: PO yêu cầu thiết kế theo mô-đun riêng để sau này cập nhật từng phần, và mỗi khi có tính năng mới thì cập nhật đúng mô-đun. Giao diện tham chiếu: **`docs/design/lam1cham_canvas.html`** (file thiết kế của PO, từ bản 0.11.0; thay cho canvas thiết kế v3).
 - Liên quan: tài liệu 02 (kiến trúc, ranh giới tin cậy), 05 (cập nhật), QĐ-001.
 
 ## 1. Danh mục mô-đun
@@ -34,7 +34,7 @@ Thành phần dùng chung (không thuộc riêng mô-đun nào): `App/Converters
 3. Tăng phiên bản ứng dụng (`Version` trong `Directory.Build.props`) — bằng mức tăng lớn nhất trong các mô-đun đã đổi.
 4. Ghi `CHANGELOG.md`: một mục cho bản ứng dụng, chia theo mô-đun.
 5. Tính năng đủ lớn để có màn hình riêng → tạo **mô-đun mới**: thêm dòng vào `ModuleCatalog`, trang XAML + ViewModel riêng, mục điều hướng, và cập nhật bảng ở mục 1.
-6. Cập nhật canvas thiết kế: sửa đúng file mô-đun tương ứng (`Mod*.dc.html`).
+6. Giao diện bám file thiết kế `docs/design/lam1cham_canvas.html` (màu, thẻ, thanh bên, tiêu đề trang). Trang trong file chỉ là minh họa (Pro, Web Admin, thông báo, hồ sơ) thì không làm khi chưa có chức năng thật; số liệu luôn là dữ liệu thật. Khi PO gửi bản thiết kế mới, thay file này và ghi vào CHANGELOG.
 7. Build EXE qua GitHub Actions; chỉ báo xong khi CI build và test đạt.
 
 ## 3. Cách phân phối bản cập nhật
