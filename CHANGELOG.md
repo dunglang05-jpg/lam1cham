@@ -2,6 +2,23 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.8.2 — 18/10/2026
+
+Tinh gọn: chia trang dài thành **tab ngang**, mỗi lần chỉ hiện một nhóm.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.4.1**
+- 4 tab theo nhóm: Cập nhật và bảo trì · Trải nghiệm Windows · Quyền riêng tư · Hiệu năng & Nguồn điện (kèm số mục).
+- Không tự mở phần chi tiết của dòng đầu; bấm mũi tên để xem 6 điểm. Mô tả trang ngắn hơn.
+
+**Ổ đĩa & Tài khoản (`disk`) 0.3.1**
+- 3 tab: Ổ đĩa & Mã hóa · Chia ổ đĩa · Tên máy & Tài khoản.
+
+**Kiểm tra & Bàn giao (`handover`) 0.3.3**
+- 3 tab: Điều kiện bàn giao · Hệ thống · Phần cứng (kèm số mục). Chip tóm tắt Đạt/Cần chú ý/Chưa kiểm tra giữ ở trên.
+
+**Khung ứng dụng (`shell`) 0.4.4** — dùng chung
+- Kiểu tab ngang `PageTabs`/`PageTab` và nhãn số mục `TabCount` trong Theme.
+
 ## 0.8.1 — 18/10/2026
 
 **Tổng quan (`overview`) 0.5.1** — khôi phục giao diện ban đầu, chỉ chỉnh kích cỡ

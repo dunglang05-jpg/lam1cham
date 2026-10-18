@@ -40,11 +40,6 @@ public sealed class WindowsViewModel : ObservableObject
             (WindowsCatalog.GroupPerformance, "Nguồn điện và ứng dụng chạy cùng Windows.", "bolt"),
         ];
         Groups = [.. groups.Select(g => new SettingGroup(g.Title, g.Desc, g.Icon, [.. _rows.Where(r => r.Group == g.Title)]))];
-        if (_rows.FirstOrDefault() is { } first)
-        {
-            first.IsExpanded = true;
-        }
-
         foreach (var r in _rows)
         {
             r.PropertyChanged += (_, e) =>

@@ -7,7 +7,7 @@
     <StackPanel>
         <!-- Mô-đun "windows" (QĐ-002) -->
         <c:PageHeader IconKey="gear" Heading="Cài đặt &amp; Tối ưu Windows" ModuleLabel="{Binding Module.Label}"
-                      Description="Giá trị cũ được lưu lại trước khi đổi để hoàn tác. Defender, Tường lửa và Windows Update không bị tắt. Tắt BitLocker nằm trong nhóm Quyền riêng tư, được chọn sẵn.">
+                      Description="Giá trị cũ được lưu để hoàn tác. Không tắt Defender, Tường lửa, Windows Update.">
             <StackPanel Orientation="Horizontal">
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Content="Hoàn tác thay đổi" Margin="0,0,10,0" />
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}">
@@ -21,24 +21,24 @@
             </StackPanel>
         </c:PageHeader>
 
-        <ItemsControl ItemsSource="{Binding Groups}">
-            <ItemsControl.ItemTemplate>
+        <!-- Mỗi nhóm một tab ngang -->
+        <TabControl Style="{StaticResource PageTabs}" ItemsSource="{Binding Groups}" SelectedIndex="0" AutomationProperties.Name="Nhóm thiết lập">
+            <TabControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:SettingGroup}">
-                    <Border Style="{StaticResource CardFlush}" Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                        <Border Style="{StaticResource TabCount}">
+                            <TextBlock Text="{Binding Rows.Count}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ChipGrayTextBrush}" VerticalAlignment="Center" />
+                        </Border>
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate DataType="{x:Type vm:SettingGroup}">
+                    <Border Style="{StaticResource CardFlush}">
                         <StackPanel>
-                            <Grid Margin="16,14">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,12,0">
-                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="24" Height="24" Style="{StaticResource IconImage}" />
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" Style="{StaticResource H3}" />
-                                    <TextBlock Text="{Binding Description}" Style="{StaticResource Secondary}" />
-                                </StackPanel>
-                            </Grid>
+                            <TextBlock Text="{Binding Description}" Style="{StaticResource Secondary}" Margin="16,10" />
                             <ItemsControl ItemsSource="{Binding Rows}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
@@ -107,7 +107,7 @@
                         </StackPanel>
                     </Border>
                 </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            </TabControl.ContentTemplate>
+        </TabControl>
     </StackPanel>
 </UserControl>

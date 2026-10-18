@@ -478,4 +478,60 @@
         <Setter Property="Foreground" Value="#2E9E5B" />
     </Style>
 
+    <!-- Tab ngang trong trang: mỗi lần chỉ hiện một nhóm cho gọn (dùng chung cho các mô-đun) -->
+    <Style x:Key="PageTab" TargetType="TabItem">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource Text2Brush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="Bd" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,3" Padding="14,8,14,7" Margin="0,0,4,-1">
+                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PageTabs" TargetType="TabControl">
+        <Setter Property="ItemContainerStyle" Value="{StaticResource PageTab}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Top" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Margin="0,0,0,14">
+                            <TabPanel IsItemsHost="True" KeyboardNavigation.TabIndex="1" />
+                        </Border>
+                        <ContentPresenter ContentSource="SelectedContent" />
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Số mục nhỏ cạnh tên tab -->
+    <Style x:Key="TabCount" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ChipGrayBrush}" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Padding" Value="7,0" />
+        <Setter Property="Margin" Value="8,0,0,0" />
+        <Setter Property="MinHeight" Value="18" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
 </ResourceDictionary>
