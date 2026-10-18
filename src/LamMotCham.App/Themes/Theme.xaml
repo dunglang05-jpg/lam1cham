@@ -47,6 +47,22 @@
 
     <conv:IconConverter x:Key="ThemeIcon" />
 
+    <!--
+        QUAN TRỌNG: trong file này, một tài nguyên chỉ được dùng {StaticResource} tới tài nguyên khai báo PHÍA TRÊN nó
+        (kể cả bên trong ControlTemplate). Dùng trước khai báo sẽ lỗi "StaticResourceHolder threw an exception" khi chạy.
+        Test ThemeResourceOrderTests kiểm tra quy tắc này.
+    -->
+    <Style x:Key="IconImage" TargetType="Image">
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Stretch" Value="Uniform" />
+    </Style>
+
+    <Style x:Key="Divider" TargetType="Border">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="{StaticResource LineSoftBrush}" />
+    </Style>
+
     <!-- Chữ: không dưới 11 px cho thông tin cần đọc -->
     <Style x:Key="H1" TargetType="TextBlock">
         <Setter Property="FontSize" Value="22" />
@@ -463,14 +479,4 @@
         <Setter Property="Foreground" Value="#2E9E5B" />
     </Style>
 
-    <Style x:Key="IconImage" TargetType="Image">
-        <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
-        <Setter Property="SnapsToDevicePixels" Value="True" />
-        <Setter Property="Stretch" Value="Uniform" />
-    </Style>
-
-    <Style x:Key="Divider" TargetType="Border">
-        <Setter Property="Height" Value="1" />
-        <Setter Property="Background" Value="{StaticResource LineSoftBrush}" />
-    </Style>
 </ResourceDictionary>

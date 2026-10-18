@@ -2,6 +2,13 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.2.1 — 18/10/2026
+
+**Khung ứng dụng (`shell`) 0.2.1** — sửa lỗi
+- Sửa lỗi mở các trang Phần mềm, Windows, Ổ đĩa, Dọn dẹp, Bàn giao, Mô-đun báo "StaticResourceHolder threw an exception": tiêu đề trang dùng kiểu `IconImage` trước khi khai báo trong Theme.xaml.
+- Lỗi giao diện lặp lại chỉ báo một lần, không mở chồng nhiều hộp thoại; trang không hiển thị được thì quay về Tổng quan.
+- Thêm test tự động kiểm tra thứ tự và sự tồn tại của tài nguyên XAML.
+
 ## 0.2.0 — 18/10/2026
 
 **Khung ứng dụng (`shell`) 0.2.0**

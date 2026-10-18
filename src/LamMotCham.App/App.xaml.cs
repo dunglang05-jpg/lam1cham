@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Markup;
 using System.Windows.Threading;
 using LamMotCham.Core.Logging;
 using LamMotCham.Presentation.Services;
@@ -14,6 +15,9 @@ public partial class App : Application, IUiPlatform
     private Mutex? _singleInstance;
     private AppServices? _services;
     private MainViewModel? _main;
+    private bool _showingError;
+    private string? _lastErrorMessage;
+    private DateTimeOffset _lastErrorAt;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -96,11 +100,40 @@ public partial class App : Application, IUiPlatform
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        _services?.Log.Error("Lỗi giao diện không được xử lý: " + e.Exception);
-        MessageBox.Show(
-            "Có lỗi không mong đợi: " + e.Exception.Message + Environment.NewLine + Environment.NewLine +
-            "Thao tác vừa rồi có thể chưa hoàn tất. Chi tiết đã được ghi vào log.",
-            "Làm 1 Chạm", MessageBoxButton.OK, MessageBoxImage.Warning);
         e.Handled = true;
+        _services?.Log.Error("Lỗi giao diện không được xử lý: " + e.Exception);
+
+        // Lỗi dựng giao diện lặp lại ở mỗi lượt vẽ: chỉ báo một lần, không mở hộp thoại lồng nhau.
+        var now = DateTimeOffset.Now;
+        var same = string.Equals(_lastErrorMessage, e.Exception.Message, StringComparison.Ordinal) && now - _lastErrorAt < TimeSpan.FromSeconds(15);
+        _lastErrorMessage = e.Exception.Message;
+        _lastErrorAt = now;
+        if (_showingError || same)
+        {
+            return;
+        }
+
+        // Trang không dựng được: quay về Tổng quan để ứng dụng vẫn dùng được.
+        var pageFailed = e.Exception is XamlParseException || e.Exception.InnerException is XamlParseException;
+        var leftPage = false;
+        if (pageFailed && _main is not null && _main.CurrentPage != Page.Overview)
+        {
+            _main.CurrentPage = Page.Overview;
+            leftPage = true;
+        }
+
+        _showingError = true;
+        try
+        {
+            MessageBox.Show(
+                "Có lỗi không mong đợi: " + e.Exception.Message + Environment.NewLine + Environment.NewLine +
+                (leftPage ? "Trang vừa mở không hiển thị được nên ứng dụng đã quay về Tổng quan. " : "Thao tác vừa rồi có thể chưa hoàn tất. ") +
+                "Chi tiết đã được ghi vào log.",
+                "Làm 1 Chạm", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _showingError = false;
+        }
     }
 }
