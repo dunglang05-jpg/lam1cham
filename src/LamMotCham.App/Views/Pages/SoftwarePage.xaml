@@ -45,7 +45,11 @@
             <!-- Danh sách ứng dụng -->
             <Border Style="{StaticResource CardFlush}" VerticalAlignment="Top">
                 <StackPanel>
-                    <Grid Margin="18,14">
+                    <StackPanel Margin="18,16,18,0">
+                        <TextBlock Text="Danh sách ứng dụng" Style="{StaticResource H3}" />
+                        <TextBlock Text="Tìm kiếm, lọc theo nhóm và chọn nhiều ứng dụng. Các gói được xử lý lần lượt." Style="{StaticResource Secondary}" Margin="0,3,0,0" />
+                    </StackPanel>
+                    <Grid Margin="18,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -81,8 +85,29 @@
                     <ItemsControl ItemsSource="{Binding Visible}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="18,9">
-                                    <Grid MinHeight="40">
+                                <Border Padding="14,8" Margin="4,2" CornerRadius="10">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource LineSoftBrush}" />
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource SubtleBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsProblem}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource WarningTintBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid MinHeight="44">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="30" />
                                             <ColumnDefinition Width="46" />
@@ -92,14 +117,17 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
-                                        <Image Grid.Column="1" Width="32" Height="32" Style="{StaticResource IconImage}" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <Image.Source>
-                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                    <Binding Path="LogoKey" />
-                                                    <Binding Path="IconKey" />
-                                                </MultiBinding>
-                                            </Image.Source>
-                                        </Image>
+                                        <Border Grid.Column="1" Width="38" Height="38" CornerRadius="9" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1"
+                                                HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <Image Width="28" Height="28" Style="{StaticResource IconImage}">
+                                                <Image.Source>
+                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                        <Binding Path="LogoKey" />
+                                                        <Binding Path="IconKey" />
+                                                    </MultiBinding>
+                                                </Image.Source>
+                                            </Image>
+                                        </Border>
                                         <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
