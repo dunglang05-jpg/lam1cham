@@ -2,6 +2,18 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.7.1 — 18/10/2026
+
+**Tổng quan (`overview`) 0.4.2** — vừa một màn hình, không cần cuộn
+- Bỏ thẻ giới thiệu lớn; trang chia hai cột: trái là tên ứng dụng (một dòng), 4 gói thiết lập nhanh dạng thẻ gọn (2×2 trên laptop), "Gói này gồm" và nút Bắt đầu; phải là Thông tin máy.
+- Nút Bắt đầu nằm cạnh ghi chú và "Xem báo cáo gần nhất" thay vì xếp dọc.
+- Thông tin máy mỗi mục một dòng (rê chuột để xem đầy đủ); tên CPU gọn ("Intel Core i3-1005G1 @ 1.20GHz").
+- Mục tiêu: vừa laptop 1920×1080 phóng 150% (1280×720) và 1366×768.
+
+**Khung ứng dụng (`shell`) 0.4.1**
+- Màn hình thấp (dưới 820 px): lề trên/dưới của trang nhỏ hơn.
+- Dùng chung: thẻ gói (`PackCard`) nhận `Padding`, viền không đổi độ dày khi chọn (không giật bố cục).
+
 ## 0.7.0 — 18/10/2026
 
 **Cài đặt & Tối ưu Windows (`windows`) 0.4.0** — Tắt BitLocker thành một thiết lập

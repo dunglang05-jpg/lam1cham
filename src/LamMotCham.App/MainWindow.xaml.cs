@@ -8,6 +8,9 @@ public partial class MainWindow : Window
     /// <summary>Cửa sổ hẹp hơn mức này thì thanh bên chỉ còn icon.</summary>
     public const double CompactBelowWidth = 1200;
 
+    /// <summary>Dưới chiều cao này (DIP) dùng lề trên/dưới nhỏ.</summary>
+    public const double ShortBelowHeight = 820;
+
     public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
         nameof(IsCompact), typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
 
@@ -51,12 +54,21 @@ public partial class MainWindow : Window
     private void UpdateCompact()
     {
         var width = ActualWidth > 0 ? ActualWidth : (WindowState == WindowState.Maximized ? SystemParameters.WorkArea.Width : Width);
+        var height = ActualHeight > 0 ? ActualHeight : (WindowState == WindowState.Maximized ? SystemParameters.WorkArea.Height : Height);
         var compact = width < CompactBelowWidth;
         if (compact != IsCompact)
         {
             IsCompact = compact;
             SidebarColumn.Width = new GridLength(compact ? 76 : 232);
-            PageHost.Margin = compact ? new Thickness(18, 16, 18, 16) : new Thickness(28, 24, 28, 24);
         }
+
+        // Màn hình thấp (laptop 1366×768 hoặc 1920×1080 phóng 150%): lề trên/dưới nhỏ để trang vừa một màn hình.
+        var shortScreen = height < ShortBelowHeight;
+        PageHost.Margin = (compact, shortScreen) switch
+        {
+            (true, _) => new Thickness(18, 14, 18, 14),
+            (false, true) => new Thickness(24, 16, 24, 16),
+            _ => new Thickness(28, 24, 28, 24),
+        };
     }
 }

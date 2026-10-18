@@ -294,11 +294,12 @@
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="MinHeight" Value="118" />
+        <Setter Property="Padding" Value="16" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="Bd" Background="{StaticResource SurfaceBrush}" BorderBrush="#E0E7F3" BorderThickness="1" CornerRadius="12" Padding="16">
+                    <Border x:Name="Bd" Background="{StaticResource SurfaceBrush}" BorderBrush="#E0E7F3" BorderThickness="1.5" CornerRadius="12" Padding="{TemplateBinding Padding}">
                         <ContentPresenter VerticalAlignment="Top" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -308,8 +309,6 @@
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimarySoftBrush}" />
                             <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-                            <Setter TargetName="Bd" Property="BorderThickness" Value="2" />
-                            <Setter TargetName="Bd" Property="Padding" Value="15" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

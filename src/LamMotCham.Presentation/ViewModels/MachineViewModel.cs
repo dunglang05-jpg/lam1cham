@@ -439,14 +439,24 @@ public sealed class MachineViewModel : ObservableObject
         Status.Clear();
         var s = _snapshot!;
         Status.Add(new InfoRow("Máy", $"{s.Str("manufacturer")} {s.Str("model")}".Trim() is { Length: > 0 } model ? model : "Không đọc được"));
-        Status.Add(new InfoRow("CPU", s.Str("cpu") ?? "Không đọc được"));
+        Status.Add(new InfoRow("CPU", s.Str("cpu") is { } cpu ? ShortCpu(cpu) : "Không đọc được"));
         Status.Add(new InfoRow("RAM", s.Num("totalRamBytes") is { } ram ? CleanupTask.FormatBytes(ram) : "Không đọc được"));
         Status.Add(new InfoRow("Ổ hệ thống", SystemDriveText()));
         Status.Add(new InfoRow("Windows", $"{s.Str("osCaption")?.Replace("Microsoft ", "", StringComparison.Ordinal)} {s.Str("osDisplayVersion")} · {RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant()}"));
         Status.Add(new InfoRow("Pin", InventoryChecks.Battery(s).Detail ?? "Không đọc được"));
         Status.Add(new InfoRow("WinGet", _winGetVersion is null ? "Không khả dụng" : _winGetVersion + " · sẵn sàng"));
-        Status.Add(new InfoRow("Quyền", _main.S.IsElevated ? "Quản trị viên" : "Người dùng — cần nâng quyền khi cài"));
+        Status.Add(new InfoRow("Quyền", _main.S.IsElevated ? "Quản trị viên" : "Người dùng (cần nâng quyền khi cài)"));
         Status.Add(new InfoRow("Mạng", NetworkInterface.GetIsNetworkAvailable() ? "Đã kết nối" : "Không có kết nối"));
+    }
+
+    /// <summary>Tên CPU gọn cho một dòng: bỏ (R), (TM), chữ "CPU" và khoảng trắng thừa.</summary>
+    public static string ShortCpu(string cpu)
+    {
+        ArgumentNullException.ThrowIfNull(cpu);
+        var t = cpu.Replace("(R)", "", StringComparison.OrdinalIgnoreCase)
+            .Replace("(TM)", "", StringComparison.OrdinalIgnoreCase)
+            .Replace(" CPU", "", StringComparison.Ordinal);
+        return string.Join(' ', t.Split(' ', StringSplitOptions.RemoveEmptyEntries));
     }
 
     private static string SystemDriveText()

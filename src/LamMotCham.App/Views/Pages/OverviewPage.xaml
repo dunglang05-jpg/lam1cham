@@ -5,55 +5,120 @@
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <!-- Mô-đun "overview" (QĐ-002) -->
     <StackPanel>
-        <c:SplitPanel SideWidth="330" StackBelow="800" Gap="18" Margin="0,0,0,18">
+        <!-- Gọn để vừa một màn hình laptop 1280×720 (150%) mà không cần cuộn -->
+        <c:SplitPanel SideWidth="320" StackBelow="760" Gap="16">
 
-            <!-- Thẻ giới thiệu -->
-            <Border CornerRadius="14" BorderBrush="#DCE6F7" BorderThickness="1" Padding="30,24" MinHeight="228">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#E3EDFF" Offset="0" />
-                        <GradientStop Color="#F3F7FF" Offset="0.6" />
-                        <GradientStop Color="#FFFFFF" Offset="1" />
-                    </LinearGradientBrush>
-                </Border.Background>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="120" Height="120" Style="{StaticResource IconImage}"
-                           Margin="0,0,28,0" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <WrapPanel>
-                            <TextBlock Text="Làm 1 Chạm" FontSize="36" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
-                            <Border Margin="12,0,0,0" Padding="8,2" CornerRadius="6" Background="White" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Module.Label}" Style="{StaticResource GrayTagText}" />
-                            </Border>
-                        </WrapPanel>
-                        <TextBlock Text="Thiết lập laptop mới nhanh chóng và an toàn" FontSize="17" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
-                        <StackPanel Margin="0,12,0,0">
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                <TextBlock Text="Cấu hình Windows" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                <TextBlock Text="Cài phần mềm thiết yếu" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                <TextBlock Text="Kiểm tra và sẵn sàng giao máy" VerticalAlignment="Center" />
-                            </StackPanel>
+            <!-- Trái: giới thiệu ngắn + gói thiết lập nhanh + Bắt đầu -->
+            <Border Style="{StaticResource Card}" Padding="22,16,22,16">
+                <StackPanel>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Width="48" Height="48" CornerRadius="12" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,14,0">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="34" Height="34" Style="{StaticResource IconImage}" />
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <WrapPanel>
+                                <TextBlock Text="Làm 1 Chạm" FontSize="22" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
+                                <Border Margin="10,0,0,0" Padding="7,1" CornerRadius="6" Background="{StaticResource SubtleBrush}" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Module.Label}" Style="{StaticResource GrayTagText}" />
+                                </Border>
+                            </WrapPanel>
+                            <TextBlock Text="Cấu hình Windows · Cài phần mềm thiết yếu · Kiểm tra và giao máy" FontSize="13" Foreground="{StaticResource PrimaryTextBrush}" TextWrapping="Wrap" />
                         </StackPanel>
-                    </StackPanel>
-                </Grid>
+                    </Grid>
+
+                    <TextBlock Text="Chọn gói thiết lập nhanh" Style="{StaticResource H3}" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding PackCards}" KeyboardNavigation.TabNavigation="Once"
+                                  AutomationProperties.Name="Gói thiết lập">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <c:AdaptiveGrid MinItemWidth="230" MaxColumns="2" Gap="10" RowGap="10" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:PackCardViewModel}">
+                                <RadioButton Style="{StaticResource PackCard}" MinHeight="0" Padding="12,10" GroupName="Packs" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                             AutomationProperties.Name="{Binding Title}" ToolTip="{Binding Description}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="26" Height="26" Style="{StaticResource IconImage}"
+                                               Margin="0,0,10,0" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Tag}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </RadioButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Gói này gồm -->
+                    <Border Background="{StaticResource SubtleBrush}" CornerRadius="10" Padding="12,8" Margin="0,10,0,0">
+                        <WrapPanel>
+                            <TextBlock Text="Gói này gồm" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <ItemsControl ItemsSource="{Binding SelectedCard.Apps}" VerticalAlignment="Center"
+                                          Visibility="{Binding SelectedCard.HasApps, Converter={StaticResource Vis}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
+                                        <Image Width="22" Height="22" Style="{StaticResource IconImage}" Margin="0,0,6,0" ToolTip="{Binding Name}">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                    <Binding Path="LogoKey" />
+                                                    <Binding Path="IconKey" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding SelectedCard.Extra}" FontSize="12" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" Margin="4,0,0,0" TextWrapping="Wrap" />
+                        </WrapPanel>
+                    </Border>
+
+                    <!-- Bắt đầu: nút bên trái, ghi chú và báo cáo bên phải -->
+                    <DockPanel Margin="0,12,0,0">
+                        <Button DockPanel.Dock="Left" Style="{StaticResource HeroButton}" Command="{Binding StartPackCommand}" MinWidth="260" MinHeight="48" FontSize="16">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource WhiteIconChip}" Width="26" Height="26" Margin="0,0,10,0">
+                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=bolt}" Width="20" Height="20" Style="{StaticResource IconImage}" />
+                                </Border>
+                                <TextBlock Text="{Binding StartLabel}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding StartNote}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap"
+                                       Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}" />
+                            <TextBlock Text="Đang đọc thông tin máy… hoặc bấm “Đọc thông tin máy” ở khung bên phải." FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap"
+                                       Visibility="{Binding Machine.Unchecked, Converter={StaticResource Vis}}" />
+                            <Button Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="26" Padding="0" Command="{Binding OpenLastReportCommand}" HorizontalAlignment="Left" Margin="0,2,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
+                                    <TextBlock Text="Xem báo cáo gần nhất" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
             </Border>
 
             <!-- Thông tin máy -->
-            <Border Style="{StaticResource Card}" Padding="20,16">
+            <Border Style="{StaticResource Card}" Padding="18,14">
                 <StackPanel>
-                    <DockPanel Margin="0,0,0,10">
-                        <Button DockPanel.Dock="Right" Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="30"
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="26"
                                 Content="{Binding Machine.CheckButtonText}" Command="{Binding Machine.CheckCommand}"
                                 Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}" />
                         <TextBlock Text="Thông tin máy" Style="{StaticResource H3}" VerticalAlignment="Center" />
@@ -78,18 +143,18 @@
                         <ItemsControl ItemsSource="{Binding Machine.Status}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <c:AdaptiveGrid MinItemWidth="270" MaxColumns="3" Gap="24" RowGap="2" />
+                                    <c:AdaptiveGrid MinItemWidth="270" MaxColumns="3" Gap="20" RowGap="0" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:InfoRow}">
-                                    <Grid Margin="0,0,0,7">
+                                    <Grid Margin="0,0,0,5" ToolTip="{Binding Value}">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="84" />
+                                            <ColumnDefinition Width="78" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="{Binding Label}" FontSize="13" Foreground="{StaticResource Text2Brush}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13" TextTrimming="CharacterEllipsis" />
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -107,92 +172,5 @@
             </Border>
         </c:SplitPanel>
 
-        <!-- Gói thiết lập nhanh -->
-        <Border Style="{StaticResource Card}" Padding="24,20,24,22">
-            <StackPanel>
-                <TextBlock Text="Chọn gói thiết lập nhanh" Style="{StaticResource H2}" Margin="0,0,0,16" />
-                <ItemsControl ItemsSource="{Binding PackCards}" KeyboardNavigation.TabNavigation="Once"
-                              AutomationProperties.Name="Gói thiết lập">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <c:AdaptiveGrid MinItemWidth="185" MaxColumns="4" Gap="14" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:PackCardViewModel}">
-                            <RadioButton Style="{StaticResource PackCard}" GroupName="Packs" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                         AutomationProperties.Name="{Binding Title}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="30" Height="30" Style="{StaticResource IconImage}"
-                                           Margin="0,0,12,0" VerticalAlignment="Top" />
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                        <Border Background="{StaticResource PrimaryTintBrush}" CornerRadius="10" Padding="10,2" Margin="0,8,0,0" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding Tag}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" />
-                                        </Border>
-                                    </StackPanel>
-                                </Grid>
-                            </RadioButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <!-- Gói này gồm -->
-                <Border Background="{StaticResource SubtleBrush}" CornerRadius="10" Padding="16,12" Margin="0,16,0,0">
-                    <WrapPanel>
-                        <TextBlock Text="Gói này gồm" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" Margin="0,0,12,0" />
-                        <ItemsControl ItemsSource="{Binding SelectedCard.Apps}" VerticalAlignment="Center"
-                                      Visibility="{Binding SelectedCard.HasApps, Converter={StaticResource Vis}}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                    <Image Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,8,0" ToolTip="{Binding Name}">
-                                        <Image.Source>
-                                            <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                <Binding Path="LogoKey" />
-                                                <Binding Path="IconKey" />
-                                            </MultiBinding>
-                                        </Image.Source>
-                                    </Image>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="{Binding SelectedCard.Extra}" FontSize="13" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" Margin="4,0,0,0" TextWrapping="Wrap" />
-                    </WrapPanel>
-                </Border>
-
-                <!-- Bắt đầu -->
-                <StackPanel HorizontalAlignment="Center" Margin="0,18,0,0">
-                    <Button Style="{StaticResource HeroButton}" Command="{Binding StartPackCommand}" MinWidth="300" MinHeight="54" FontSize="17">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Style="{StaticResource WhiteIconChip}" Width="28" Height="28" Margin="0,0,12,0">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=bolt}" Width="22" Height="22" Style="{StaticResource IconImage}" />
-                            </Border>
-                            <TextBlock Text="{Binding StartLabel}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                    <TextBlock Text="{Binding StartNote}" FontSize="12" Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" Margin="0,8,0,0"
-                               Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}" />
-                    <TextBlock Text="Đang đọc thông tin máy… hoặc bấm “Đọc thông tin máy” ở khung bên phải." FontSize="12" Foreground="{StaticResource Text2Brush}"
-                               HorizontalAlignment="Center" Margin="0,8,0,0"
-                               Visibility="{Binding Machine.Unchecked, Converter={StaticResource Vis}}" />
-                    <Button Style="{StaticResource TertiaryButton}" FontSize="12" Command="{Binding OpenLastReportCommand}" HorizontalAlignment="Center" Margin="0,4,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
-                            <TextBlock Text="Xem báo cáo gần nhất" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </StackPanel>
-        </Border>
     </StackPanel>
 </UserControl>
