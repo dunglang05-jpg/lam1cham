@@ -1,4 +1,5 @@
 using System.Windows;
+using LamMotCham.App.Views.Dialogs;
 
 namespace LamMotCham.App;
 
@@ -49,6 +50,13 @@ public partial class MainWindow : Window
             Width = PreferredWidth;
             Height = PreferredHeight;
         }
+    }
+
+    private void OpenProInfo_Click(object sender, RoutedEventArgs e)
+    {
+        // Informational only: checkout/licensing is not connected in this build.
+        var dialog = new ProInfoDialog { Owner = this };
+        dialog.ShowDialog();
     }
 
     private void UpdateCompact()
