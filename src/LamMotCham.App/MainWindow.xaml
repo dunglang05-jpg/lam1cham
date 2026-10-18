@@ -53,6 +53,16 @@
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource SecondaryButton}" MinHeight="34" FontSize="12" Padding="8,0" Margin="0,0,10,0"
+                            Click="OpenProInfo_Click" ToolTip="Khám phá tính năng Pro"
+                            Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="24" Height="24" CornerRadius="7" Background="#FFF3D6" Margin="0,0,7,0">
+                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=badge}" Width="17" Height="17" Style="{StaticResource IconImage}" />
+                            </Border>
+                            <TextBlock Text="Khám phá Pro" VerticalAlignment="Center" Foreground="{StaticResource PrimaryTextBrush}" />
+                        </StackPanel>
+                    </Button>
                     <Border Height="28" Padding="10,0,12,0" CornerRadius="14" Background="{StaticResource SuccessTintBrush}" Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />

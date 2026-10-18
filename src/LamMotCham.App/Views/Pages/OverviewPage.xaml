@@ -8,7 +8,7 @@
         <c:SplitPanel SideWidth="330" StackBelow="800" Gap="14" Margin="0,0,0,10">
 
             <!-- Thẻ giới thiệu -->
-            <Border CornerRadius="14" BorderBrush="#DCE6F7" BorderThickness="1" Padding="24,14">
+            <Border CornerRadius="16" BorderBrush="#D6E3F8" BorderThickness="1" Padding="22,16">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Color="#E3EDFF" Offset="0" />
@@ -21,28 +21,29 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="92" Height="92" Style="{StaticResource IconImage}"
-                           Margin="0,0,22,0" VerticalAlignment="Center" />
+                    <Border Width="76" Height="76" CornerRadius="18" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="48" Height="48" Style="{StaticResource IconImage}" />
+                    </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <WrapPanel>
-                            <TextBlock Text="Làm 1 Chạm" FontSize="28" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
+                            <TextBlock Text="Chuẩn bị laptop mới" FontSize="25" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
                             <Border Margin="12,0,0,0" Padding="8,2" CornerRadius="6" Background="White" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Module.Label}" Style="{StaticResource GrayTagText}" />
                             </Border>
                         </WrapPanel>
-                        <TextBlock Text="Thiết lập laptop mới nhanh chóng và an toàn" FontSize="15" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="Một quy trình rõ ràng, an toàn và dễ kiểm tra trước khi bàn giao." FontSize="14" Foreground="{StaticResource PrimaryTextBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
                         <StackPanel Margin="0,8,0,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                                 <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                <TextBlock Text="Cấu hình Windows" VerticalAlignment="Center" />
+                                <TextBlock Text="Kiểm tra cấu hình và tình trạng máy" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                                 <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                <TextBlock Text="Cài phần mềm thiết yếu" VerticalAlignment="Center" />
+                                <TextBlock Text="Cài phần mềm lần lượt theo hàng đợi" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=check}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                <TextBlock Text="Kiểm tra và sẵn sàng giao máy" VerticalAlignment="Center" />
+                                <TextBlock Text="Tạo báo cáo kiểm tra trước bàn giao" VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
