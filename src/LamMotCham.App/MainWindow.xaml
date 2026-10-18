@@ -148,7 +148,7 @@
             </Border>
 
             <!-- KHU VỰC MÔ-ĐUN -->
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <ScrollViewer x:Name="PageScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
                 <ContentControl x:Name="PageHost" Content="{Binding CurrentPageViewModel}" Margin="28,24" Focusable="False" />
             </ScrollViewer>
         </Grid>

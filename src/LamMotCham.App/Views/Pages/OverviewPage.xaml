@@ -4,7 +4,47 @@
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <!-- Mô-đun "overview" (QĐ-002) -->
-    <StackPanel>
+    <UserControl.Resources>
+        <!-- Ô một bước quy trình: giãn theo chiều cao còn lại, bấm để mở trang -->
+        <Style x:Key="StepTile" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{StaticResource SubtleBrush}" BorderBrush="Transparent" BorderThickness="1.5" CornerRadius="10" Padding="10,8">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <DataTemplate x:Key="MetricRow" DataType="{x:Type vm:MetricViewModel}">
+            <StackPanel VerticalAlignment="Center" ToolTip="{Binding Sub}">
+                <DockPanel>
+                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                    <TextBlock DockPanel.Dock="Right" FontSize="14" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" VerticalAlignment="Center">
+                        <Run Text="{Binding Value, Mode=OneWay}" /> <Run Text="{Binding Unit, Mode=OneWay}" FontSize="12" FontWeight="Normal" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+                <ProgressBar Style="{StaticResource GreenMeter}" Value="{Binding Percent, Mode=OneWay}" Margin="26,5,0,0" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <!-- Trang giãn bằng chiều cao cửa sổ: hàng dưới lấp phần còn lại, màn hình thấp thì co về kích thước nội dung -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <!-- Gọn để vừa một màn hình laptop 1280×720 (150%) mà không cần cuộn -->
         <c:SplitPanel SideWidth="320" StackBelow="760" Gap="16">
 
@@ -172,5 +212,52 @@
             </Border>
         </c:SplitPanel>
 
-    </StackPanel>
+        <!-- Hàng dưới: quy trình thiết lập + tài nguyên máy -->
+        <c:SplitPanel Grid.Row="1" SideWidth="320" StackBelow="760" Gap="16" Margin="0,16,0,0">
+            <Border Style="{StaticResource Card}" Padding="18,12,18,14">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock DockPanel.Dock="Right" Text="Bấm một bước để mở trang" Style="{StaticResource Meta}" VerticalAlignment="Center" />
+                        <TextBlock Text="Quy trình thiết lập" Style="{StaticResource H3}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Steps}" AutomationProperties.Name="Quy trình thiết lập" Margin="0,0,-8,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:StepViewModel}">
+                                <Button Style="{StaticResource StepTile}" Margin="0,0,8,0" AutomationProperties.Name="{Binding Title}" ToolTip="{Binding Description}"
+                                        Command="{Binding DataContext.GoCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <Border Width="22" Height="22" CornerRadius="11" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,6,0" VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding Number}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource PrimaryTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource HeadingBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                                   MaxHeight="32" Margin="0,4,0,0" />
+                                        <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22" HorizontalAlignment="Left" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DockPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Padding="18,12,18,14">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Tài nguyên máy" Style="{StaticResource H3}" Margin="0,0,0,6" />
+                    <UniformGrid Columns="1">
+                        <ContentControl Content="{Binding Machine.Cpu}" ContentTemplate="{StaticResource MetricRow}" Focusable="False" Margin="0,2" />
+                        <ContentControl Content="{Binding Machine.Ram}" ContentTemplate="{StaticResource MetricRow}" Focusable="False" Margin="0,2" />
+                        <ContentControl Content="{Binding Machine.SystemDisk}" ContentTemplate="{StaticResource MetricRow}" Focusable="False" Margin="0,2" />
+                    </UniformGrid>
+                </DockPanel>
+            </Border>
+        </c:SplitPanel>
+    </Grid>
 </UserControl>

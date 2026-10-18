@@ -10,8 +10,8 @@
     <NeutralLanguage>vi-VN</NeutralLanguage>
     <Company>Làm 1 Chạm</Company>
     <Product>Làm 1 Chạm</Product>
-    <Version>0.7.1</Version>
-    <InformationalVersion>0.7.1-thu-nghiem</InformationalVersion>
+    <Version>0.8.0</Version>
+    <InformationalVersion>0.8.0-thu-nghiem</InformationalVersion>
     <!-- Khóa phiên bản gói khi restore (tài liệu 06: pin dependency). -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>

@@ -22,6 +22,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         FitToScreen();
         SizeChanged += (_, _) => UpdateCompact();
+        PageScroll.SizeChanged += (_, _) => FitPageHeight();
         UpdateCompact();
     }
 
@@ -70,5 +71,13 @@ public partial class MainWindow : Window
             (false, true) => new Thickness(24, 16, 24, 16),
             _ => new Thickness(28, 24, 28, 24),
         };
+        FitPageHeight();
+    }
+
+    /// <summary>Trang cao tối thiểu bằng vùng nhìn thấy: trang có hàng giãn (Tổng quan) lấp hết, không để khoảng trống dưới.</summary>
+    private void FitPageHeight()
+    {
+        var m = PageHost.Margin;
+        PageHost.MinHeight = Math.Max(0, Math.Floor(PageScroll.ActualHeight - m.Top - m.Bottom));
     }
 }

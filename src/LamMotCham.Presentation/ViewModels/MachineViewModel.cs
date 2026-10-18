@@ -393,7 +393,7 @@ public sealed class MachineViewModel : ObservableObject
         {
             Cpu.Value = cpu.ToString("0", Vi);
             Cpu.Unit = "%";
-            Cpu.Sub = _snapshot?.Str("cpu") ?? Environment.ProcessorCount + " luồng xử lý";
+            Cpu.Sub = _snapshot?.Str("cpu") is { } name ? ShortCpu(name) : Environment.ProcessorCount + " luồng xử lý";
             Cpu.Percent = cpu;
             Cpu.Time = "Trung bình giữa hai lần đọc";
         }

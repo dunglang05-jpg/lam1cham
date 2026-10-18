@@ -2,6 +2,17 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.8.0 — 18/10/2026
+
+**Tổng quan (`overview`) 0.5.0** — lấp đầy màn hình
+- Hàng dưới mới, giãn theo phần còn lại của cửa sổ (không còn khoảng trống phía dưới):
+  - **Quy trình thiết lập**: 5 bước (Kiểm tra máy → Chọn phần mềm → Cài đặt → Tác vụ Windows → Kiểm tra bàn giao) với trạng thái thật; bấm một bước để mở trang tương ứng.
+  - **Tài nguyên máy**: CPU đang dùng, RAM còn trống, ổ hệ thống còn trống, cập nhật liên tục.
+- Màn hình thấp (laptop 1280×720) hàng dưới co về kích thước nội dung, vẫn không cần cuộn.
+
+**Khung ứng dụng (`shell`) 0.4.2**
+- Vùng trang cao tối thiểu bằng vùng nhìn thấy, để trang có hàng giãn lấp hết cửa sổ.
+
 ## 0.7.1 — 18/10/2026
 
 **Tổng quan (`overview`) 0.4.2** — vừa một màn hình, không cần cuộn
