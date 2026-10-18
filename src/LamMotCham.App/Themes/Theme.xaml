@@ -94,7 +94,7 @@
 
     <!-- Chữ: không dưới 11 px cho thông tin cần đọc -->
     <Style x:Key="H1" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="25" />
+        <Setter Property="FontSize" Value="22" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource HeadingBrush}" />
     </Style>
@@ -168,7 +168,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="15" />
-        <Setter Property="Padding" Value="18,17" />
+        <Setter Property="Padding" Value="16,14" />
     </Style>
     <Style x:Key="CardFlush" TargetType="Border" BasedOn="{StaticResource Card}">
         <Setter Property="Padding" Value="0" />
@@ -213,7 +213,7 @@
     <Style x:Key="SettingRow" TargetType="Border">
         <Setter Property="BorderBrush" Value="{StaticResource LineSoftBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <Setter Property="Padding" Value="0,11" />
+        <Setter Property="Padding" Value="0,9" />
     </Style>
     <Style x:Key="RowTitle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13" />
@@ -464,7 +464,7 @@
 
     <!-- Tiêu đề trang (.page-heading): nhãn nhỏ, tiêu đề lớn + nhãn mô-đun, mô tả; nút ở bên phải -->
     <Style TargetType="c:PageHeader">
-        <Setter Property="Margin" Value="0,0,0,18" />
+        <Setter Property="Margin" Value="0,0,0,12" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
@@ -475,14 +475,14 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Top">
-                            <TextBlock Text="{TemplateBinding Eyebrow}" Style="{StaticResource Eyebrow}" Margin="0,0,0,5" />
+                            <TextBlock Text="{TemplateBinding Eyebrow}" Style="{StaticResource Eyebrow}" Margin="0,0,0,3" />
                             <WrapPanel>
                                 <TextBlock Text="{TemplateBinding Heading}" Style="{StaticResource H1}" VerticalAlignment="Center" Margin="0,0,10,0" />
                                 <Border Style="{StaticResource GrayTag}">
                                     <TextBlock Text="{TemplateBinding ModuleLabel}" Style="{StaticResource GrayTagText}" />
                                 </Border>
                             </WrapPanel>
-                            <TextBlock Text="{TemplateBinding Description}" FontSize="13" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock Text="{TemplateBinding Description}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
                         <ContentPresenter Grid.Column="1" VerticalAlignment="Top" Margin="16,4,0,0" />
                     </Grid>
@@ -554,6 +554,31 @@
                         </Trigger>
                         <Trigger Property="Validation.HasError" Value="True">
                             <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource ErrorBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="PasswordBox">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="PasswordBox">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{StaticResource ControlLineBrush}" BorderThickness="1" CornerRadius="10">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Focusable="False" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="BorderThickness" Value="2" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

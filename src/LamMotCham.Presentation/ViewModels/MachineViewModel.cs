@@ -15,6 +15,9 @@ namespace LamMotCham.Presentation.ViewModels;
 
 public sealed record InfoRow(string Label, string Value);
 
+/// <summary>Một dòng thông số máy có icon (thẻ thiết bị ở Tổng quan).</summary>
+public sealed record SpecRow(string IconKey, string Label, string Value);
+
 public sealed class MetricViewModel(string iconKey, string label) : ObservableObject
 {
     private string _value = "—";
@@ -172,7 +175,7 @@ public sealed class MachineViewModel : ObservableObject
     public ObservableCollection<InfoRow> Status { get; } = [];
 
     /// <summary>Thông số hiển thị dạng dải trên thẻ chào (Tổng quan): mọi dòng Status trừ "Máy" và "Quyền".</summary>
-    public ObservableCollection<InfoRow> Specs { get; } = [];
+    public ObservableCollection<SpecRow> Specs { get; } = [];
 
     /// <summary>Hãng và model máy, hoặc lời nhắc khi chưa đọc.</summary>
     public string ModelText => Status.FirstOrDefault(r => r.Label == "Máy")?.Value ?? "Chưa đọc thông tin máy";
@@ -456,7 +459,18 @@ public sealed class MachineViewModel : ObservableObject
         Specs.Clear();
         foreach (var row in Status.Where(r => r.Label is not "Máy" and not "Quyền"))
         {
-            Specs.Add(row);
+            var icon = row.Label switch
+            {
+                "CPU" => "cpu",
+                "RAM" => "memory",
+                "Ổ hệ thống" => "disk",
+                "Windows" => "laptop",
+                "Pin" => "battery",
+                "WinGet" => "download",
+                "Mạng" => "wifi",
+                _ => "info",
+            };
+            Specs.Add(new SpecRow(icon, row.Label, row.Value));
         }
 
         OnPropertyChanged(nameof(ModelText));

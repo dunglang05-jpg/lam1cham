@@ -14,7 +14,7 @@ Nguồn sự thật về tên và phiên bản: `src/LamMotCham.Presentation/Mod
 | `overview` | Tổng quan & Gói nhanh | `App/Views/Pages/OverviewPage.xaml`, `Presentation/ViewModels/OverviewViewModel.cs`, `MachineViewModel.cs`, `Windows/Probe/*` |
 | `software` | Phần mềm thiết yếu | `App/Views/Pages/SoftwarePage.xaml`, `Presentation/ViewModels/SoftwareViewModel.cs`, `Windows/Software/*` (trừ danh mục) |
 | `windows` | Cài đặt & Tối ưu Windows | `App/Views/Pages/WindowsPage.xaml`, `Presentation/ViewModels/WindowsViewModel.cs`, `Windows/Config/*` (trừ đổi tên máy) |
-| `disk` | Ổ đĩa & Tài khoản | `App/Views/Pages/DiskPage.xaml`, `Presentation/ViewModels/DiskViewModel.cs`, `Windows/Config/RenameComputerTask.cs` |
+| `disk` | Ổ đĩa & Tài khoản | `App/Views/Pages/DiskPage.xaml`, `App/Views/Dialogs/UserEditDialog.xaml`, `Presentation/ViewModels/DiskViewModel.cs`, `Presentation/ViewModels/UserEditDialogViewModel.cs`, `Windows/Config/RenameComputerTask.cs`, `Windows/Disk/*`, `Windows/Accounts/*` |
 | `cleanup` | Dọn dẹp & Hiệu năng | `App/Views/Pages/CleanupPage.xaml`, `Presentation/ViewModels/CleanupViewModel.cs`, `Windows/Cleanup/*` |
 | `handover` | Kiểm tra & Bàn giao | `App/Views/Pages/HandoverPage.xaml`, `Presentation/ViewModels/HandoverViewModel.cs`, `Windows/Checks/*`, `Core/Reporting/*` |
 | `engine` | Lõi điều phối tác vụ | `Core/Orchestration/*`, `Core/Tasks/*`, `Core/Logging/*`, `Core/Processes/*`, `Core/Resources/*` |

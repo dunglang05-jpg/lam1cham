@@ -3,95 +3,87 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
-    <!-- Mô-đun "overview" (QĐ-002) — bố cục theo canvas lam1cham_canvas.html: chào + Một chạm, Tác vụ nhanh, Tình trạng tổng thể. Mọi số liệu là dữ liệu thật. -->
-    <UserControl.Resources>
-        <Style x:Key="ReadyDot" TargetType="Ellipse">
-            <Setter Property="Width" Value="7" />
-            <Setter Property="Height" Value="7" />
-            <Setter Property="Fill" Value="{StaticResource WarningBrush}" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,7,0" />
-        </Style>
-    </UserControl.Resources>
-
+    <!-- Mô-đun "overview" (QĐ-002): thẻ "Một chạm" lớn bên trái, thẻ thiết bị gọn bên phải, Tác vụ nhanh. Mọi số liệu là dữ liệu thật. -->
     <StackPanel>
         <c:PageHeader Eyebrow="BẢNG ĐIỀU KHIỂN" Heading="Xin chào! Sẵn sàng cho laptop mới." ModuleLabel="{Binding Module.Label}"
-                      Description="Kiểm tra cấu hình, chọn gói và hoàn tất bàn giao có kiểm soát — mọi bước được xác minh trước khi báo thành công." />
+                      Description="Một chạm để thiết lập đầy đủ, hoặc chọn từng gói bên dưới. Mọi bước được xác minh trước khi báo thành công." />
 
-        <!-- Hàng đầu: thiết bị (dữ liệu thật) + thẻ xanh Một chạm -->
-        <c:SplitPanel SideWidth="360" StackBelow="820" Gap="16" Margin="0,0,0,6">
-            <Border Style="{StaticResource Card}" Padding="22,20" CornerRadius="16">
-                <Grid>
-                    <StackPanel>
-                        <TextBlock Text="THIẾT BỊ CỦA BẠN" Style="{StaticResource Eyebrow}" />
-                        <DockPanel Margin="0,6,0,0">
-                            <Image DockPanel.Dock="Right" Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="72" Height="72"
-                                   Style="{StaticResource IconImage}" VerticalAlignment="Top" Margin="12,0,6,0" />
-                            <StackPanel>
-                                <TextBlock Text="{Binding Machine.ModelText}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" TextWrapping="Wrap" />
-                                <TextBlock FontSize="12" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0" TextWrapping="Wrap">
-                                    <Run Text="Tên máy:" /> <Run Text="{Binding Machine.ComputerName, Mode=OneWay}" FontWeight="SemiBold" />
-                                    <Run Text="  ·  " /><Run Text="{Binding Machine.InventoryStatus, Mode=OneWay}" />
-                                </TextBlock>
-                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                    <Button Style="{StaticResource SecondaryButton}" Command="{Binding Machine.CheckCommand}" MinHeight="34" FontSize="12">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="15" Height="15" Style="{StaticResource IconImage}" Margin="0,0,7,0" />
-                                            <TextBlock Text="{Binding Machine.CheckButtonText}" VerticalAlignment="Center" />
+        <c:SplitPanel SideWidth="340" StackBelow="820" Gap="14">
+            <!-- MỘT CHẠM: thẻ chính, nổi bật -->
+            <Border CornerRadius="16" Background="{StaticResource ReadinessBrush}" Padding="24,20">
+                <StackPanel>
+                    <DockPanel>
+                        <Border DockPanel.Dock="Left" Width="56" Height="56" CornerRadius="16" Background="White" Margin="0,0,16,0" VerticalAlignment="Top">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=bolt}" Width="32" Height="32" Style="{StaticResource IconImage}" />
+                        </Border>
+                        <StackPanel>
+                            <TextBlock Text="MỘT CHẠM" FontSize="11" FontWeight="Bold" Foreground="#CDE0FF" />
+                            <TextBlock Text="Thiết lập đầy đủ — sẵn sàng sử dụng." FontSize="23" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" Margin="0,2,0,0" />
+                            <TextBlock Text="Một lần bấm: cài phần mềm, tối ưu Windows, dọn dẹp và kiểm tra bàn giao — chạy lần lượt, xác minh từng bước."
+                                       FontSize="12" Foreground="#DCE9FF" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- 4 bước của gói, mỗi bước có icon -->
+                    <ItemsControl ItemsSource="{Binding FullSetupLines}" Margin="0,16,0,0" Focusable="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <c:AdaptiveGrid MinItemWidth="220" MaxColumns="2" Gap="10" RowGap="10" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:SetupLine}">
+                                <Border Background="#1FFFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="12" Padding="12,10">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Left" Width="34" Height="34" CornerRadius="10" Background="White" Margin="0,0,12,0">
+                                            <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" />
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Count}" FontSize="18" FontWeight="ExtraBold" Foreground="White" />
+                                            <TextBlock Text="{Binding Text}" FontSize="12" Foreground="#E3EEFF" TextWrapping="Wrap" />
                                         </StackPanel>
-                                    </Button>
-                                    <TextBlock VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12" Foreground="{StaticResource SuccessTextBrush}" FontWeight="SemiBold"
-                                               Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}">
-                                        <Run Text="✓ Đã kiểm tra lúc" /> <Run Text="{Binding Machine.CheckedAt, Mode=OneWay}" />
-                                    </TextBlock>
-                                </StackPanel>
-                            </StackPanel>
-                        </DockPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                        <!-- Dải thông số (.system-strip) -->
-                        <ItemsControl ItemsSource="{Binding Machine.Specs}" Margin="0,16,0,0" Focusable="False">
+                    <!-- Phần mềm sẽ cài -->
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                        <TextBlock Text="Sẽ cài:" FontSize="12" Foreground="#CDE0FF" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <ItemsControl ItemsSource="{Binding FullSetupApps}" Focusable="False">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <c:AdaptiveGrid MinItemWidth="150" MaxColumns="4" Gap="12" RowGap="8" />
+                                    <StackPanel Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:InfoRow}">
-                                    <Border BorderBrush="#E9EEF6" BorderThickness="0,1,0,0" Padding="0,8,0,0" ToolTip="{Binding Value}">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding Label}" FontSize="11" Foreground="{StaticResource Text2Brush}" Margin="0,2,0,0" />
-                                        </StackPanel>
+                                <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
+                                    <Border Width="30" Height="30" CornerRadius="8" Background="White" Margin="0,0,6,0" ToolTip="{Binding Name}">
+                                        <Image Width="20" Height="20" Style="{StaticResource IconImage}">
+                                            <Image.Source>
+                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                    <Binding Path="LogoKey" />
+                                                    <Binding Path="IconKey" />
+                                                </MultiBinding>
+                                            </Image.Source>
+                                        </Image>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                </Grid>
-            </Border>
 
-            <!-- Thẻ xanh Một chạm (.readiness) -->
-            <Border CornerRadius="16" Background="{StaticResource ReadinessBrush}" Padding="20,19">
-                <Grid>
-                    <StackPanel>
-                        <TextBlock Text="MỘT CHẠM" FontSize="11" FontWeight="Bold" Foreground="#CDE0FF" />
-                        <TextBlock Text="Thiết lập đầy đủ — sẵn sàng sử dụng." FontSize="18" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" Margin="0,8,0,10" />
-                        <ItemsControl ItemsSource="{Binding FullSetupLines}" Focusable="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="0,4">
-                                        <TextBlock Text="✓" FontSize="12" FontWeight="Bold" Foreground="#8CFFD7" Margin="0,0,8,0" />
-                                        <TextBlock Text="{Binding}" FontSize="12" Foreground="#E3EEFF" TextWrapping="Wrap" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <Button Command="{Binding StartFullCommand}" HorizontalAlignment="Left" Margin="0,14,0,0" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}"
+                    <DockPanel Margin="0,16,0,0">
+                        <Button DockPanel.Dock="Left" Command="{Binding StartFullCommand}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}"
                                 AutomationProperties.Name="Bắt đầu thiết lập đầy đủ">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border x:Name="Bd" Background="White" CornerRadius="8" Padding="14,10">
-                                        <TextBlock Text="Bắt đầu thiết lập đầy đủ   →" FontSize="13" FontWeight="Bold" Foreground="#1256BE" />
+                                    <Border x:Name="Bd" Background="White" CornerRadius="10" Padding="18,12">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=bolt}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                                            <TextBlock Text="Bắt đầu thiết lập đầy đủ   →" FontSize="15" FontWeight="Bold" Foreground="#1256BE" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
@@ -104,36 +96,77 @@
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
-                        <TextBlock Text="Bấm “Đọc lại” thông tin máy trước khi bắt đầu." FontSize="11" Foreground="#CDE0FF" Margin="0,8,0,0"
-                                   Visibility="{Binding Machine.Unchecked, Converter={StaticResource Vis}}" />
-                    </StackPanel>
-                </Grid>
+                        <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                            <TextBlock Text="Có hộp xác nhận trước khi chạy. Không tự khởi động lại." FontSize="11" Foreground="#CDE0FF" TextWrapping="Wrap" />
+                            <TextBlock Text="Cần đọc thông tin máy trước (Đọc lại ở thẻ bên phải)." FontSize="11" Foreground="White" FontWeight="SemiBold" TextWrapping="Wrap"
+                                       Visibility="{Binding Machine.Unchecked, Converter={StaticResource Vis}}" />
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Thiết bị: gọn, mỗi dòng có icon -->
+            <Border Style="{StaticResource Card}" Padding="16,14">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="{Binding Machine.CheckButtonText}" Command="{Binding Machine.CheckCommand}"
+                                VerticalAlignment="Top" />
+                        <Border DockPanel.Dock="Left" Style="{StaticResource IconTile}" Width="38" Height="38" Margin="0,0,10,0">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="22" Height="22" Style="{StaticResource IconImage}" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Machine.ModelText}" FontSize="14" FontWeight="ExtraBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Machine.ModelText}" />
+                            <TextBlock FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis">
+                                <Run Text="Tên máy:" /> <Run Text="{Binding Machine.ComputerName, Mode=OneWay}" FontWeight="SemiBold" />
+                            </TextBlock>
+                        </StackPanel>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Machine.Specs}" Margin="0,10,0,0" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:SpecRow}">
+                                <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="0,5" ToolTip="{Binding Value}">
+                                    <DockPanel>
+                                        <Image DockPanel.Dock="Left" Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                                        <TextBlock DockPanel.Dock="Left" Text="{Binding Label}" Width="74" FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock FontSize="11" Foreground="{StaticResource SuccessTextBrush}" FontWeight="SemiBold" Margin="0,8,0,0"
+                               Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}">
+                        <Run Text="✓ Đã kiểm tra lúc" /> <Run Text="{Binding Machine.CheckedAt, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="{Binding Machine.InventoryStatus}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap"
+                               Visibility="{Binding Machine.InventoryStatus, Converter={StaticResource NotEmpty}}" />
+                </StackPanel>
             </Border>
         </c:SplitPanel>
 
-        <!-- Tác vụ nhanh = 4 gói -->
-        <DockPanel Margin="0,18,0,12">
+        <!-- Tác vụ nhanh: các gói còn lại -->
+        <DockPanel Margin="0,16,0,10">
             <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Xem tất cả mô-đun →" Command="{Binding Main.GoModulesCommand}" />
             <TextBlock Text="Tác vụ nhanh" Style="{StaticResource SectionTitle}" VerticalAlignment="Center" />
         </DockPanel>
-        <ItemsControl ItemsSource="{Binding PackCards}" Focusable="False" AutomationProperties.Name="Gói thiết lập">
+        <ItemsControl ItemsSource="{Binding OtherPacks}" Focusable="False" AutomationProperties.Name="Gói thiết lập">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <c:AdaptiveGrid MinItemWidth="190" MaxColumns="4" Gap="15" RowGap="15" />
+                    <c:AdaptiveGrid MinItemWidth="230" MaxColumns="3" Gap="14" RowGap="14" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:PackCardViewModel}">
-                    <Border Style="{StaticResource Card}" Padding="16" ToolTip="{Binding Extra}">
+                    <Border Style="{StaticResource Card}" Padding="14,12" ToolTip="{Binding Extra}">
                         <DockPanel>
-                            <Border x:Name="Tile" DockPanel.Dock="Top" Style="{StaticResource IconTile}" HorizontalAlignment="Left">
+                            <Border x:Name="Tile" DockPanel.Dock="Left" Style="{StaticResource IconTile}" Margin="0,0,12,0" VerticalAlignment="Center">
                                 <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" />
                             </Border>
-                            <Button DockPanel.Dock="Bottom" Style="{StaticResource SecondaryButton}" Command="{Binding StartCommand}" MinHeight="34" FontSize="12"
-                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="Bắt đầu gói →" />
-                            <StackPanel Margin="0,10,0,12">
-                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,3,0,0" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryButton}" Command="{Binding StartCommand}" MinHeight="32" FontSize="12" Padding="12,0"
+                                    VerticalAlignment="Center" Margin="10,0,0,0" Content="Bắt đầu →" AutomationProperties.Name="{Binding Title}" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
                             </StackPanel>
                         </DockPanel>
                     </Border>
@@ -151,61 +184,5 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-
-        <!-- Tình trạng tổng thể -->
-        <TextBlock Text="Tình trạng tổng thể" Style="{StaticResource SectionTitle}" Margin="0,20,0,12" />
-        <c:SplitPanel SideWidth="0" StackBelow="760" Gap="15">
-            <Border Style="{StaticResource Card}">
-                <DockPanel>
-                    <c:RingProgress DockPanel.Dock="Left" Value="{Binding ProgressPercent}" Text="{Binding ProgressText}" VerticalAlignment="Center" Margin="0,0,14,0" />
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{Binding ProgressTitle}" FontSize="14" FontWeight="Bold" Margin="0,0,0,8" />
-                        <ItemsControl ItemsSource="{Binding Readiness}" Focusable="False">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:ReadinessItem}">
-                                    <StackPanel Orientation="Horizontal" Margin="0,3">
-                                        <Ellipse x:Name="Dot" Style="{StaticResource ReadyDot}" />
-                                        <TextBlock Text="{Binding Text}" FontSize="12" Foreground="#596C84" TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                    <DataTemplate.Triggers>
-                                        <DataTrigger Binding="{Binding StateKey}" Value="success">
-                                            <Setter TargetName="Dot" Property="Fill" Value="{StaticResource SuccessBrush}" />
-                                        </DataTrigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </DockPanel>
-            </Border>
-
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <DockPanel Margin="0,0,0,6">
-                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Content="Báo cáo gần nhất →" Command="{Binding OpenLastReportCommand}" />
-                        <TextBlock Text="Hoạt động gần đây" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <TextBlock Text="Chưa có tác vụ nào trong phiên này." Style="{StaticResource Secondary}" Margin="0,6,0,0"
-                               Visibility="{Binding Main.HasRecent, Converter={StaticResource Vis}, ConverterParameter=invert}" />
-                    <ItemsControl ItemsSource="{Binding Main.Recent}" Focusable="False">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:RecentItem}">
-                                <Border Style="{StaticResource SettingRow}" Padding="0,8">
-                                    <DockPanel>
-                                        <c:StatusChip DockPanel.Dock="Right" State="{Binding StateKey}" Height="22" Margin="8,0,0,0" />
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Name}" Style="{StaticResource RowTitle}" />
-                                            <TextBlock Style="{StaticResource RowSub}">
-                                                <Run Text="{Binding Time, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Message, Mode=OneWay}" />
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </DockPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </c:SplitPanel>
     </StackPanel>
 </UserControl>

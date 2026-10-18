@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media;
 
 namespace LamMotCham.App;
 
@@ -13,6 +14,12 @@ public partial class MainWindow : Window
 
     public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
         nameof(IsCompact), typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+
+    private const double DesignWidth = 1366;
+    private const double DesignHeight = 768;
+    private const double MinScale = 0.85;
+
+    private double _scale = 1.0;
 
     private const double PreferredWidth = 1440;
     private const double PreferredHeight = 900;
@@ -53,24 +60,40 @@ public partial class MainWindow : Window
 
     private void UpdateCompact()
     {
-        var width = ActualWidth > 0 ? ActualWidth : (WindowState == WindowState.Maximized ? SystemParameters.WorkArea.Width : Width);
-        var height = ActualHeight > 0 ? ActualHeight : (WindowState == WindowState.Maximized ? SystemParameters.WorkArea.Height : Height);
-        var compact = width < CompactBelowWidth;
+        var outerWidth = ActualWidth > 0 ? ActualWidth : (WindowState == WindowState.Maximized ? SystemParameters.WorkArea.Width : Width);
+        var outerHeight = ActualHeight > 0 ? ActualHeight : (WindowState == WindowState.Maximized ? SystemParameters.WorkArea.Height : Height);
+
+        // Vùng nội dung (trừ khung cửa sổ và thanh tiêu đề Windows).
+        var width = Math.Max(1, outerWidth - 16);
+        var height = Math.Max(1, outerHeight - 39);
+
+        // Co giãn: nhỏ hơn khung thiết kế 1366×768 thì thu nhỏ toàn bộ giao diện (tối thiểu 85%) để vừa một màn hình.
+        var scale = Math.Clamp(Math.Min(width / DesignWidth, height / DesignHeight), MinScale, 1.0);
+        if (Math.Abs(scale - _scale) > 0.005)
+        {
+            _scale = scale;
+            Root.LayoutTransform = scale < 0.995 ? new ScaleTransform(scale, scale) : Transform.Identity;
+            TextOptions.SetTextFormattingMode(this, scale < 0.995 ? TextFormattingMode.Ideal : TextFormattingMode.Display);
+        }
+
+        var effectiveWidth = width / _scale;
+        var effectiveHeight = height / _scale;
+        var compact = effectiveWidth < CompactBelowWidth;
         if (compact != IsCompact)
         {
             IsCompact = compact;
             SidebarColumn.Width = new GridLength(compact ? 64 : 232);
         }
 
-        // Màn hình thấp (laptop 1366×768 hoặc 1920×1080 phóng 150%): thanh trên thấp hơn, ẩn chân trang, lề nhỏ.
-        var shortScreen = height < ShortBelowHeight;
-        TopBarRow.Height = new GridLength(shortScreen ? 58 : 66);
+        // Màn hình thấp: thanh trên thấp hơn, ẩn chân trang, lề nhỏ.
+        var shortScreen = effectiveHeight < ShortBelowHeight;
+        TopBarRow.Height = new GridLength(shortScreen ? 52 : 58);
         Footer.Visibility = shortScreen ? Visibility.Collapsed : Visibility.Visible;
         PageHost.Margin = (compact, shortScreen) switch
         {
-            (true, _) => new Thickness(16),
-            (false, true) => new Thickness(22, 16, 22, 16),
-            _ => new Thickness(25),
+            (true, _) => new Thickness(14),
+            (false, true) => new Thickness(18, 14, 18, 14),
+            _ => new Thickness(20),
         };
     }
 }

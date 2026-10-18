@@ -2,6 +2,32 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.12.0 — 19/10/2026
+
+**Khung ứng dụng (`shell`) 0.8.0**
+- Tự co giãn: cửa sổ nhỏ hơn 1366×768 thì thu nhỏ toàn bộ giao diện (tối thiểu 85%) để thông tin vừa một màn hình.
+- Khoảng cách gọn hơn: tiêu đề trang nhỏ hơn, lề trang, thẻ, dòng thiết lập sát hơn; thanh trên thấp hơn.
+- Dùng chung: kiểu ô mật khẩu (`PasswordBox`).
+
+**Tổng quan (`overview`) 0.7.0**
+- Thẻ **Một chạm** chuyển sang bên trái, to và rõ hơn: biểu tượng lớn, 4 ô bước có icon và số lượng thật (phần mềm, thiết lập Windows, nhóm dọn dẹp, mục kiểm tra), logo phần mềm sẽ cài, nút bắt đầu lớn.
+- Thẻ thiết bị bên phải gọn lại, mỗi thông số một dòng có icon.
+- Tác vụ nhanh còn 3 gói (gói đầy đủ đã ở thẻ Một chạm), thẻ một hàng.
+- Bỏ khu "Tình trạng tổng thể".
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.7.0**
+- Một thẻ chiếm cả bề ngang; thiết lập chia **2 cột** khi đủ rộng, cửa sổ hẹp tự về 1 cột. Bộ lọc nhóm nằm cùng hàng tiêu đề; ghi chú và nút ở một hàng.
+- Bỏ thẻ "Trạng thái hệ thống" và "Nguyên tắc an toàn" (nguyên tắc ghi gọn ở ghi chú).
+
+**Ổ đĩa & Tài khoản (`disk`) 0.6.0** — tính năng mới: **Sửa tài khoản**
+- Thêm icon cho từng thẻ, ổ đĩa và tài khoản (quản trị viên có icon khiên).
+- Danh sách tài khoản đang bật trên máy (tên, tên hiển thị, loại, cục bộ/Microsoft, "Đang dùng").
+- Nút **Sửa** (chỉ tài khoản cục bộ): đổi tên hiển thị, đổi tên đăng nhập, đặt mật khẩu mới. Chạy qua hàng đợi, cần quyền quản trị, mỗi thay đổi được đọc lại để xác minh (mật khẩu: đăng nhập thử). Đặt mật khẩu bắt buộc tick khách đồng ý và cảnh báo mật khẩu đã lưu có thể không mở được.
+- Bảo mật: dùng Windows API (netapi32) trực tiếp — mật khẩu không qua dòng lệnh, file, log hay báo cáo; bộ nhớ chứa mật khẩu được xóa sau khi dùng. Tài khoản Microsoft không sửa ở đây.
+
+**Dọn dẹp (`cleanup`) 0.4.0**
+- Gộp thành một thẻ: vòng dung lượng + nút Quét/Dọn trên cùng, nhóm file 2 cột có icon, nguyên tắc an toàn thành dải nhãn ngắn.
+
 ## 0.11.0 — 18/10/2026
 
 Giao diện mới theo file thiết kế PO (`lam1cham_canvas.html`) cho 7 trang đang có. Mọi số liệu là dữ liệu thật của máy; không thêm phần minh họa không có chức năng (Pro, Web Admin, thông báo, hồ sơ chưa làm).

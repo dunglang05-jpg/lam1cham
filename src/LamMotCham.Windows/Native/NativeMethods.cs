@@ -120,4 +120,70 @@ internal static class NativeMethods
     /// <summary>Báo cho Explorer làm mới sau khi đổi thiết lập hiển thị.</summary>
     internal static void NotifyShellSettingsChanged() =>
         SHChangeNotify(ShcneAssocChanged, ShcnfIdList, IntPtr.Zero, IntPtr.Zero);
+
+    // ---- Tài khoản cục bộ (netapi32 / advapi32). Mật khẩu chỉ truyền qua con trỏ bộ nhớ, xóa ngay sau khi dùng. ----
+    internal const uint NerrSuccess = 0;
+    internal const uint NerrUserNotFound = 2221;
+    internal const uint NerrUserExists = 2224;
+    internal const uint NerrPasswordTooShort = 2245;
+    internal const uint ErrorAccessDenied = 5;
+    internal const int Logon32LogonNetwork = 3;
+    internal const int Logon32ProviderDefault = 0;
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct UserInfo0
+    {
+        public IntPtr Name;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct UserInfo10
+    {
+        public IntPtr Name;
+        public IntPtr Comment;
+        public IntPtr UserComment;
+        public IntPtr FullName;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct UserInfo1003
+    {
+        public IntPtr Password;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct UserInfo1011
+    {
+        public IntPtr FullName;
+    }
+
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern uint NetUserGetInfo(string? serverName, string userName, uint level, out IntPtr buffer);
+
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern uint NetUserSetInfo(string? serverName, string userName, uint level, ref UserInfo0 buffer, out uint parmError);
+
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern uint NetUserSetInfo(string? serverName, string userName, uint level, ref UserInfo1003 buffer, out uint parmError);
+
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern uint NetUserSetInfo(string? serverName, string userName, uint level, ref UserInfo1011 buffer, out uint parmError);
+
+    [DllImport("netapi32.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern uint NetApiBufferFree(IntPtr buffer);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool LogonUserW(string userName, string domain, IntPtr password, int logonType, int logonProvider, out IntPtr token);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool CloseHandle(IntPtr handle);
 }

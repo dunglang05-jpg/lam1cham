@@ -51,6 +51,26 @@ public static class WindowsCatalog
         SelectedByDefault = false,
     };
 
+    /// <summary>Sửa tài khoản cục bộ: chỉ tạo khi người dùng bấm Lưu trong hộp sửa tài khoản; không nằm trong gói nhanh.</summary>
+    public static TaskCatalogEntry UserFullName(string userName, string fullName) => AccountEntry(new Accounts.UserFullNameTask(userName, fullName),
+        "Tên hiện ở màn hình đăng nhập và menu Start.");
+
+    public static TaskCatalogEntry UserPassword(string userName, string password) => AccountEntry(new Accounts.UserPasswordTask(userName, password),
+        "Mật khẩu không được ghi vào log hay báo cáo.");
+
+    public static TaskCatalogEntry UserRename(string userName, string newName) => AccountEntry(new Accounts.UserRenameTask(userName, newName),
+        "Tên dùng để đăng nhập; thư mục C:\\Users giữ tên cũ.");
+
+    private static TaskCatalogEntry AccountEntry(ITaskModule module, string description) => new()
+    {
+        Module = module,
+        Category = TaskCategory.DiskAndAccount,
+        Description = description,
+        Impact = TaskImpact.Medium,
+        IconKey = "user",
+        SelectedByDefault = false,
+    };
+
     /// <summary>Chia ổ (R3): chỉ tạo sau khi xem trước và xác nhận riêng; không bao giờ nằm trong gói nhanh.</summary>
     public static TaskCatalogEntry SplitDisk(DiskSplitPlan plan) => new()
     {

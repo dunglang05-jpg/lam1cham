@@ -4,6 +4,7 @@ using LamMotCham.Presentation.Services;
 using LamMotCham.Core.Logging;
 using LamMotCham.Core.Tasks;
 using LamMotCham.Windows;
+using LamMotCham.Windows.Accounts;
 using LamMotCham.Windows.Cleanup;
 using LamMotCham.Windows.Config;
 using LamMotCham.Windows.Disk;
@@ -30,6 +31,8 @@ public sealed class DiskViewModel : ObservableObject
     private bool _previewing;
     private DiskSplitPlan? _plan;
     private string _planMessage = "Nhập dung lượng ổ mới rồi bấm “Xem trước”. Chưa có gì thay đổi trên máy.";
+    private string _usersMessage = "Đang đọc tài khoản…";
+    private bool _usersLoaded;
 
     public DiskViewModel(MainViewModel main)
     {
@@ -39,6 +42,24 @@ public sealed class DiskViewModel : ObservableObject
         PreviewSplitCommand = new AsyncCommand(PreviewSplitAsync, () => !_previewing && !main.IsRunning);
         SplitCommand = new RelayCommand(AskSplit, () => _plan is { IsValid: true } && !_previewing && !main.IsRunning);
         OpenDiskManagementCommand = new RelayCommand(() => ShellActions.OpenUri("diskmgmt.msc"));
+        EditUserCommand = new RelayCommand(p =>
+        {
+            if (p is LocalAccount { IsLocal: true } account)
+            {
+                main.ShowDialog(new UserEditDialogViewModel(main, account, LoadUsersAsync));
+            }
+        }, p => p is LocalAccount { IsLocal: true } && !main.IsRunning);
+        ReloadUsersCommand = new AsyncCommand(LoadUsersAsync, () => !main.IsRunning);
+
+        // Đọc tài khoản khi mở trang lần đầu (không đọc lúc khởi động để mở app nhanh).
+        main.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.CurrentPage) && main.CurrentPage == Page.Disk && !_usersLoaded)
+            {
+                _usersLoaded = true;
+                _ = LoadUsersAsync();
+            }
+        };
         main.Machine.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(MachineViewModel.Snapshot))
@@ -68,6 +89,29 @@ public sealed class DiskViewModel : ObservableObject
     public ObservableCollection<DriveRow> Drives { get; } = [];
 
     public ObservableCollection<InfoRow> Account { get; } = [];
+
+    /// <summary>Tài khoản đang bật trên máy.</summary>
+    public ObservableCollection<LocalAccount> Users { get; } = [];
+
+    public string UsersMessage { get => _usersMessage; private set => Set(ref _usersMessage, value); }
+
+    /// <summary>Mở hộp sửa tài khoản (chỉ tài khoản cục bộ).</summary>
+    public RelayCommand EditUserCommand { get; }
+
+    public AsyncCommand ReloadUsersCommand { get; }
+
+    private async Task LoadUsersAsync()
+    {
+        UsersMessage = "Đang đọc tài khoản…";
+        var (accounts, error) = await Task.Run(() => LocalAccounts.ReadAsync(CancellationToken.None));
+        Users.Clear();
+        foreach (var a in accounts.OrderByDescending(a => a.IsCurrent).ThenBy(a => a.Name, StringComparer.CurrentCultureIgnoreCase))
+        {
+            Users.Add(a);
+        }
+
+        UsersMessage = error ?? (accounts.Count == 0 ? "Không có tài khoản nào đang bật." : "");
+    }
 
     public RelayCommand RenameCommand { get; }
 

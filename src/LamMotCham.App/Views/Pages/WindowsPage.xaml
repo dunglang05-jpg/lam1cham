@@ -3,23 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
-    <!-- Mô-đun "windows" (QĐ-002) — bố cục canvas: "Thiết lập đề xuất" (lọc nhóm, công tắc) | "Trạng thái hệ thống" + "Nguyên tắc an toàn" -->
+    <!-- Mô-đun "windows" (QĐ-002) — một thẻ "Thiết lập đề xuất": lọc nhóm, công tắc, 2 cột khi đủ rộng -->
     <StackPanel>
         <c:PageHeader Eyebrow="CẤU HÌNH THIẾT BỊ" Heading="Tối ưu Windows" ModuleLabel="{Binding Module.Label}"
-                      Description="Kiểm tra từng lựa chọn trước khi áp dụng. Không tự động tắt các lớp bảo vệ hệ thống." />
+                      Description="Chọn thiết lập cần áp dụng. Rê chuột vào dòng để xem giá trị hiện tại và chi tiết." />
 
-        <c:SplitPanel SideWidth="330" StackBelow="860" Gap="15">
             <!-- Thiết lập đề xuất -->
-            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+            <Border Style="{StaticResource Card}" Padding="18,14">
                 <StackPanel>
-                    <DockPanel Margin="0,0,0,12">
-                        <Border DockPanel.Dock="Right" Style="{StaticResource TagGreen}">
-                            <TextBlock Text="Ưu tiên an toàn" Style="{StaticResource TagGreenText}" />
-                        </Border>
-                        <TextBlock Text="Thiết lập đề xuất" FontSize="13" FontWeight="ExtraBold" VerticalAlignment="Center" />
-                    </DockPanel>
-
-                    <ItemsControl ItemsSource="{Binding Filters}" KeyboardNavigation.TabNavigation="Once" AutomationProperties.Name="Nhóm thiết lập" Margin="0,0,0,6">
+                    <DockPanel Margin="0,0,0,4">
+                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <Border Style="{StaticResource IconTileGreen}" Width="32" Height="32" CornerRadius="9" Margin="0,0,10,0">
+                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="18" Height="18" Style="{StaticResource IconImage}" />
+                            </Border>
+                            <TextBlock Text="Thiết lập đề xuất" FontSize="13" FontWeight="ExtraBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Filters}" KeyboardNavigation.TabNavigation="Once" AutomationProperties.Name="Nhóm thiết lập" VerticalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel />
@@ -32,11 +31,18 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    </DockPanel>
 
+                    <!-- Nhiều mục thì chia 2 cột; cửa sổ hẹp tự về 1 cột -->
                     <ItemsControl ItemsSource="{Binding VisibleRows}" Focusable="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <c:AdaptiveGrid MinItemWidth="380" MaxColumns="2" Gap="28" RowGap="0" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                <Border Style="{StaticResource SettingRow}">
+                                <Border Style="{StaticResource SettingRow}" Padding="0,8">
                                     <DockPanel Background="Transparent">
                                         <DockPanel.ToolTip>
                                             <StackPanel MaxWidth="420">
@@ -82,11 +88,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Border Style="{StaticResource Note}" Margin="0,14,0,0">
-                        <TextBlock Style="{StaticResource NoteText}"
-                                   Text="ⓘ  Bật công tắc để chọn thay đổi. Chưa có gì thay đổi trên máy cho đến khi bấm Áp dụng và xác nhận. Rê chuột vào dòng để xem chi tiết." />
-                    </Border>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                    <DockPanel Margin="0,12,0,0">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Content="Hoàn tác thay đổi" Margin="0,0,8,0" />
                         <Button Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}">
                             <TextBlock>
@@ -94,47 +97,13 @@
                             </TextBlock>
                         </Button>
                     </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Trạng thái hệ thống + nguyên tắc -->
-            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
-                <StackPanel>
-                    <TextBlock Text="Trạng thái hệ thống" FontSize="13" FontWeight="ExtraBold" Margin="0,0,0,12" />
-                    <DockPanel>
-                        <Border DockPanel.Dock="Left" Style="{StaticResource IconTile}" Width="43" Height="43" Margin="0,0,12,0">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="23" Height="23" Style="{StaticResource IconImage}" />
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{Binding WindowsText}" FontSize="13" FontWeight="ExtraBold" TextTrimming="CharacterEllipsis" />
-                            <TextBlock Text="Đọc từ máy này" FontSize="11" Foreground="{StaticResource Text2Brush}" />
-                        </StackPanel>
+                    <Border Style="{StaticResource Note}" Margin="0,0,14,0" Padding="12,8">
+                        <TextBlock Style="{StaticResource NoteText}"
+                                   Text="ⓘ  Bật công tắc để chọn. Chưa thay đổi gì cho đến khi bấm Áp dụng và xác nhận. Defender, Tường lửa, Windows Update không bị tắt; giá trị cũ được lưu để hoàn tác." />
+                    </Border>
                     </DockPanel>
-                    <Border Height="1" Background="{StaticResource LineBrush}" Margin="0,16" />
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                            <Ellipse Width="7" Height="7" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
-                            <TextBlock FontSize="12" Foreground="#596C84"><Run Text="{Binding SelectedCount, Mode=OneWay}" /> <Run Text="thay đổi đang chọn" /></TextBlock>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                            <Ellipse Width="7" Height="7" Fill="{StaticResource WarningBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
-                            <TextBlock FontSize="12" Foreground="#596C84"><Run Text="{Binding AdminCount, Mode=OneWay}" /> <Run Text="thay đổi cần quyền quản trị (UAC)" /></TextBlock>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,3">
-                            <Ellipse Width="7" Height="7" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
-                            <TextBlock Text="Giá trị cũ được lưu trước khi đổi" FontSize="12" Foreground="#596C84" />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <TextBlock Text="Nguyên tắc an toàn" FontSize="13" FontWeight="ExtraBold" Margin="0,20,0,8" />
-                    <TextBlock FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" LineHeight="21">
-                        <Run Text="•  Không tắt Defender, Tường lửa, Windows Update." /><LineBreak />
-                        <Run Text="•  Không thay đổi khi chưa có xác nhận." /><LineBreak />
-                        <Run Text="•  Lưu giá trị cũ để hoàn tác (BitLocker bật lại trong Settings)." /><LineBreak />
-                        <Run Text="•  Đọc lại và xác minh sau mỗi thay đổi." />
-                    </TextBlock>
                 </StackPanel>
             </Border>
-        </c:SplitPanel>
+
     </StackPanel>
 </UserControl>

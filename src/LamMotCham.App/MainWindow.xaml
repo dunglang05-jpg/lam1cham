@@ -28,9 +28,11 @@
         <DataTemplate DataType="{x:Type vm:ErrorDialogViewModel}"><dialogs:ErrorDialog /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:RestartDialogViewModel}"><dialogs:RestartDialog /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ListDialogViewModel}"><dialogs:ListDialog /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UserEditDialogViewModel}"><dialogs:UserEditDialog /></DataTemplate>
     </Window.Resources>
 
-    <Grid>
+    <!-- Root được co giãn (LayoutTransform) theo kích thước cửa sổ để thông tin vừa một màn hình. -->
+    <Grid x:Name="Root">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="SidebarColumn" Width="232" />
             <ColumnDefinition Width="*" />
@@ -116,7 +118,7 @@
         <!-- KHÔNG GIAN LÀM VIỆC -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition x:Name="TopBarRow" Height="66" />
+                <RowDefinition x:Name="TopBarRow" Height="58" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -202,7 +204,7 @@
 
             <!-- Nội dung mô-đun -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-                <ContentControl x:Name="PageHost" Content="{Binding CurrentPageViewModel}" Margin="25" Focusable="False" />
+                <ContentControl x:Name="PageHost" Content="{Binding CurrentPageViewModel}" Margin="20" Focusable="False" />
             </ScrollViewer>
 
             <!-- Chân trang -->
