@@ -2,6 +2,16 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.8.1 — 18/10/2026
+
+**Tổng quan (`overview`) 0.5.1** — khôi phục giao diện ban đầu, chỉ chỉnh kích cỡ
+- Theo yêu cầu PO: bỏ bố cục 0.7.1 và hàng Quy trình/Tài nguyên của 0.8.0; trở lại giao diện của 0.7.0 (thẻ giới thiệu, Thông tin máy, 4 gói, Gói này gồm, nút Bắt đầu ở giữa).
+- Chỉ thu nhỏ kích cỡ để vừa laptop 1280×720 không cần cuộn: lề và khoảng cách nhỏ hơn, biểu tượng/chữ tiêu đề nhỏ hơn, thẻ gói thấp hơn (mô tả một dòng, rê chuột xem đủ), Thông tin máy mỗi mục một dòng.
+
+**Khung ứng dụng (`shell`) 0.4.3**
+- Bỏ phần giãn trang theo chiều cao cửa sổ (0.4.2).
+- Màn hình thấp: thanh trên cao 56 px thay vì 64, lề trang 12 px.
+
 ## 0.8.0 — 18/10/2026
 
 **Tổng quan (`overview`) 0.5.0** — lấp đầy màn hình

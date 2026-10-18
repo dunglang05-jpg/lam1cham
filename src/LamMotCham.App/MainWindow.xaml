@@ -32,7 +32,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
+            <RowDefinition x:Name="TopBarRow" Height="64" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -148,7 +148,7 @@
             </Border>
 
             <!-- KHU VỰC MÔ-ĐUN -->
-            <ScrollViewer x:Name="PageScroll" Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
                 <ContentControl x:Name="PageHost" Content="{Binding CurrentPageViewModel}" Margin="28,24" Focusable="False" />
             </ScrollViewer>
         </Grid>

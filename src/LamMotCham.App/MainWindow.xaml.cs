@@ -22,7 +22,6 @@ public partial class MainWindow : Window
         InitializeComponent();
         FitToScreen();
         SizeChanged += (_, _) => UpdateCompact();
-        PageScroll.SizeChanged += (_, _) => FitPageHeight();
         UpdateCompact();
     }
 
@@ -65,19 +64,12 @@ public partial class MainWindow : Window
 
         // Màn hình thấp (laptop 1366×768 hoặc 1920×1080 phóng 150%): lề trên/dưới nhỏ để trang vừa một màn hình.
         var shortScreen = height < ShortBelowHeight;
+        TopBarRow.Height = new GridLength(shortScreen ? 56 : 64);
         PageHost.Margin = (compact, shortScreen) switch
         {
             (true, _) => new Thickness(18, 14, 18, 14),
-            (false, true) => new Thickness(24, 16, 24, 16),
+            (false, true) => new Thickness(24, 12, 24, 12),
             _ => new Thickness(28, 24, 28, 24),
         };
-        FitPageHeight();
-    }
-
-    /// <summary>Trang cao tối thiểu bằng vùng nhìn thấy: trang có hàng giãn (Tổng quan) lấp hết, không để khoảng trống dưới.</summary>
-    private void FitPageHeight()
-    {
-        var m = PageHost.Margin;
-        PageHost.MinHeight = Math.Max(0, Math.Floor(PageScroll.ActualHeight - m.Top - m.Bottom));
     }
 }
