@@ -49,3 +49,16 @@ PO yêu cầu thêm tính năng chia ổ đĩa. Thay thế mục "Chia/format �
 | Xác minh | Ổ mới tồn tại, NTFS, kích thước ≥ 90% dự kiến; ổ cũ đúng kích thước mới. |
 | Hoàn tác | Không tự hoàn tác; hướng dẫn gộp lại bằng Disk Management. |
 | Rủi ro còn lại | Mất điện giữa lúc thu nhỏ có thể hỏng dữ liệu; chưa kiểm thử trên máy thật nhiều cấu hình (ổ BitLocker, MBR). Chỉ dùng trên máy thử nghiệm cho đến khi kiểm thử xong. |
+
+## Cập nhật 18/10/2026 — Cho phép tắt BitLocker (bản 0.6.0)
+
+PO yêu cầu thêm "tắt BitLocker" vào mô-đun Tối ưu Windows. Tài liệu 03 chỉ cấm **tự** giải mã BitLocker; tính năng này chạy khi kỹ thuật viên xác nhận riêng.
+
+| Điểm | Quyết định |
+|---|---|
+| Cách làm | `Win32_EncryptableVolume.Decrypt` (chạy cả Windows Home/Device Encryption). Giải mã chạy nền trong Windows. |
+| Điều kiện | Quyền quản trị; ổ đang mã hóa (trạng thái 1, 2, 4). Ổ dữ liệu trước; ổ Windows chỉ khi mọi ổ dữ liệu đã giải mã xong (mới xóa khóa tự mở khóa). |
+| Xác nhận | Hộp xác nhận cảnh báo đỏ, bắt buộc tick "Khách hàng đã đồng ý tắt mã hóa ổ đĩa". Không bao giờ trong gói nhanh. |
+| Xác minh | Trạng thái chuyển sang "đang giải mã" hoặc "đã giải mã". |
+| Bảo mật | Không đọc, hiển thị, ghi log khóa khôi phục. Không tự bật lại; hướng dẫn bật lại trong Settings/Control Panel. |
+| Rủi ro còn lại | Dữ liệu không còn được mã hóa sau khi tắt; chưa kiểm thử trên máy thật có nhiều ổ mã hóa. |

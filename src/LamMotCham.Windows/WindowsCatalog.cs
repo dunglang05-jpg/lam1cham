@@ -51,6 +51,18 @@ public static class WindowsCatalog
         SelectedByDefault = false,
     };
 
+    /// <summary>Tắt BitLocker một ổ: chỉ tạo sau khi xác nhận riêng; không bao giờ nằm trong gói nhanh.</summary>
+    public static TaskCatalogEntry TurnOffBitLocker(BitLockerVolume volume) => new()
+    {
+        Module = new BitLockerOffTask(volume.Letter, volume.IsOsVolume),
+        Category = TaskCategory.WindowsSettings,
+        Group = GroupPrivacy,
+        Description = "Giải mã ổ đĩa. Dữ liệu không còn được BitLocker bảo vệ.",
+        Impact = TaskImpact.Medium,
+        IconKey = "lock",
+        SelectedByDefault = false,
+    };
+
     /// <summary>Chia ổ (R3): chỉ tạo sau khi xem trước và xác nhận riêng; không bao giờ nằm trong gói nhanh.</summary>
     public static TaskCatalogEntry SplitDisk(DiskSplitPlan plan) => new()
     {

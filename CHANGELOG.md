@@ -2,6 +2,24 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.6.0 — 18/10/2026
+
+**Khung ứng dụng (`shell`) 0.4.0**
+- Màn hình khởi động có thanh tiến trình và từng bước thật: nạp giao diện, đọc cấu hình máy, đọc pin, kiểm tra mạng, kiểm tra WinGet. Hiện thời gian khởi động.
+
+**Tổng quan (`overview`) 0.4.0** — tăng tốc
+- Cấu hình máy và pin đọc bằng API Windows (registry, bộ nhớ, ổ đĩa, nguồn điện), không qua PowerShell: thường dưới 0,1 giây thay vì nhiều giây. WinGet kiểm tra song song.
+- Dữ liệu kiểm tra đầy đủ nạp chạy nền ngay sau khi mở: script chia 4 nhóm chạy song song; truy vấn thiết bị lọc bằng WQL thay vì đọc toàn bộ danh sách PnP. Khung Thông tin máy hiện "Đang nạp dữ liệu kiểm tra n/4".
+
+**Kiểm tra & Bàn giao (`handover`) 0.3.2** — tăng tốc
+- Lượt kiểm tra chỉ đọc dùng lại dữ liệu đã nạp nền nếu còn mới (3 phút); lượt có thay đổi máy luôn đọc lại.
+- Pin: hiện thêm "đang cắm sạc".
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.3.0** — tính năng mới: Tắt BitLocker
+- Khung "Mã hóa ổ đĩa (BitLocker)": đọc trạng thái từng ổ khi mở trang (cần quyền quản trị).
+- "Tắt BitLocker…" mở hộp xác nhận riêng (cảnh báo đỏ, bắt buộc tick khách đồng ý). Giải mã chạy nền trong Windows; tác vụ xác minh Windows đã bắt đầu giải mã.
+- Ổ dữ liệu tắt trước; ổ Windows chỉ tắt khi ổ dữ liệu đã giải mã xong (tránh ổ dữ liệu bị khóa ở lần khởi động sau). Không đọc, hiển thị hay ghi log khóa khôi phục. Không bao giờ nằm trong gói nhanh.
+
 ## 0.5.0 — 18/10/2026
 
 **Ổ đĩa & Tài khoản (`disk`) 0.3.0** — tính năng mới: Chia ổ đĩa

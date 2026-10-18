@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
         xmlns:views="clr-namespace:LamMotCham.App.Views"
+        xmlns:c="clr-namespace:LamMotCham.App.Controls"
         xmlns:pages="clr-namespace:LamMotCham.App.Views.Pages"
         xmlns:dialogs="clr-namespace:LamMotCham.App.Views.Dialogs"
         Title="Làm 1 Chạm"
@@ -165,6 +166,51 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ContentControl Content="{Binding Dialog}" Focusable="False" />
                 </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- MÀN HÌNH KHỞI ĐỘNG: các bước nạp thật (cấu hình, pin, mạng, WinGet) -->
+        <Grid Grid.RowSpan="2" Background="{StaticResource BackgroundBrush}" Visibility="{Binding Machine.IsStarting, Converter={StaticResource Vis}}">
+            <Border MaxWidth="520" Margin="24" Background="{StaticResource SurfaceBrush}" CornerRadius="16" Padding="32,28"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" AutomationProperties.Name="Đang khởi động">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="40" ShadowDepth="6" Opacity="0.14" Color="#10213F" />
+                </Border.Effect>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="pack://application:,,,/Assets/logo.png" Width="52" Height="52" Style="{StaticResource IconImage}" />
+                        <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Làm 1 Chạm" FontSize="24" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
+                                <Border Margin="10,0,0,0" Padding="7,1" CornerRadius="6" Background="{StaticResource PrimaryTintBrush}" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding AppVersion}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Một chạm – Sẵn sàng sử dụng" FontSize="13" Foreground="{StaticResource Text2Brush}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <ProgressBar Style="{StaticResource ThinProgress}" Value="{Binding Machine.StartupPercent, Mode=OneWay}" Maximum="100" Margin="0,24,0,0"
+                                 AutomationProperties.Name="Tiến độ khởi động" />
+                    <TextBlock Text="{Binding Machine.StartupText}" FontSize="13" Foreground="{StaticResource Text3Brush}" Margin="0,8,0,10" />
+                    <ItemsControl ItemsSource="{Binding Machine.StartupSteps}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:StartupStep}">
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis"
+                                                   Visibility="{Binding Detail, Converter={StaticResource NotEmpty}}" />
+                                    </StackPanel>
+                                    <c:StatusChip Grid.Column="1" State="{Binding StateKey}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>

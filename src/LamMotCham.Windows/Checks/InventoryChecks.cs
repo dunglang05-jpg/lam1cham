@@ -246,7 +246,12 @@ public static class InventoryChecks
         }
 
         var charge = InventorySnapshot.Num(bats[0], "charge");
-        var text = $"Đang ở {charge}%";
+        var text = $"Đang ở {charge}%" + (InventorySnapshot.Num(bats[0], "status") == 2 ? " · đang cắm sạc" : "");
+        if (s.IsQuick)
+        {
+            return VerifyResult.Passed(text + ". Độ chai pin đọc khi nạp xong dữ liệu kiểm tra.");
+        }
+
         if (s.Obj("batteryCapacity") is { } cap &&
             InventorySnapshot.Num(cap, "design") is { } design && design > 0 &&
             InventorySnapshot.Num(cap, "full") is { } full)

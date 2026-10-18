@@ -61,7 +61,7 @@ public partial class App : Application, IUiPlatform
         MainWindow = window;
         window.Show();
         _main.StartTicker();
-        window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, () => _main.Machine.CheckCommand.Execute(null));
+        window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, async () => await _main.Machine.StartupAsync());
     }
 
     protected override void OnExit(ExitEventArgs e)

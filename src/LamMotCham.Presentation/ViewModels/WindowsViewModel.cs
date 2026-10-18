@@ -1,7 +1,9 @@
 using LamMotCham.Presentation.Mvvm;
 using LamMotCham.Core.Logging;
 using LamMotCham.Core.Tasks;
+using System.Collections.ObjectModel;
 using LamMotCham.Windows;
+using LamMotCham.Windows.Config;
 
 namespace LamMotCham.Presentation.ViewModels;
 
@@ -16,6 +18,8 @@ public sealed class WindowsViewModel : ObservableObject
     private readonly MainViewModel _main;
     private readonly List<TaskRowViewModel> _rows;
     private bool _statesLoaded;
+    private bool _bitLockerReading;
+    private string _bitLockerMessage = "Mở trang với quyền quản trị để đọc trạng thái BitLocker.";
 
     public WindowsViewModel(MainViewModel main)
     {
@@ -29,8 +33,12 @@ public sealed class WindowsViewModel : ObservableObject
             {
                 _statesLoaded = true;
                 _ = main.Machine.RefreshCurrentStatesAsync(TaskCategory.WindowsSettings);
+                _ = ReadBitLockerAsync();
             }
         };
+        ReadBitLockerCommand = new AsyncCommand(ReadBitLockerAsync, () => !_bitLockerReading && !main.IsRunning);
+        TurnOffBitLockerCommand = new RelayCommand(AskTurnOffBitLocker,
+            () => !_bitLockerReading && !main.IsRunning && BitLockerVolumes.Any(v => v.CanTurnOff));
         (string Title, string Desc, string Icon)[] groups =
         [
             (WindowsCatalog.GroupMaintenance, "Giờ hệ thống và trạng thái cập nhật.", "refresh"),
@@ -84,6 +92,104 @@ public sealed class WindowsViewModel : ObservableObject
     public RelayCommand UndoCommand { get; }
 
     public RelayCommand ShowErrorCommand { get; }
+
+    public AsyncCommand ReadBitLockerCommand { get; }
+
+    public RelayCommand TurnOffBitLockerCommand { get; }
+
+    /// <summary>Trạng thái BitLocker từng ổ.</summary>
+    public ObservableCollection<BitLockerVolume> BitLockerVolumes { get; } = [];
+
+    public string BitLockerMessage
+    {
+        get => _bitLockerMessage;
+        private set => Set(ref _bitLockerMessage, value);
+    }
+
+    public bool BitLockerReading
+    {
+        get => _bitLockerReading;
+        private set
+        {
+            if (Set(ref _bitLockerReading, value))
+            {
+                OnPropertyChanged(nameof(BitLockerReadLabel));
+                Commands.InvalidateAll();
+            }
+        }
+    }
+
+    public string BitLockerReadLabel => _bitLockerReading ? "Đang đọc…" : "Đọc lại";
+
+    private async Task ReadBitLockerAsync()
+    {
+        if (!_main.IsElevated)
+        {
+            BitLockerMessage = "Cần quyền quản trị để đọc và tắt BitLocker. Bấm “Nâng quyền quản trị…” ở thanh trên.";
+            return;
+        }
+
+        BitLockerReading = true;
+        try
+        {
+            var (volumes, error) = await Task.Run(() => BitLockerReader.ReadAsync(CancellationToken.None));
+            BitLockerVolumes.Clear();
+            foreach (var v in volumes)
+            {
+                BitLockerVolumes.Add(v);
+            }
+
+            BitLockerMessage = error
+                ?? (volumes.Count == 0 ? "Không có ổ nào hỗ trợ BitLocker."
+                : volumes.Any(v => v.CanTurnOff) ? "Có ổ đang được mã hóa. Chỉ tắt khi khách yêu cầu."
+                : volumes.Any(v => v.Conversion is 3 or 5) ? "Đang giải mã nền. Có thể đóng ứng dụng, Windows tự giải mã tiếp."
+                : "Không ổ nào đang mã hóa.");
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.Text.Json.JsonException or System.ComponentModel.Win32Exception or IOException)
+        {
+            BitLockerMessage = "Không đọc được BitLocker: " + ex.Message;
+        }
+        finally
+        {
+            BitLockerReading = false;
+        }
+    }
+
+    private void AskTurnOffBitLocker()
+    {
+        // Ổ dữ liệu trước, ổ Windows sau cùng.
+        var targets = BitLockerVolumes.Where(v => v.CanTurnOff).OrderBy(v => v.IsOsVolume).ThenBy(v => v.Letter).ToList();
+        if (targets.Count == 0)
+        {
+            return;
+        }
+
+        var names = string.Join(", ", targets.Select(v => v.Letter + ":"));
+        var hasData = targets.Any(v => !v.IsOsVolume);
+        var hasOs = targets.Any(v => v.IsOsVolume);
+        _main.ShowDialog(new ConfirmDialogViewModel(_main, "Tắt BitLocker", "lock", "Tắt BitLocker", async () =>
+        {
+            var rows = targets.Select(v => new TaskRowViewModel(WindowsCatalog.TurnOffBitLocker(v)) { IsSelected = true }).ToList();
+            await _main.RunAsync(rows, "Tắt BitLocker");
+            await ReadBitLockerAsync();
+        }, "Hủy")
+        {
+            Lead = $"Giải mã ổ {names}. Windows giải mã chạy nền, có thể mất từ vài phút đến hơn một giờ tùy dung lượng; máy vẫn dùng bình thường.",
+            Facts =
+            [
+                .. targets.Select(v => new DialogFact($"Ổ {v.Letter}:" + (v.IsOsVolume ? " (Windows)" : ""), v.StateText)),
+                new DialogFact("Thứ tự", hasData && hasOs
+                    ? "Ổ dữ liệu trước. Ổ Windows chỉ tắt được khi ổ dữ liệu đã giải mã xong — nếu chưa, bấm lại sau."
+                    : "Lần lượt từng ổ."),
+                new DialogFact("Khóa khôi phục", "Ứng dụng không đọc, hiển thị hay ghi log khóa khôi phục."),
+                new DialogFact("Bật lại", "Settings › Privacy & security › Device encryption, hoặc Control Panel › BitLocker."),
+            ],
+            Warning = "Sau khi tắt, dữ liệu trên ổ không còn được mã hóa: nếu máy bị mất, người khác có thể đọc được. Chỉ tắt khi khách yêu cầu.",
+            WarningIsDanger = true,
+            RequireAgreement = true,
+            AgreementText = "Khách hàng đã đồng ý tắt mã hóa ổ đĩa.",
+        });
+    }
 
     public int SelectedCount => _rows.Count(r => r.IsSelected && r.IsSelectable);
 

@@ -17,6 +17,9 @@ public sealed class InventorySnapshot
 
     public DateTimeOffset CollectedAt { get; }
 
+    /// <summary>true: bản đọc nhanh lúc mở ứng dụng (chưa có dữ liệu kiểm tra đầy đủ).</summary>
+    public bool IsQuick => string.Equals(Str("source"), QuickProbe.SourceQuick, StringComparison.Ordinal);
+
     public IReadOnlyList<string> Errors { get; }
 
     public string? ErrorFor(string section) =>

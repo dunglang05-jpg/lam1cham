@@ -396,7 +396,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             RunRows.Add(r);
         }
 
-        S.Inventory.Invalidate();
+        // Lượt chỉ đọc dùng lại dữ liệu đã nạp nếu còn mới (vài phút); lượt có thay đổi máy luôn đọc lại sau đó.
+        var changesMachine = rows.Any(r => !r.IsReadOnly);
+        if (changesMachine)
+        {
+            S.Inventory.Invalidate();
+        }
+
         var byId = rows.ToDictionary(r => r.Id, StringComparer.Ordinal);
         var progress = new Progress<TaskStatusUpdate>(u =>
         {
@@ -431,6 +437,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 {
                     row.Apply(outcome);
                 }
+            }
+
+            if (changesMachine)
+            {
+                S.Inventory.Invalidate();
             }
 
             LastRunReportPath = WriteReport(report, "lượt chạy");

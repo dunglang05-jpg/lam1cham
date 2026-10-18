@@ -38,6 +38,20 @@ public sealed class MetricViewModel(string iconKey, string label) : ObservableOb
     public string Time { get => _time; set => Set(ref _time, value); }
 }
 
+/// <summary>Một bước trên màn hình khởi động (trạng thái thật của từng bước nạp).</summary>
+public sealed class StartupStep(string title) : ObservableObject
+{
+    private string _stateKey = "pending";
+    private string _detail = "";
+
+    public string Title { get; } = title;
+
+    /// <summary>pending, running, success, attention.</summary>
+    public string StateKey { get => _stateKey; set => Set(ref _stateKey, value); }
+
+    public string Detail { get => _detail; set => Set(ref _detail, value); }
+}
+
 /// <summary>Thông tin máy và tài nguyên. Không giả định đã kiểm tra khi chưa đọc được dữ liệu.</summary>
 public sealed class MachineViewModel : ObservableObject
 {
@@ -51,11 +65,59 @@ public sealed class MachineViewModel : ObservableObject
     private string? _winGetVersion;
     private bool _winGetChecked;
     private int _tick;
+    private bool _isStarting = true;
+    private double _startupPercent;
+    private string _startupText = "Đang khởi động…";
+    private bool _inventoryLoading;
+    private string _inventoryStatus = "";
 
     public MachineViewModel(MainViewModel main)
     {
         _main = main;
-        CheckCommand = new AsyncCommand(CheckAsync, () => !_isChecking && !main.IsRunning);
+        CheckCommand = new AsyncCommand(CheckAsync, () => !_isChecking && !_isStarting && !main.IsRunning);
+        StartupSteps =
+        [
+            new("Nạp giao diện và mô-đun"),
+            new("Đọc cấu hình máy"),
+            new("Đọc pin và nguồn điện"),
+            new("Kiểm tra kết nối mạng"),
+            new("Kiểm tra WinGet"),
+        ];
+    }
+
+    /// <summary>Đang hiện màn hình khởi động.</summary>
+    public bool IsStarting
+    {
+        get => _isStarting;
+        private set => Set(ref _isStarting, value);
+    }
+
+    public ObservableCollection<StartupStep> StartupSteps { get; }
+
+    public double StartupPercent
+    {
+        get => _startupPercent;
+        private set => Set(ref _startupPercent, value);
+    }
+
+    public string StartupText
+    {
+        get => _startupText;
+        private set => Set(ref _startupText, value);
+    }
+
+    /// <summary>Đang nạp dữ liệu kiểm tra đầy đủ chạy nền.</summary>
+    public bool InventoryLoading
+    {
+        get => _inventoryLoading;
+        private set => Set(ref _inventoryLoading, value);
+    }
+
+    /// <summary>Trạng thái dữ liệu kiểm tra nền, ví dụ "Đang nạp dữ liệu kiểm tra 2/4…".</summary>
+    public string InventoryStatus
+    {
+        get => _inventoryStatus;
+        private set => Set(ref _inventoryStatus, value);
     }
 
     public AsyncCommand CheckCommand { get; }
@@ -122,6 +184,63 @@ public sealed class MachineViewModel : ObservableObject
             ? c + (_snapshot.Str("osDisplayVersion") is { Length: > 0 } dv ? " " + dv : "")
             : "Windows";
 
+    /// <summary>
+    /// Màn hình khởi động: đọc nhanh cấu hình và pin bằng API Windows (không PowerShell), kiểm tra mạng và WinGet song song,
+    /// rồi nạp dữ liệu kiểm tra đầy đủ chạy nền. Mỗi bước hiện trạng thái thật.
+    /// </summary>
+    public async Task StartupAsync()
+    {
+        var started = DateTimeOffset.Now;
+        IsStarting = true;
+        try
+        {
+            Step(0, "success", "Sẵn sàng");
+            Step(1, "running", "");
+            StartupText = "Đang đọc cấu hình máy…";
+
+            // WinGet chậm nhất: bắt đầu song song ngay.
+            var winget = Task.Run(() => ReadWinGetAsync());
+
+            var data = await Task.Run(QuickProbe.ReadSystem);
+            Snapshot = QuickProbe.ToSnapshot(data);
+            Step(1, "success", $"{Snapshot.Str("cpu") ?? "CPU"} · {(Snapshot.Num("totalRamBytes") is { } ram ? CleanupTask.FormatBytes(ram) : "RAM?")}");
+
+            Step(2, "running", "");
+            StartupText = "Đang đọc pin…";
+            await Task.Run(() => QuickProbe.ReadBattery(data));
+            Snapshot = QuickProbe.ToSnapshot(data);
+            Step(2, "success", InventoryChecks.Battery(Snapshot).Detail ?? "");
+
+            Step(3, "running", "");
+            var online = await Task.Run(NetworkInterface.GetIsNetworkAvailable);
+            Step(3, online ? "success" : "attention", online ? "Đã kết nối" : "Không có kết nối — cài phần mềm sẽ cần mạng");
+
+            Step(4, "running", "");
+            StartupText = "Đang kiểm tra WinGet…";
+            await winget;
+            Step(4, WinGetAvailable ? "success" : "attention", WinGetAvailable ? _winGetVersion! : "Không khả dụng — cần App Installer để cài phần mềm");
+
+            FinishRead();
+            StartupText = $"Sẵn sàng sau {(DateTimeOffset.Now - started).TotalSeconds.ToString("0.0", Vi)} giây";
+            _main.S.Log.Info($"Khởi động: đọc thông tin cơ bản mất {(DateTimeOffset.Now - started).TotalMilliseconds:0} ms.");
+            await Task.Delay(350);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            _main.S.Log.Error("Khởi động: " + ex.Message);
+            StartupText = "Không đọc được một phần thông tin máy. Có thể bấm “Đọc lại” sau.";
+            await Task.Delay(1200);
+        }
+        finally
+        {
+            IsStarting = false;
+            Commands.InvalidateAll();
+        }
+
+        _ = LoadFullInventoryAsync();
+    }
+
+    /// <summary>Nút "Đọc lại": đọc nhanh cấu hình, pin, WinGet; sau đó nạp lại dữ liệu kiểm tra chạy nền.</summary>
     public async Task CheckAsync()
     {
         if (IsChecking || _main.IsRunning)
@@ -132,31 +251,95 @@ public sealed class MachineViewModel : ObservableObject
         IsChecking = true;
         try
         {
-            _main.S.Inventory.Invalidate();
-            Snapshot = await Task.Run(() => _main.S.Inventory.GetAsync(CancellationToken.None));
-            _winGetVersion = await Task.Run(() => _main.S.WinGet.GetVersionAsync(CancellationToken.None));
-            _winGetChecked = true;
-            OnPropertyChanged(nameof(WinGetAvailable));
-            OnPropertyChanged(nameof(WinGetMissing));
-            OnPropertyChanged(nameof(WinGetVersion));
-            OnPropertyChanged(nameof(WindowsShort));
-            _main.NotifyWindowsLabel();
-            CheckedAt = DateTimeOffset.Now.ToString("HH:mm · dd/MM/yyyy", Vi);
-            Checked = true;
-            BuildStatus();
-            RefreshResources(force: true);
-            foreach (var err in Snapshot.Errors)
-            {
-                _main.S.Log.Warning("Thu thập thông tin: " + err);
-            }
+            var winget = Task.Run(() => ReadWinGetAsync());
+            Snapshot = await Task.Run(QuickProbe.Read);
+            await winget;
+            FinishRead();
         }
         finally
         {
             IsChecking = false;
         }
 
-        // Chỉ đọc cấu hình và pin. Các bước kiểm tra đầy đủ chạy khi kỹ thuật viên bấm thực hiện ở mô-đun Kiểm tra & Bàn giao;
-        // trạng thái cài phần mềm đọc khi bấm "Kiểm tra trạng thái cài" (WinGet chậm).
+        _main.S.Inventory.Invalidate();
+        _ = LoadFullInventoryAsync();
+    }
+
+    /// <summary>
+    /// Nạp dữ liệu kiểm tra đầy đủ (các nhóm PowerShell chạy song song) mà không chặn giao diện.
+    /// Kiểm tra bàn giao và trang Ổ đĩa dùng lại dữ liệu này nếu còn mới.
+    /// </summary>
+    public async Task LoadFullInventoryAsync()
+    {
+        if (InventoryLoading)
+        {
+            return;
+        }
+
+        InventoryLoading = true;
+        var total = InventoryProvider.GroupCount;
+        InventoryStatus = $"Đang nạp dữ liệu kiểm tra 0/{total}…";
+        var started = DateTimeOffset.Now;
+        try
+        {
+            var progress = new Progress<int>(n => InventoryStatus = $"Đang nạp dữ liệu kiểm tra {n}/{total}…");
+            var full = await Task.Run(() => _main.S.Inventory.GetAsync(progress, CancellationToken.None));
+            Snapshot = full;
+            BuildStatus();
+            OnPropertyChanged(nameof(WindowsShort));
+            _main.NotifyWindowsLabel();
+            InventoryStatus = $"Dữ liệu kiểm tra sẵn sàng ({(DateTimeOffset.Now - started).TotalSeconds.ToString("0.0", Vi)} giây)";
+            foreach (var err in full.Errors)
+            {
+                _main.S.Log.Warning("Thu thập thông tin: " + err);
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            InventoryStatus = "Chưa nạp được dữ liệu kiểm tra — sẽ thử lại khi bấm Bắt đầu kiểm tra.";
+            _main.S.Log.Warning("Nạp dữ liệu kiểm tra: " + ex.Message);
+        }
+        finally
+        {
+            InventoryLoading = false;
+        }
+    }
+
+    private async Task ReadWinGetAsync()
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            _winGetVersion = await _main.S.WinGet.GetVersionAsync(cts.Token);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or InvalidOperationException or System.ComponentModel.Win32Exception or IOException)
+        {
+            _winGetVersion = null;
+            _main.S.Log.Warning("Không đọc được phiên bản WinGet: " + ex.Message);
+        }
+
+        _winGetChecked = true;
+    }
+
+    private void FinishRead()
+    {
+        OnPropertyChanged(nameof(WinGetAvailable));
+        OnPropertyChanged(nameof(WinGetMissing));
+        OnPropertyChanged(nameof(WinGetVersion));
+        OnPropertyChanged(nameof(WindowsShort));
+        _main.NotifyWindowsLabel();
+        CheckedAt = DateTimeOffset.Now.ToString("HH:mm · dd/MM/yyyy", Vi);
+        Checked = true;
+        BuildStatus();
+        RefreshResources(force: true);
+    }
+
+    private void Step(int index, string state, string detail)
+    {
+        StartupSteps[index].StateKey = state;
+        StartupSteps[index].Detail = detail;
+        var done = StartupSteps.Count(s => s.StateKey is "success" or "attention");
+        StartupPercent = done * 100.0 / StartupSteps.Count;
     }
 
     /// <summary>Đọc trạng thái hiện tại của các mục; <paramref name="only"/> giới hạn theo nhóm.</summary>

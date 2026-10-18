@@ -100,6 +100,8 @@
                                 <Run Text="Đã kiểm tra lúc" /> <Run Text="{Binding Machine.CheckedAt, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
+                        <TextBlock Text="{Binding Machine.InventoryStatus}" Style="{StaticResource Meta}" Margin="22,4,0,0"
+                                   Visibility="{Binding Machine.InventoryStatus, Converter={StaticResource NotEmpty}}" />
                     </StackPanel>
                 </StackPanel>
             </Border>

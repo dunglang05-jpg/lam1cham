@@ -11,7 +11,7 @@ Nguồn sự thật về tên và phiên bản: `src/LamMotCham.Presentation/Mod
 | Id | Mô-đun | File thuộc mô-đun |
 |---|---|---|
 | `shell` | Khung ứng dụng | `App/MainWindow.xaml`, `App/Themes/Theme.xaml`, `App/Views/RunOverlay.xaml`, `Presentation/ViewModels/MainViewModel.cs` |
-| `overview` | Tổng quan & Gói nhanh | `App/Views/Pages/OverviewPage.xaml`, `Presentation/ViewModels/OverviewViewModel.cs`, `MachineViewModel.cs` |
+| `overview` | Tổng quan & Gói nhanh | `App/Views/Pages/OverviewPage.xaml`, `Presentation/ViewModels/OverviewViewModel.cs`, `MachineViewModel.cs`, `Windows/Probe/*` |
 | `software` | Phần mềm thiết yếu | `App/Views/Pages/SoftwarePage.xaml`, `Presentation/ViewModels/SoftwareViewModel.cs`, `Windows/Software/*` (trừ danh mục) |
 | `windows` | Cài đặt & Tối ưu Windows | `App/Views/Pages/WindowsPage.xaml`, `Presentation/ViewModels/WindowsViewModel.cs`, `Windows/Config/*` (trừ đổi tên máy) |
 | `disk` | Ổ đĩa & Tài khoản | `App/Views/Pages/DiskPage.xaml`, `Presentation/ViewModels/DiskViewModel.cs`, `Windows/Config/RenameComputerTask.cs` |
