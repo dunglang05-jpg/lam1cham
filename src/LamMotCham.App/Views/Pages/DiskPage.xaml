@@ -6,7 +6,7 @@
     <StackPanel>
         <!-- Mô-đun "disk" (QĐ-002) -->
         <c:PageHeader IconKey="disk" Heading="Ổ đĩa &amp; Tài khoản" ModuleLabel="{Binding Module.Label}"
-                      Description="Chỉ đọc thông tin ổ đĩa. Làm 1 Chạm không tự chia ổ, định dạng, giải mã BitLocker hay xóa tài khoản." />
+                      Description="Xem ổ đĩa, chia ổ có xem trước và xác nhận, đổi tên máy. Không định dạng ổ có sẵn, không giải mã BitLocker, không xóa tài khoản." />
 
         <Border Style="{StaticResource CardFlush}" Margin="0,0,0,16">
             <StackPanel>
@@ -50,6 +50,99 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- Chia ổ đĩa (R3): xem trước, xác nhận riêng; chỉ thu nhỏ ổ có sẵn và tạo ổ mới từ phần trống -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,14">
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=pie}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
+                    <Button DockPanel.Dock="Right" Style="{StaticResource TertiaryButton}" FontSize="12" Content="Mở Disk Management" Command="{Binding OpenDiskManagementCommand}" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Chia ổ đĩa" Style="{StaticResource H3}" />
+                        <TextBlock Text="Thu nhỏ ổ có sẵn và tạo ổ mới từ phần trống. Dữ liệu trên ổ cũ được giữ nguyên." Style="{StaticResource Secondary}" />
+                    </StackPanel>
+                </DockPanel>
+                <c:SplitPanel SideWidth="0" StackBelow="720" Gap="20">
+                    <!-- Nhập -->
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Ổ cần chia" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <ComboBox ItemsSource="{Binding SplitSources}" SelectedItem="{Binding SplitSource}" MinHeight="40" AutomationProperties.Name="Ổ cần chia" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Dung lượng ổ mới (GB)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6" />
+                                <TextBox Text="{Binding SplitSizeText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Dung lượng ổ mới tính bằng GB" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="Tên ổ mới" FontSize="13" FontWeight="SemiBold" Margin="0,12,0,6" />
+                        <TextBox Text="{Binding SplitLabel, UpdateSourceTrigger=PropertyChanged}" MaxLength="32" AutomationProperties.Name="Tên ổ mới" />
+                        <TextBlock Text="Ổ cũ luôn được chừa trống ít nhất 30 GB. Ổ mới định dạng NTFS, tự nhận ký tự còn trống." Style="{StaticResource Secondary}" Margin="0,8,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Style="{StaticResource SecondaryButton}" Command="{Binding PreviewSplitCommand}" Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=eye}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                                    <TextBlock Text="{Binding PreviewLabel}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource PrimaryButton}" Command="{Binding SplitCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Style="{StaticResource WhiteIconChip}" Width="24" Height="24" Margin="0,0,8,0">
+                                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=disk}" Width="18" Height="18" Style="{StaticResource IconImage}" />
+                                    </Border>
+                                    <TextBlock Text="Chia ổ…" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Xem trước -->
+                    <Border Background="{StaticResource SubtleBrush}" CornerRadius="12" Padding="16,14">
+                        <StackPanel>
+                            <TextBlock Text="Xem trước" FontSize="13" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" Margin="0,0,0,8" />
+                            <TextBlock Text="{Binding PlanMessage}" FontSize="13" Foreground="{StaticResource Text3Brush}" TextWrapping="Wrap" />
+                            <ItemsControl ItemsSource="{Binding PlanRows}" Margin="0,10,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:InfoRow}">
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Label}" FontSize="13" Foreground="{StaticResource Text2Brush}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding PlanErrors}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource ErrorTintBrush}" BorderBrush="{StaticResource ErrorLineBrush}" BorderThickness="1" CornerRadius="8" Padding="10,6" Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding}" FontSize="12" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding PlanWarnings}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource WarningTintBrush}" CornerRadius="8" Padding="10,6" Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding}" FontSize="12" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </c:SplitPanel>
             </StackPanel>
         </Border>
 

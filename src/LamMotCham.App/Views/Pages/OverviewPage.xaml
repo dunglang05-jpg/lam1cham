@@ -5,7 +5,7 @@
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
     <!-- Mô-đun "overview" (QĐ-002) -->
     <StackPanel>
-        <c:SplitPanel SideWidth="340" StackBelow="900" Gap="18" Margin="0,0,0,18">
+        <c:SplitPanel SideWidth="330" StackBelow="800" Gap="18" Margin="0,0,0,18">
 
             <!-- Thẻ giới thiệu -->
             <Border CornerRadius="14" BorderBrush="#DCE6F7" BorderThickness="1" Padding="30,24" MinHeight="228">
@@ -76,6 +76,11 @@
                     <!-- Đã kiểm tra -->
                     <StackPanel Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}">
                         <ItemsControl ItemsSource="{Binding Machine.Status}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <c:AdaptiveGrid MinItemWidth="270" MaxColumns="3" Gap="24" RowGap="2" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:InfoRow}">
                                     <Grid Margin="0,0,0,7">
@@ -108,7 +113,7 @@
                               AutomationProperties.Name="Gói thiết lập">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <c:AdaptiveGrid MinItemWidth="210" MaxColumns="4" Gap="14" />
+                            <c:AdaptiveGrid MinItemWidth="185" MaxColumns="4" Gap="14" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>

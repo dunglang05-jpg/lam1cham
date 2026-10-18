@@ -12,7 +12,7 @@ public enum RiskLevel
     /// <summary>R2 — cài hoặc gỡ phần mềm.</summary>
     SoftwareChange = 2,
 
-    /// <summary>R3 — có thể gây mất dữ liệu. Không có trong MVP.</summary>
+    /// <summary>R3 — có thể gây mất dữ liệu (ví dụ chia ổ đĩa). Chỉ chạy khi người dùng xác nhận riêng (<see cref="TaskDescriptor.RequiresConfirmation"/>).</summary>
     Destructive = 3,
 }
 
@@ -82,6 +82,12 @@ public sealed record TaskDescriptor
     /// <summary>Bắt buộc khi <see cref="Rollback"/> là <see cref="RollbackSupport.NotPossible"/>.</summary>
     public string? RollbackNote { get; init; }
 
+    /// <summary>
+    /// Task chỉ được tạo sau khi người dùng xem trước và xác nhận riêng; không bao giờ nằm trong gói nhanh.
+    /// Bắt buộc với mức <see cref="RiskLevel.Destructive"/>.
+    /// </summary>
+    public bool RequiresConfirmation { get; init; }
+
     /// <summary>Trả về danh sách lỗi khai báo; rỗng nghĩa là hợp lệ.</summary>
     public IReadOnlyList<string> Validate()
     {
@@ -131,9 +137,14 @@ public sealed record TaskDescriptor
             errors.Add($"Task '{Id}': task thay đổi hệ thống phải khai báo rollback hoặc lý do không thể rollback.");
         }
 
-        if (Risk == RiskLevel.Destructive)
+        if (Risk == RiskLevel.Destructive && !RequiresConfirmation)
         {
-            errors.Add($"Task '{Id}': task mức R3 không được phép trong MVP.");
+            errors.Add($"Task '{Id}': task mức R3 phải khai báo RequiresConfirmation (xem trước và xác nhận riêng).");
+        }
+
+        if (Risk == RiskLevel.Destructive && AllowForcedStop)
+        {
+            errors.Add($"Task '{Id}': task mức R3 không được cưỡng chế dừng giữa chừng (AllowForcedStop = false).");
         }
 
         if (DependsOn is null)

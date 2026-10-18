@@ -2,6 +2,20 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.5.0 — 18/10/2026
+
+**Ổ đĩa & Tài khoản (`disk`) 0.3.0** — tính năng mới: Chia ổ đĩa
+- Chọn ổ (NTFS), nhập dung lượng ổ mới (GB) và tên ổ → "Xem trước" hiện con số trước/sau khi chia, dung lượng tối đa tách được và lý do nếu chưa chia được.
+- "Chia ổ…" mở hộp xác nhận riêng (cảnh báo đỏ, bắt buộc tick đã sao lưu, máy cắm sạc). Thu nhỏ ổ có sẵn rồi tạo ổ NTFS mới từ phần trống; không xóa hay định dạng phân vùng cũ.
+- Quy tắc an toàn: ổ cũ luôn còn trống ít nhất 30 GB (hoặc 15%); ổ mới từ 10 GB; chặn ổ không phải NTFS, ổ MBR đã đủ 4 phân vùng, BitLocker đang mã hóa/giải mã; đọc lại phân vùng ngay trước khi chia; xác minh ổ mới sau khi chia.
+- Cần quyền quản trị. Không tự hoàn tác (gộp lại bằng Disk Management).
+
+**Lõi điều phối tác vụ (`engine`) 0.3.0**
+- Cho phép tác vụ mức R3 (có thể mất dữ liệu) khi khai báo RequiresConfirmation và không cho cưỡng chế dừng giữa chừng. Tác vụ R3 không bao giờ nằm trong gói nhanh.
+
+**Tổng quan (`overview`) 0.3.2**, **Khung (`shell`) 0.3.1**
+- Bớt khoảng trống: Thông tin máy chia 2–3 cột khi rộng; thẻ giới thiệu và thông tin máy nằm cạnh nhau ở cửa sổ hẹp hơn; 4 thẻ gói vừa một hàng sớm hơn.
+
 ## 0.4.0 — 18/10/2026
 
 **Khung ứng dụng (`shell`) 0.3.0**

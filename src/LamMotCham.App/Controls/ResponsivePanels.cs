@@ -126,6 +126,10 @@ public sealed class AdaptiveGrid : Panel
     public static readonly DependencyProperty GapProperty = DependencyProperty.Register(
         nameof(Gap), typeof(double), typeof(AdaptiveGrid), new FrameworkPropertyMetadata(14.0, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
+    /// <summary>Khoảng cách giữa các hàng; âm = dùng <see cref="Gap"/>.</summary>
+    public static readonly DependencyProperty RowGapProperty = DependencyProperty.Register(
+        nameof(RowGap), typeof(double), typeof(AdaptiveGrid), new FrameworkPropertyMetadata(-1.0, FrameworkPropertyMetadataOptions.AffectsMeasure));
+
     public double MinItemWidth
     {
         get => (double)GetValue(MinItemWidthProperty);
@@ -144,6 +148,14 @@ public sealed class AdaptiveGrid : Panel
         set => SetValue(GapProperty, value);
     }
 
+    public double RowGap
+    {
+        get => (double)GetValue(RowGapProperty);
+        set => SetValue(RowGapProperty, value);
+    }
+
+    private double VerticalGap => RowGap >= 0 ? RowGap : Gap;
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var width = double.IsInfinity(availableSize.Width) ? MinItemWidth * MaxColumns : availableSize.Width;
@@ -157,7 +169,7 @@ public sealed class AdaptiveGrid : Panel
             rowHeight = Math.Max(rowHeight, items[i].DesiredSize.Height);
             if (i % columns == columns - 1 || i == items.Count - 1)
             {
-                height += rowHeight + (height > 0 ? Gap : 0);
+                height += rowHeight + (height > 0 ? VerticalGap : 0);
                 rowHeight = 0;
             }
         }
@@ -179,7 +191,7 @@ public sealed class AdaptiveGrid : Panel
                 row[j].Arrange(new Rect(j * (itemWidth + Gap), y, itemWidth, rowHeight));
             }
 
-            y += rowHeight + Gap;
+            y += rowHeight + VerticalGap;
         }
 
         return finalSize;

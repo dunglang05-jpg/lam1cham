@@ -346,6 +346,17 @@ public sealed class OrchestratorTests
     }
 
     [Fact]
+    public void Destructive_task_requires_explicit_confirmation_and_no_forced_stop()
+    {
+        var task = new FakeTask("split");
+        var risky = task.Descriptor with { Risk = RiskLevel.Destructive, Rollback = RollbackSupport.NotPossible, RollbackNote = "Không tự hoàn tác." };
+
+        Assert.Contains(risky.Validate(), e => e.Contains("RequiresConfirmation", StringComparison.Ordinal));
+        Assert.Contains(risky.Validate(), e => e.Contains("AllowForcedStop", StringComparison.Ordinal));
+        Assert.Empty((risky with { RequiresConfirmation = true, AllowForcedStop = false }).Validate());
+    }
+
+    [Fact]
     public async Task Waits_for_resources_before_starting()
     {
         var delay = new RecordingDelay();

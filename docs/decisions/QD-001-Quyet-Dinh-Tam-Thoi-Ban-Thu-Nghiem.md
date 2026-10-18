@@ -35,3 +35,17 @@ PO quyết định: từ nay **không áp dụng tài liệu 06 (QA, CI/CD và p
 - Không còn bắt buộc: ghim phiên bản/lock file, kiểm tra định dạng chặn build, ký số, SBOM, quy trình phê duyệt phát hành.
 - Vẫn giữ: workflow GitHub Actions như công cụ build EXE tiện lợi, kèm test tự động để bắt lỗi sớm.
 - Các tài liệu 00–05 vẫn áp dụng, gồm các nguyên tắc an toàn: không tắt Defender/Tường lửa/Windows Update; không tự chia ổ, định dạng, giải mã BitLocker, xóa tài khoản hay khởi động lại khi chưa xác nhận; chỉ báo thành công sau khi xác minh; không ghi dữ liệu nhạy cảm vào log.
+
+## Cập nhật 18/10/2026 — Cho phép chia ổ đĩa (bản 0.5.0)
+
+PO yêu cầu thêm tính năng chia ổ đĩa. Thay thế mục "Chia/format ổ đĩa — ngoài phạm vi MVP" của kế hoạch 07, theo đúng tài liệu 03 ("Chia ổ đĩa phải có xem trước và xác nhận cuối cùng").
+
+| Điểm | Quyết định |
+|---|---|
+| Mức rủi ro | R3 (Destructive). Task R3 phải khai báo `RequiresConfirmation`, `AllowForcedStop = false`; không bao giờ trong gói nhanh. |
+| Cách làm | Chỉ `Resize-Partition` (thu nhỏ) ổ NTFS có sẵn, `New-Partition` từ vùng trống, `Format-Volume` **chỉ** phân vùng vừa tạo. Không xóa/định dạng phân vùng cũ. |
+| Giới hạn | Ổ cũ còn trống ≥ max(30 GB, 15%); chừa 2 GB so với giới hạn thu nhỏ của Windows; ổ mới ≥ 10 GB; chặn FAT/exFAT, MBR đủ 4 phân vùng, BitLocker đang mã hóa/giải mã. |
+| Xác nhận | Xem trước con số cụ thể; hộp xác nhận cảnh báo đỏ, bắt buộc tick "đã sao lưu, máy cắm sạc". Đọc lại phân vùng ngay trước khi chạy. |
+| Xác minh | Ổ mới tồn tại, NTFS, kích thước ≥ 90% dự kiến; ổ cũ đúng kích thước mới. |
+| Hoàn tác | Không tự hoàn tác; hướng dẫn gộp lại bằng Disk Management. |
+| Rủi ro còn lại | Mất điện giữa lúc thu nhỏ có thể hỏng dữ liệu; chưa kiểm thử trên máy thật nhiều cấu hình (ổ BitLocker, MBR). Chỉ dùng trên máy thử nghiệm cho đến khi kiểm thử xong. |

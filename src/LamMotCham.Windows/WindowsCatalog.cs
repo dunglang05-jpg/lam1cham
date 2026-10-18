@@ -2,6 +2,7 @@ using LamMotCham.Core.Tasks;
 using LamMotCham.Windows.Checks;
 using LamMotCham.Windows.Cleanup;
 using LamMotCham.Windows.Config;
+using LamMotCham.Windows.Disk;
 using LamMotCham.Windows.Infrastructure;
 using LamMotCham.Windows.Probe;
 using LamMotCham.Windows.Software;
@@ -47,6 +48,17 @@ public static class WindowsCatalog
         Description = "Tên mới có hiệu lực sau khi khởi động lại.",
         Impact = TaskImpact.Medium,
         IconKey = "laptop",
+        SelectedByDefault = false,
+    };
+
+    /// <summary>Chia ổ (R3): chỉ tạo sau khi xem trước và xác nhận riêng; không bao giờ nằm trong gói nhanh.</summary>
+    public static TaskCatalogEntry SplitDisk(DiskSplitPlan plan) => new()
+    {
+        Module = new DiskSplitTask(plan),
+        Category = TaskCategory.DiskAndAccount,
+        Description = "Thu nhỏ ổ có sẵn và tạo ổ NTFS mới từ phần trống vừa tách.",
+        Impact = TaskImpact.Medium,
+        IconKey = "disk",
         SelectedByDefault = false,
     };
 
