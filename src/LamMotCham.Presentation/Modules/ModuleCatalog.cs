@@ -24,23 +24,23 @@ public sealed record AppModule(string Id, string Name, string ShortName, string 
 /// </summary>
 public static class ModuleCatalog
 {
-    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.6.0", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
+    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.7.0", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
-    public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.5.3", "home", "Thông tin máy, chọn gói thiết lập");
+    public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.6.0", "home", "Thông tin máy, chọn gói thiết lập");
 
-    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.2.2", "download", "Cài qua WinGet, xác minh sau khi cài");
+    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.3.0", "download", "Cài qua WinGet, xác minh sau khi cài");
 
-    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.5.0", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
+    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.6.0", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
 
-    public static AppModule Disk { get; } = new("disk", "Ổ đĩa & Tài khoản", "Ổ đĩa", "0.4.0", "disk", "Xem ổ đĩa, chia ổ, BitLocker, đổi tên máy");
+    public static AppModule Disk { get; } = new("disk", "Ổ đĩa & Tài khoản", "Ổ đĩa", "0.5.0", "disk", "Xem ổ đĩa, chia ổ, BitLocker, đổi tên máy");
 
-    public static AppModule Cleanup { get; } = new("cleanup", "Dọn dẹp & Hiệu năng", "Dọn dẹp", "0.2.0", "sparkle", "Quét và xem trước trước khi xóa");
+    public static AppModule Cleanup { get; } = new("cleanup", "Dọn dẹp & Hiệu năng", "Dọn dẹp", "0.3.0", "sparkle", "Quét và xem trước trước khi xóa");
 
-    public static AppModule Handover { get; } = new("handover", "Kiểm tra & Bàn giao", "Bàn giao", "0.4.0", "clipboard", "Kiểm tra máy, thử phần cứng, báo cáo");
+    public static AppModule Handover { get; } = new("handover", "Kiểm tra & Bàn giao", "Bàn giao", "0.5.0", "clipboard", "Kiểm tra máy, thử phần cứng, báo cáo");
 
     public static AppModule Engine { get; } = new("engine", "Lõi điều phối tác vụ", "Lõi", "0.3.0", "listcheck", "Hàng đợi, xác minh, nhật ký");
 
-    public static AppModule Modules { get; } = new("modules", "Mô-đun & Cập nhật", "Cập nhật", "0.2.0", "refresh", "Phiên bản các mô-đun");
+    public static AppModule Modules { get; } = new("modules", "Mô-đun & Cập nhật", "Cập nhật", "0.3.0", "refresh", "Phiên bản các mô-đun");
 
     public static AppModule Catalog { get; } = new("catalog", "Danh mục phần mềm", "Danh mục", SoftwareCatalog.DataVersion, "list", "Gói WinGet đã duyệt và logo ứng dụng", IsData: true);
 

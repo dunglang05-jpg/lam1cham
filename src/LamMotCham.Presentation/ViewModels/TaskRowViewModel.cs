@@ -55,6 +55,9 @@ public sealed class TaskRowViewModel : ObservableObject
 
     public bool IsReadOnly => Entry.IsReadOnly;
 
+    /// <summary>Nằm trong bộ chọn sẵn (thiết kế: cột "Đề xuất" — Khuyến nghị / Tùy chọn).</summary>
+    public bool IsRecommended => Entry.SelectedByDefault;
+
     public bool IsSelectable => !Entry.IsReadOnly;
 
     public bool NeedsAdmin => Entry.Module.Descriptor.Privilege == PrivilegeLevel.Administrator;

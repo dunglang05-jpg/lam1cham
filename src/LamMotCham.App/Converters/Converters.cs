@@ -63,6 +63,8 @@ public sealed class IconConverter : IValueConverter
         ["memory"] = "data_area",
         ["external"] = "link",
         ["power"] = "arrow_sync",
+        ["puzzle"] = "puzzle_piece",
+        ["history"] = "history",
     };
 
     private static readonly Dictionary<string, ImageSource> Cache = new(StringComparer.OrdinalIgnoreCase);

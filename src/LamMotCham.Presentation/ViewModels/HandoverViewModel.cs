@@ -32,6 +32,10 @@ public sealed class HandoverViewModel : ObservableObject
 
     private readonly MainViewModel _main;
     private bool _issuesReviewed;
+    private double _passPercent;
+    private string _passText = "0%";
+    private string _checklistText = "";
+    private string _summaryTitle = "Chưa kiểm tra";
     private string _summaryPass = "0 Đạt";
     private string _summaryAttention = "0 Cần chú ý";
     private string _summaryUnchecked = "0 Chưa kiểm tra";
@@ -98,6 +102,14 @@ public sealed class HandoverViewModel : ObservableObject
 
     public string SummaryUnchecked { get => _summaryUnchecked; private set => Set(ref _summaryUnchecked, value); }
 
+    public double PassPercent { get => _passPercent; private set => Set(ref _passPercent, value); }
+
+    public string PassText { get => _passText; private set => Set(ref _passText, value); }
+
+    public string ChecklistText { get => _checklistText; private set => Set(ref _checklistText, value); }
+
+    public string SummaryTitle { get => _summaryTitle; private set => Set(ref _summaryTitle, value); }
+
     public void Refresh()
     {
         if (Conditions is null)
@@ -145,6 +157,15 @@ public sealed class HandoverViewModel : ObservableObject
         SummaryPass = keys.Count(k => k == "pass") + " Đạt";
         SummaryAttention = keys.Count(k => k is "attention" or "failed") + " Cần chú ý";
         SummaryUnchecked = keys.Count(k => k is "unchecked" or "manual" or "pending") + " Chưa kiểm tra";
+
+        // Vòng tròn "Tóm tắt bàn giao": tỷ lệ mục đạt trên tổng (điều kiện + kiểm tra hệ thống + phần cứng).
+        var pass = keys.Count(k => k == "pass");
+        PassPercent = keys.Count == 0 ? 0 : pass * 100.0 / keys.Count;
+        PassText = $"{PassPercent:0}%";
+        ChecklistText = $"{pass}/{keys.Count} đạt";
+        SummaryTitle = pass == keys.Count ? "Sẵn sàng bàn giao"
+            : keys.Any(k => k is "attention" or "failed") ? "Có mục cần chú ý"
+            : pass == 0 ? "Chưa kiểm tra" : "Đang kiểm tra";
     }
 
     private void ReviewIssues()

@@ -3,211 +3,217 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
-    <!-- Mô-đun "software" (QĐ-002) -->
+    <!-- Mô-đun "software" (QĐ-002) — bố cục canvas: thanh lọc, bảng danh mục, thẻ "Danh sách đã chọn" bên phải -->
+    <UserControl.Resources>
+        <Style x:Key="Th" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="ExtraBold" />
+            <Setter Property="Foreground" Value="#75849A" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
     <StackPanel>
-        <c:PageHeader IconKey="download" Heading="Cài phần mềm thiết yếu" ModuleLabel="{Binding Module.Label}"
-                      Description="Chọn ứng dụng cần cài. Ứng dụng đã có trên máy sẽ được bỏ qua; mỗi gói chỉ báo thành công sau khi xác minh.">
+        <c:PageHeader Eyebrow="THƯ VIỆN ỨNG DỤNG" Heading="Phần mềm cần thiết" ModuleLabel="{Binding Module.Label}"
+                      Description="Chọn ứng dụng cần cài. Ứng dụng đã có trên máy được bỏ qua; mỗi gói chỉ báo thành công sau khi xác minh.">
             <Button Style="{StaticResource SecondaryButton}" Command="{Binding RefreshStatusCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,7,0" />
                     <TextBlock Text="Kiểm tra trạng thái cài" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
         </c:PageHeader>
 
         <!-- Thiếu WinGet: nêu rõ, cho cách khắc phục, không chạy được hàng đợi. -->
-        <Border Background="{StaticResource WarningTintBrush}" BorderBrush="{StaticResource WarningBrush}" BorderThickness="1" CornerRadius="12" Padding="16,12" Margin="0,0,0,16"
+        <Border Background="{StaticResource WarningTintBrush}" CornerRadius="12" Padding="16,12" Margin="0,0,0,15"
                 Visibility="{Binding WinGetMissing, Converter={StaticResource Vis}}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=alert}" Width="24" Height="24" Style="{StaticResource IconImage}" Margin="0,0,12,0" VerticalAlignment="Top" />
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="Chưa tìm thấy WinGet (App Installer)" FontWeight="SemiBold" Foreground="{StaticResource WarningTextBrush}" />
-                    <TextBlock Text="Không thể cài phần mềm khi thiếu WinGet. Hãy cài hoặc cập nhật “App Installer” từ Microsoft Store, sau đó kiểm tra lại." Style="{StaticResource SecondaryDark}" />
-                </StackPanel>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource SecondaryButton}" Command="{Binding OpenStoreCommand}" Margin="12,0,8,0">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=store}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                            <TextBlock Text="Mở Microsoft Store" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Style="{StaticResource SecondaryButton}" Command="{Binding OpenStoreCommand}" Content="Mở Microsoft Store" Margin="12,0,8,0" />
                     <Button Style="{StaticResource TertiaryButton}" Command="{Binding RecheckCommand}" Content="Kiểm tra lại" />
                 </StackPanel>
-            </Grid>
+                <StackPanel>
+                    <TextBlock Text="Chưa tìm thấy WinGet (App Installer)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource WarningTextBrush}" />
+                    <TextBlock Text="Không thể cài phần mềm khi thiếu WinGet. Cài hoặc cập nhật “App Installer” từ Microsoft Store, rồi kiểm tra lại." Style="{StaticResource SecondaryDark}" />
+                </StackPanel>
+            </DockPanel>
         </Border>
 
-        <c:SplitPanel SideWidth="316" StackBelow="860" Gap="18">
-            <!-- Danh sách ứng dụng -->
+        <!-- Thanh lọc (.toolbar) -->
+        <DockPanel Margin="0,0,0,15">
+            <Grid DockPanel.Dock="Right" Width="220" VerticalAlignment="Center">
+                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" MinHeight="34" Padding="32,0,10,0" FontSize="12" AutomationProperties.Name="Tìm ứng dụng" />
+                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="15" Height="15" Style="{StaticResource IconImage}"
+                       Margin="11,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" />
+                <TextBlock Text="Tìm ứng dụng" FontSize="12" Foreground="{StaticResource Text2Brush}" Margin="34,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                           Visibility="{Binding SearchText, Converter={StaticResource NotEmpty}, ConverterParameter=invert}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding CategoryChips}" VerticalAlignment="Center" KeyboardNavigation.TabNavigation="Once" AutomationProperties.Name="Nhóm ứng dụng">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:CategoryChip}">
+                        <RadioButton Style="{StaticResource PillRadio}" GroupName="SoftwareCategory" Content="{Binding Label}"
+                                     IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2,8,2" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+
+        <c:SplitPanel SideWidth="270" StackBelow="860" Gap="15">
+            <!-- Bảng danh mục -->
             <Border Style="{StaticResource CardFlush}" VerticalAlignment="Top">
                 <StackPanel>
-                    <Grid Margin="18,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ItemsControl ItemsSource="{Binding CategoryChips}" VerticalAlignment="Center" KeyboardNavigation.TabNavigation="Once"
-                                      AutomationProperties.Name="Nhóm ứng dụng">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:CategoryChip}">
-                                    <RadioButton Style="{StaticResource PillRadio}" GroupName="SoftwareCategory" Content="{Binding Label}"
-                                                 IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2,6,2" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <Grid Grid.Column="1" VerticalAlignment="Center" Width="180" Margin="8,0,0,0">
-                            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" MinHeight="36" Padding="32,0,10,0" FontSize="13"
-                                     AutomationProperties.Name="Tìm ứng dụng" />
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="16" Height="16" Style="{StaticResource IconImage}"
-                                   Margin="11,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" />
-                            <TextBlock Text="Tìm ứng dụng" FontSize="13" Foreground="{StaticResource Text2Brush}" Margin="34,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"
-                                       Visibility="{Binding SearchText, Converter={StaticResource NotEmpty}, ConverterParameter=invert}" />
-                        </Grid>
-                    </Grid>
-                    <Border Style="{StaticResource Divider}" Background="{StaticResource LineBrush}" />
+                    <DockPanel Margin="16,16,16,12">
+                        <Border DockPanel.Dock="Right" Style="{StaticResource Tag}">
+                            <TextBlock Style="{StaticResource TagText}">
+                                <Run Text="{Binding Visible.Count, Mode=OneWay}" /> <Run Text="mục" />
+                            </TextBlock>
+                        </Border>
+                        <TextBlock Text="Danh mục ứng dụng" FontSize="13" FontWeight="ExtraBold" VerticalAlignment="Center" />
+                    </DockPanel>
 
-                    <TextBlock Text="Không có ứng dụng nào khớp với bộ lọc." Style="{StaticResource Secondary}" Margin="18,20"
-                               Visibility="{Binding NoResults, Converter={StaticResource Vis}}" />
+                    <Border Margin="16,0,16,0" BorderBrush="#EDF1F7" BorderThickness="1" CornerRadius="11">
+                        <StackPanel>
+                            <!-- Tiêu đề cột -->
+                            <Border Background="#F7F9FD" BorderBrush="#E8EEF6" BorderThickness="0,0,0,1" CornerRadius="11,11,0,0" Padding="11,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="96" />
+                                        <ColumnDefinition Width="140" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="CHỌN" Style="{StaticResource Th}" />
+                                    <TextBlock Grid.Column="1" Text="PHẦN MỀM" Style="{StaticResource Th}" />
+                                    <TextBlock Grid.Column="2" Text="NHÓM" Style="{StaticResource Th}" />
+                                    <TextBlock Grid.Column="3" Text="ĐỀ XUẤT" Style="{StaticResource Th}" />
+                                    <TextBlock Grid.Column="4" Text="TRẠNG THÁI" Style="{StaticResource Th}" />
+                                </Grid>
+                            </Border>
 
-                    <ItemsControl ItemsSource="{Binding Visible}">
+                            <TextBlock Text="Không có ứng dụng nào khớp với bộ lọc." Style="{StaticResource Secondary}" Margin="12,16"
+                                       Visibility="{Binding NoResults, Converter={StaticResource Vis}}" />
+
+                            <ItemsControl ItemsSource="{Binding Visible}" Focusable="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
+                                        <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="11,9">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="40" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="100" />
+                                                    <ColumnDefinition Width="96" />
+                                                    <ColumnDefinition Width="140" />
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
+                                                <DockPanel Grid.Column="1" Margin="0,0,10,0">
+                                                    <Border DockPanel.Dock="Left" Width="29" Height="29" CornerRadius="9" Background="#F0F5FF" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                        <Image Width="20" Height="20" Style="{StaticResource IconImage}">
+                                                            <Image.Source>
+                                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                                    <Binding Path="LogoKey" />
+                                                                    <Binding Path="IconKey" />
+                                                                </MultiBinding>
+                                                            </Image.Source>
+                                                        </Image>
+                                                    </Border>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                                        <TextBlock Text="{Binding PackageId}" FontFamily="{StaticResource MonoFont}" FontSize="11" Foreground="{StaticResource Text2Brush}"
+                                                                   Visibility="{Binding DataContext.TechOpen, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Vis}}" />
+                                                        <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                                   Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                                <TextBlock Grid.Column="2" Text="{Binding Group}" FontSize="12" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <Grid Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                                    <Border Style="{StaticResource TagGreen}" Visibility="{Binding IsRecommended, Converter={StaticResource Vis}}">
+                                                        <TextBlock Text="Khuyến nghị" Style="{StaticResource TagGreenText}" />
+                                                    </Border>
+                                                    <Border Style="{StaticResource Tag}" Visibility="{Binding IsRecommended, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                                                        <TextBlock Text="Tùy chọn" Style="{StaticResource TagText}" />
+                                                    </Border>
+                                                </Grid>
+                                                <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22" />
+                                                        <Button Style="{StaticResource LinkButton}" Content="Xem lỗi" Margin="4,0,0,0"
+                                                                Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                                Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding MetaText}" Style="{StaticResource Meta}" Margin="2,3,0,0" Visibility="{Binding MetaText, Converter={StaticResource NotEmpty}}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <DockPanel Margin="16,10,16,0">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Command="{Binding ToggleTechCommand}" Content="Hiện/ẩn package ID" />
+                        <CheckBox IsChecked="{Binding RecommendedSelected}" Content="Chọn bộ khuyến nghị" FontSize="12" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <Border Style="{StaticResource Note}" Margin="12">
+                        <TextBlock Style="{StaticResource NoteText}"
+                                   Text="ⓘ  Chỉ cài gói đã duyệt qua WinGet. Hủy giữa chừng sẽ dừng sau gói đang cài, không ép tắt trình cài đặt. Microsoft 365 cần bản quyền của khách." />
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Danh sách đã chọn (.sticky-card) -->
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Danh sách đã chọn" FontSize="13" FontWeight="ExtraBold" />
+                    <TextBlock Text="Cài lần lượt, im lặng, xác minh lại sau mỗi gói." FontSize="11" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding SelectedCountText}" FontSize="26" FontWeight="ExtraBold" Foreground="{StaticResource HeadingBrush}" Margin="0,8,0,0" />
+                    <TextBlock Text="{Binding SkipNote}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,2,0,8" />
+
+                    <ItemsControl ItemsSource="{Binding SelectedRows}" Focusable="False">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="18,9">
-                                    <Grid MinHeight="40">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="30" />
-                                            <ColumnDefinition Width="46" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="100" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
-                                        <Image Grid.Column="1" Width="32" Height="32" Style="{StaticResource IconImage}" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                            <Image.Source>
-                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                    <Binding Path="LogoKey" />
-                                                    <Binding Path="IconKey" />
-                                                </MultiBinding>
-                                            </Image.Source>
-                                        </Image>
-                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                                <Border Background="{StaticResource PrimaryTintBrush}" CornerRadius="4" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center"
-                                                        Visibility="{Binding NeedsAdmin, Converter={StaticResource Vis}}">
-                                                    <TextBlock Text="Toàn máy" FontSize="11" Foreground="{StaticResource PrimaryTextBrush}" />
-                                                </Border>
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Text="{Binding PackageId}" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource Text2Brush}"
-                                                       Visibility="{Binding DataContext.TechOpen, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Vis}}" />
-                                            <TextBlock Text="{Binding Message}" Style="{StaticResource SecondaryDark}" Margin="0,2,0,0"
-                                                       Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                                        </StackPanel>
-                                        <Border Grid.Column="3" Style="{StaticResource GrayTag}" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding Group}" Style="{StaticResource GrayTagText}" />
+                                <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Left" Width="29" Height="29" CornerRadius="9" Background="#F0F5FF" Margin="0,0,9,0">
+                                            <Image Width="20" Height="20" Style="{StaticResource IconImage}">
+                                                <Image.Source>
+                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                        <Binding Path="LogoKey" />
+                                                        <Binding Path="IconKey" />
+                                                    </MultiBinding>
+                                                </Image.Source>
+                                            </Image>
                                         </Border>
-                                        <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="8,0,0,0">
-                                            <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" />
-                                            <TextBlock Text="{Binding MetaText}" Style="{StaticResource Meta}" Margin="2,3,0,0" Visibility="{Binding MetaText, Converter={StaticResource NotEmpty}}" />
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Group}" FontSize="11" Foreground="{StaticResource Text2Brush}" />
                                         </StackPanel>
-                                        <Button Grid.Column="5" Style="{StaticResource TertiaryButton}" Content="Xem lỗi" Margin="6,0,0,0"
-                                                Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                                    </Grid>
+                                    </DockPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Grid Margin="18,10">
-                        <CheckBox IsChecked="{Binding RecommendedSelected}" Content="Chọn bộ khuyến nghị" FontSize="13" VerticalAlignment="Center" />
-                        <Button Style="{StaticResource QuietButton}" HorizontalAlignment="Right" FontSize="12" Command="{Binding ToggleTechCommand}">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=terminal}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
-                                <TextBlock Text="Hiện/ẩn package ID" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                    </Grid>
+                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding InstallCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=download}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,7,0" />
+                            <TextBlock Text="{Binding InstallLabel}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource SecondaryButton}" Command="{Binding PlanCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                            Content="Xem kế hoạch cài" />
+                    <TextBlock Text="{Binding QueueText}" Style="{StaticResource Meta}" HorizontalAlignment="Center" Margin="0,6,0,0"
+                               Visibility="{Binding QueueEmpty, Converter={StaticResource Vis}, ConverterParameter=invert}" />
                 </StackPanel>
             </Border>
-
-            <!-- Tóm tắt và nút cài -->
-            <StackPanel>
-                <Border Style="{StaticResource Card}" Padding="20,18">
-                    <StackPanel>
-                        <TextBlock Text="Đã chọn" FontSize="13" Foreground="{StaticResource Text2Brush}" />
-                        <TextBlock Text="{Binding SelectedCountText}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
-                        <TextBlock Text="{Binding SkipNote}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" />
-
-                        <ItemsControl ItemsSource="{Binding SelectedRows}" Margin="0,12,0,4">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                    <Image Width="30" Height="30" Style="{StaticResource IconImage}" Margin="0,0,8,8" ToolTip="{Binding Name}">
-                                        <Image.Source>
-                                            <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                <Binding Path="LogoKey" />
-                                                <Binding Path="IconKey" />
-                                            </MultiBinding>
-                                        </Image.Source>
-                                    </Image>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <Border Style="{StaticResource Divider}" Margin="0,4,0,12" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="74" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="Nguồn" FontSize="12" Foreground="{StaticResource Text2Brush}" />
-                            <TextBlock Grid.Column="1" Text="WinGet · chỉ gói đã duyệt" FontSize="12" />
-                            <TextBlock Grid.Row="1" Text="Cách cài" FontSize="12" Foreground="{StaticResource Text2Brush}" Margin="0,6,0,0" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="Im lặng, lần lượt từng gói" FontSize="12" Margin="0,6,0,0" />
-                            <TextBlock Grid.Row="2" Text="Xác minh" FontSize="12" Foreground="{StaticResource Text2Brush}" Margin="0,6,0,0" />
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="Kiểm tra lại sau mỗi gói" FontSize="12" Margin="0,6,0,0" />
-                        </Grid>
-
-                        <Button Style="{StaticResource HeroButton}" Command="{Binding InstallCommand}" MinHeight="48" FontSize="15" Padding="12,0" Margin="0,16,0,0"
-                                HorizontalAlignment="Stretch">
-                            <StackPanel Orientation="Horizontal">
-                                <Border Style="{StaticResource WhiteIconChip}">
-                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=download}" Width="20" Height="20" Style="{StaticResource IconImage}" />
-                                </Border>
-                                <TextBlock Text="{Binding InstallLabel}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource TertiaryButton}" Command="{Binding PlanCommand}" HorizontalAlignment="Center" Margin="0,6,0,0" Content="Xem kế hoạch cài" />
-                        <TextBlock Text="{Binding QueueText}" Style="{StaticResource Meta}" HorizontalAlignment="Center" Margin="0,4,0,0"
-                                   Visibility="{Binding QueueEmpty, Converter={StaticResource Vis}, ConverterParameter=invert}" />
-                    </StackPanel>
-                </Border>
-                <Border Background="{StaticResource InfoTintBrush}" CornerRadius="12" Padding="14,12" Margin="0,14,0,0">
-                    <TextBlock FontSize="12" Foreground="{StaticResource InfoTextBrush}" TextWrapping="Wrap"
-                               Text="Hủy giữa chừng sẽ dừng sau gói đang cài, không ép tắt trình cài đặt. Microsoft 365 cần bản quyền của khách." />
-                </Border>
-            </StackPanel>
         </c:SplitPanel>
     </StackPanel>
 </UserControl>

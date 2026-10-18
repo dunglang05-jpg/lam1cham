@@ -7,13 +7,16 @@ namespace LamMotCham.Presentation.ViewModels;
 
 public sealed record PackOption(TaskPack Pack, string Label);
 
+/// <summary>Một dòng trạng thái có chấm màu (Tình trạng tổng thể). StateKey: success | attention | pending.</summary>
+public sealed record ReadinessItem(string Text, string StateKey);
+
 /// <summary>Thẻ gói thiết lập nhanh trên Tổng quan (thiết kế v3).</summary>
 public sealed class PackCardViewModel : ObservableObject
 {
     private readonly OverviewViewModel _owner;
 
     internal PackCardViewModel(OverviewViewModel owner, PackOption option, string description, string tag, string iconKey,
-        IReadOnlyList<TaskRowViewModel> apps, string extra)
+        IReadOnlyList<TaskRowViewModel> apps, string extra, string accent)
     {
         _owner = owner;
         Option = option;
@@ -22,7 +25,15 @@ public sealed class PackCardViewModel : ObservableObject
         IconKey = iconKey;
         Apps = apps;
         Extra = extra;
+        Accent = accent;
+        StartCommand = new RelayCommand(() => owner.StartPack(option), () => owner.CanStart);
     }
+
+    /// <summary>Màu ô icon: blue | green | amber | purple.</summary>
+    public string Accent { get; }
+
+    /// <summary>Chọn gói này và mở hộp xác nhận chạy.</summary>
+    public RelayCommand StartCommand { get; }
 
     public PackOption Option { get; }
 
@@ -98,7 +109,16 @@ public sealed class OverviewViewModel : ObservableObject
             new("4", "Tác vụ Windows", Page.Windows),
             new("5", "Kiểm tra bàn giao", Page.Handover),
         ];
-        StartPackCommand = new RelayCommand(AskStartPack, () => main.Machine.Checked && !main.IsRunning);
+        StartPackCommand = new RelayCommand(AskStartPack, () => CanStart);
+        StartFullCommand = new RelayCommand(() => StartPack(Packs.First(p => p.Pack == TaskPack.FullSetup)), () => CanStart);
+        var full = main.Rows.Values.Where(r => r.Entry.IsInPack(TaskPack.FullSetup)).ToList();
+        FullSetupLines =
+        [
+            $"Cài {full.Count(r => r.Entry.Category == TaskCategory.Software)} phần mềm thiết yếu qua WinGet",
+            $"Áp dụng {full.Count(r => r.Entry.Category == TaskCategory.WindowsSettings && !r.IsReadOnly)} thiết lập Windows, lưu để hoàn tác",
+            $"Dọn {full.Count(r => r.Entry.Category == TaskCategory.Cleanup)} nhóm file tạm an toàn",
+            $"Kiểm tra {full.Count(r => r.IsReadOnly)} mục và lập báo cáo bàn giao",
+        ];
         OpenLastReportCommand = new RelayCommand(
             () => ShellActions.OpenFile(main.LastHandoverReportPath ?? main.LastRunReportPath ?? ""),
             () => (main.LastHandoverReportPath ?? main.LastRunReportPath) is not null);
@@ -150,6 +170,35 @@ public sealed class OverviewViewModel : ObservableObject
 
     public RelayCommand StartPackCommand { get; }
 
+    /// <summary>Thẻ xanh "Một chạm": chạy gói Thiết lập đầy đủ.</summary>
+    public RelayCommand StartFullCommand { get; }
+
+    /// <summary>Nội dung thật của gói Thiết lập đầy đủ (số lượng từ danh mục).</summary>
+    public IReadOnlyList<string> FullSetupLines { get; }
+
+    internal bool CanStart => _main.Machine.Checked && !_main.IsRunning;
+
+    /// <summary>Tiến độ quy trình 5 bước (0–100) cho vòng tròn.</summary>
+    public double ProgressPercent => Steps.Count(s => s.StateKey == "success") * 100.0 / Steps.Count;
+
+    public string ProgressText => $"{ProgressPercent:0}%";
+
+    public string ProgressTitle => Steps.Count(s => s.StateKey == "success") switch
+    {
+        0 => "Chưa bắt đầu quy trình",
+        5 => "Đã hoàn tất quy trình",
+        var n => $"{n}/5 bước đã xong",
+    };
+
+    public ObservableCollection<ReadinessItem> Readiness { get; } = [];
+
+    /// <summary>Chọn gói rồi mở hộp xác nhận (không chạy khi chưa xác nhận).</summary>
+    internal void StartPack(PackOption option)
+    {
+        SelectedPack = option;
+        AskStartPack();
+    }
+
     public RelayCommand OpenLastReportCommand { get; }
 
     public RelayCommand GoCommand { get; }
@@ -186,13 +235,13 @@ public sealed class OverviewViewModel : ObservableObject
         return option.Pack switch
         {
             TaskPack.FullSetup => new(this, option, "Phần mềm + tối ưu Windows + kiểm tra", "Phù hợp laptop mới", "bolt", apps,
-                $"+ {changes} thiết lập Windows + {checks} mục kiểm tra"),
+                $"+ {changes} thiết lập Windows + {checks} mục kiểm tra", "blue"),
             TaskPack.SoftwareOnly => new(this, option, "Cài các ứng dụng cơ bản qua WinGet", "Khi máy đã ổn định", "download", apps,
-                "Ứng dụng đã có trên máy sẽ được bỏ qua"),
+                "Ứng dụng đã có trên máy sẽ được bỏ qua", "green"),
             TaskPack.WindowsOnly => new(this, option, "Cấu hình hệ thống và dọn dẹp", "Khi đã cài sẵn phần mềm", "gear", apps,
-                $"{changes} thiết lập và dọn dẹp — thiết lập lưu giá trị cũ để hoàn tác"),
+                $"{changes} thiết lập và dọn dẹp — thiết lập lưu giá trị cũ để hoàn tác", "amber"),
             _ => new(this, option, "Kiểm tra và lập báo cáo bàn giao", "Trước khi giao máy", "clipboard", apps,
-                $"{checks} mục chỉ đọc, không thay đổi gì trên máy"),
+                $"{checks} mục chỉ đọc, không thay đổi gì trên máy", "purple"),
         };
     }
 
@@ -258,6 +307,16 @@ public sealed class OverviewViewModel : ObservableObject
         Steps[3].StateKey = Aggregate(win);
         Steps[4].Description = ho.Count == 0 ? "Checklist và báo cáo" : $"{ho.Count(r => r.StateKey == "pass")}/{ho.Count} mục đạt";
         Steps[4].StateKey = Aggregate(ho);
+
+        Readiness.Clear();
+        Readiness.Add(new ReadinessItem(m.Checked ? "Đã đọc thông tin máy" : "Chưa đọc thông tin máy", m.Checked ? "success" : "attention"));
+        Readiness.Add(new ReadinessItem(m.WinGetAvailable ? "WinGet sẵn sàng cài phần mềm" : (m.WinGetMissing ? "Không có WinGet — chưa cài được phần mềm" : "Đang kiểm tra WinGet"),
+            m.WinGetAvailable ? "success" : "attention"));
+        Readiness.Add(new ReadinessItem(_main.IsElevated ? "Đang chạy quyền quản trị" : "Quyền người dùng — Windows sẽ hỏi UAC khi cần",
+            _main.IsElevated ? "success" : "attention"));
+        OnPropertyChanged(nameof(ProgressPercent));
+        OnPropertyChanged(nameof(ProgressText));
+        OnPropertyChanged(nameof(ProgressTitle));
         OnPropertyChanged(nameof(StartNote));
         Commands.InvalidateAll();
     }

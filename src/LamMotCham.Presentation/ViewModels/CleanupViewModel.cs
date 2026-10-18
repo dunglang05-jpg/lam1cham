@@ -55,6 +55,8 @@ public sealed class CleanupViewModel : ObservableObject
                 if (e.PropertyName == nameof(TaskRowViewModel.IsSelected))
                 {
                     OnPropertyChanged(nameof(TotalText));
+                    OnPropertyChanged(nameof(SelectedShort));
+                    OnPropertyChanged(nameof(SelectedPercent));
                     OnPropertyChanged(nameof(CleanLabel));
                     Commands.InvalidateAll();
                 }
@@ -103,6 +105,19 @@ public sealed class CleanupViewModel : ObservableObject
 
     public string TotalText => "khoảng " + CleanupTask.FormatBytes(Items.Where(i => i.Row.IsSelected).Sum(i => i.Bytes));
 
+    /// <summary>Dung lượng các mục đang chọn (giữa vòng tròn), "—" khi chưa quét.</summary>
+    public string SelectedShort => _scanned ? CleanupTask.FormatBytes(Items.Where(i => i.Row.IsSelected).Sum(i => i.Bytes)) : "—";
+
+    /// <summary>Phần trăm dung lượng đã chọn so với tổng đã quét (0–100) cho vòng tròn.</summary>
+    public double SelectedPercent
+    {
+        get
+        {
+            var total = Items.Sum(i => i.Bytes);
+            return !_scanned || total <= 0 ? 0 : Items.Where(i => i.Row.IsSelected).Sum(i => i.Bytes) * 100.0 / total;
+        }
+    }
+
     public string CleanLabel => $"Dọn {Items.Count(i => i.Row.IsSelected)} mục đã chọn";
 
     private async Task ScanAsync()
@@ -122,6 +137,8 @@ public sealed class CleanupViewModel : ObservableObject
             ScannedAt = "Quét lúc " + DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
             Scanned = true;
             OnPropertyChanged(nameof(TotalText));
+            OnPropertyChanged(nameof(SelectedShort));
+            OnPropertyChanged(nameof(SelectedPercent));
         }
         finally
         {

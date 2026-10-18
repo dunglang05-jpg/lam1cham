@@ -2,6 +2,34 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.11.0 — 18/10/2026
+
+Giao diện mới theo file thiết kế PO (`lam1cham_canvas.html`) cho 7 trang đang có. Mọi số liệu là dữ liệu thật của máy; không thêm phần minh họa không có chức năng (Pro, Web Admin, thông báo, hồ sơ chưa làm).
+
+**Khung ứng dụng (`shell`) 0.7.0**
+- Thanh bên màu navy: thương hiệu, nhóm "Không gian làm việc" (7 mô-đun, gồm Mô-đun & cập nhật), nhóm "Hệ thống" (Nhật ký, Báo cáo), hộp "Cần hỗ trợ?" mở Trợ giúp, phiên bản. Cửa sổ hẹp: chỉ biểu tượng.
+- Thanh trên: đường dẫn "Không gian làm việc / trang", ô **Tìm tính năng** (gõ không dấu cũng được; bấm kết quả hoặc Enter để mở đúng trang — tìm cả tên từng tác vụ), trạng thái quyền quản trị.
+- Chân trang: phiên bản, "Chạy trực tiếp – Không cần cài đặt" (ẩn trên màn hình thấp).
+- Dùng chung: bảng màu, thẻ bo 15 px, nút gradient, nhãn (tag), công tắc (`Switch`), ô icon nhiều màu, ghi chú (`Note`), dòng thiết lập (`SettingRow`), vòng tiến độ (`RingProgress`), tiêu đề trang có nhãn nhỏ (eyebrow), bộ lọc viên (`FilterChip`).
+
+**Tổng quan (`overview`) 0.6.0**
+- "Xin chào! Sẵn sàng cho laptop mới." · Thẻ thiết bị: model, tên máy, dải thông số thật (CPU, RAM, ổ, Windows, pin, WinGet, mạng), nút Đọc lại.
+- Thẻ xanh **Một chạm**: nội dung thật của gói Thiết lập đầy đủ (số phần mềm, thiết lập, nhóm dọn dẹp, mục kiểm tra) và nút chạy (vẫn qua hộp xác nhận).
+- **Tác vụ nhanh** = 4 gói, mỗi thẻ có nút "Bắt đầu gói".
+- **Tình trạng tổng thể**: vòng tiến độ 5 bước quy trình + 3 điều kiện (thông tin máy, WinGet, quyền); **Hoạt động gần đây** (4 tác vụ gần nhất, báo cáo gần nhất).
+
+**Phần mềm (`software`) 0.3.0** — thanh lọc nhóm + ô tìm; bảng Chọn · Phần mềm · Nhóm · Đề xuất (Khuyến nghị/Tùy chọn) · Trạng thái; thẻ "Danh sách đã chọn" với nút Cài đặt và Xem kế hoạch.
+
+**Tối ưu Windows (`windows`) 0.6.0** — thẻ "Thiết lập đề xuất": lọc theo nhóm, mỗi dòng có icon, tên, mô tả và **công tắc**; mục chỉ kiểm tra có nút "Kiểm tra". Thẻ "Trạng thái hệ thống" (Windows, số thay đổi, số cần UAC) và "Nguyên tắc an toàn".
+
+**Ổ đĩa & tài khoản (`disk`) 0.5.0** — Dung lượng ổ đĩa | Tài khoản người dùng (kèm BitLocker, hướng dẫn khóa khôi phục); Chia ổ đĩa | Tên máy tính. Nút "Làm mới thông tin".
+
+**Dọn dẹp (`cleanup`) 0.3.0** — "Kết quả phân tích" với vòng dung lượng đã chọn, danh sách nhóm (số file, dung lượng, mức an toàn); "Nguyên tắc an toàn" là các quy tắc luôn áp dụng (không phải công tắc giả).
+
+**Kiểm tra & bàn giao (`handover`) 0.5.0** — "Danh sách kiểm tra" với thanh tiến độ (Hệ thống, Phần cứng thử tay); "Tóm tắt bàn giao" với vòng % đạt, chip tổng hợp, 7 điều kiện, nút Tạo báo cáo.
+
+**Mô-đun & cập nhật (`modules`) 0.3.0** — lưới thẻ mô-đun 3 cột (icon, phiên bản, mô tả, mã); thẻ trạng thái cập nhật nói rõ chưa kết nối máy chủ.
+
 ## 0.10.0 — 18/10/2026
 
 Theo bản mẫu PO: **gọn như thiết kế gốc** — menu dọc bên trái, mỗi mục một dòng, nhóm xếp thành thẻ 2 cột. Bỏ mô tả dài, cột "Hiện tại" và chip trạng thái khi chưa chạy; thông tin chi tiết chuyển vào tooltip (rê chuột).

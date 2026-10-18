@@ -3,107 +3,67 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:modules="clr-namespace:LamMotCham.Presentation.Modules;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
-    <!-- Mô-đun "modules" (QĐ-002) -->
+    <!-- Mô-đun "modules" (QĐ-002) — bố cục canvas: lưới thẻ mô-đun 3 cột + ghi chú -->
     <StackPanel>
-        <c:PageHeader IconKey="refresh" Heading="Mô-đun &amp; Cập nhật" ModuleLabel="{Binding Module.Label}"
+        <c:PageHeader Eyebrow="NỀN TẢNG" Heading="Mô-đun &amp; cập nhật" ModuleLabel="{Binding Module.Label}"
                       Description="Mỗi chức năng là một mô-đun riêng, có phiên bản riêng. Mô-đun mới được phát hành cùng một file EXE mới.">
-            <Button Style="{StaticResource SecondaryButton}" Command="{Binding CopyInfoCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=clipboard}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                    <TextBlock Text="Sao chép thông tin phiên bản" VerticalAlignment="Center" />
-                </StackPanel>
-            </Button>
+            <Button Style="{StaticResource SecondaryButton}" Command="{Binding CopyInfoCommand}" Content="Sao chép thông tin phiên bản" />
         </c:PageHeader>
 
         <!-- Trạng thái cập nhật: nói đúng sự thật, chưa có máy chủ thì không báo "có bản mới". -->
-        <Border Style="{StaticResource Card}" BorderBrush="#C9DAFB" Padding="22,18" Margin="0,0,0,16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Border Width="52" Height="52" CornerRadius="14" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,18,0" VerticalAlignment="Top">
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=info}" Width="30" Height="30" Style="{StaticResource IconImage}" />
+        <Border Style="{StaticResource Card}" Margin="0,0,0,15">
+            <DockPanel>
+                <Border DockPanel.Dock="Left" Style="{StaticResource IconTileCyan}" Width="43" Height="43" Margin="0,0,14,0" VerticalAlignment="Top">
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="22" Height="22" Style="{StaticResource IconImage}" />
                 </Border>
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="Chưa kết nối máy chủ cập nhật" FontSize="17" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" />
-                    <TextBlock FontSize="13" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,2,0,0"
-                               Text="Bản thử nghiệm được cập nhật bằng cách tải file EXE mới từ GitHub Actions. Tự kiểm tra cập nhật sẽ có khi máy chủ cập nhật sẵn sàng (giai đoạn 3)." />
-                    <WrapPanel Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,18,4">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
-                            <TextBlock Text="Kiểm tra SHA-256 và chữ ký số trước khi áp dụng" FontSize="12" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,18,4">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=clock}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
-                            <TextBlock Text="Không cập nhật khi đang chạy tác vụ" FontSize="12" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,18,4">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
-                            <TextBlock Text="Giữ bản cũ để khôi phục" FontSize="12" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </WrapPanel>
-                </StackPanel>
-                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="18,0,0,0" MaxWidth="260">
-                    <TextBlock Text="{Binding Headline}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text3Brush}" TextWrapping="Wrap" TextAlignment="Right" />
-                    <TextBlock Text="{Binding CopiedText}" FontSize="12" Foreground="{StaticResource SuccessTextBrush}" TextAlignment="Right" Margin="0,4,0,0"
+                <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" Margin="14,0,0,0" MaxWidth="280">
+                    <Border Style="{StaticResource Tag}" HorizontalAlignment="Right">
+                        <TextBlock Text="Chưa kết nối" Style="{StaticResource TagText}" />
+                    </Border>
+                    <TextBlock Text="{Binding Headline}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" TextAlignment="Right" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding CopiedText}" FontSize="11" Foreground="{StaticResource SuccessTextBrush}" TextAlignment="Right" Margin="0,4,0,0"
                                Visibility="{Binding CopiedText, Converter={StaticResource NotEmpty}}" />
                 </StackPanel>
-            </Grid>
+                <StackPanel>
+                    <TextBlock Text="Cập nhật ứng dụng" FontSize="13" FontWeight="ExtraBold" />
+                    <TextBlock FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Text="Bản thử nghiệm cập nhật bằng cách tải file EXE mới từ GitHub Actions. Tự kiểm tra cập nhật sẽ có khi máy chủ cập nhật sẵn sàng (giai đoạn 3): kiểm tra SHA-256 và chữ ký, không cập nhật khi đang chạy tác vụ, giữ bản cũ để khôi phục." />
+                </StackPanel>
+            </DockPanel>
         </Border>
 
-        <!-- Danh sách mô-đun -->
-        <Border Style="{StaticResource CardFlush}" Margin="0,0,0,16">
-            <StackPanel>
-                <Border Background="{StaticResource SubtleBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" CornerRadius="14,14,0,0" Padding="18,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="44" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="110" />
-                            <ColumnDefinition Width="110" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="1" Text="Mô-đun" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="2" Text="Mã" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="3" Text="Loại" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="4" Text="Phiên bản" Style="{StaticResource ColumnHeader}" />
-                    </Grid>
-                </Border>
-                <ItemsControl ItemsSource="{Binding Items}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type modules:AppModule}">
-                            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="18,10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="44" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="110" />
-                                        <ColumnDefinition Width="110" />
-                                    </Grid.ColumnDefinitions>
-                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="26" Height="26" Style="{StaticResource IconImage}" HorizontalAlignment="Left" />
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding Summary}" FontSize="12" Foreground="{StaticResource Text2Brush}" />
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="{Binding Id}" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" />
-                                    <Border Grid.Column="3" Style="{StaticResource GrayTag}" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding KindText}" Style="{StaticResource GrayTagText}" />
-                                    </Border>
-                                    <TextBlock Grid.Column="4" Text="{Binding Version}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource PrimaryTextBrush}" VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
+        <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <c:AdaptiveGrid MinItemWidth="230" MaxColumns="3" Gap="15" RowGap="15" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type modules:AppModule}">
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <DockPanel>
+                                <Border DockPanel.Dock="Right" Style="{StaticResource TagBlue}" VerticalAlignment="Top">
+                                    <TextBlock Style="{StaticResource TagBlueText}"><Run Text="v" /><Run Text="{Binding Version, Mode=OneWay}" /></TextBlock>
+                                </Border>
+                                <Border Style="{StaticResource IconTile}" HorizontalAlignment="Left">
+                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="21" Height="21" Style="{StaticResource IconImage}" />
+                                </Border>
+                            </DockPanel>
+                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="ExtraBold" Margin="0,14,0,4" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Summary}" FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" MinHeight="34" />
+                            <TextBlock FontSize="11" Foreground="{StaticResource Text2Brush}" Margin="0,8,0,0">
+                                <Run Text="{Binding Id, Mode=OneWay}" FontFamily="{StaticResource MonoFont}" /><Run Text="  ·  " /><Run Text="{Binding KindText, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
-        <Border Background="{StaticResource InfoTintBrush}" CornerRadius="12" Padding="16,12">
-            <TextBlock FontSize="12" Foreground="{StaticResource InfoTextBrush}" TextWrapping="Wrap"
-                       Text="Ứng dụng không tải mã lệnh rời (DLL, script) từ máy chủ. Mô-đun mới đi cùng một bản EXE đã ký; danh mục phần mềm có thể cập nhật riêng dưới dạng dữ liệu có chữ ký, chỉ gồm gói đã được duyệt." />
+        <Border Style="{StaticResource Note}" Margin="0,15,0,0">
+            <TextBlock Style="{StaticResource NoteText}"
+                       Text="ⓘ  Ứng dụng không tải mã lệnh rời (DLL, script) từ máy chủ. Mô-đun mới đi cùng một bản EXE; danh mục phần mềm có thể cập nhật riêng dưới dạng dữ liệu có chữ ký, chỉ gồm gói đã được duyệt." />
         </Border>
     </StackPanel>
 </UserControl>

@@ -4,7 +4,8 @@ using System.Windows.Controls;
 namespace LamMotCham.App.Controls;
 
 /// <summary>
-/// Tiêu đề trang theo thiết kế v3: ô icon, tên trang, nhãn mô-đun (tên + phiên bản), mô tả; nội dung (nút) ở bên phải.
+/// Tiêu đề trang theo thiết kế canvas: nhãn nhỏ (eyebrow), tên trang, nhãn mô-đun (tên + phiên bản), mô tả; nội dung (nút) ở bên phải.
+/// IconKey giữ lại để tương thích, không còn hiển thị.
 /// Giao diện nằm trong Themes/Theme.xaml.
 /// </summary>
 public sealed class PageHeader : ContentControl
@@ -20,6 +21,16 @@ public sealed class PageHeader : ContentControl
 
     public static readonly DependencyProperty ModuleLabelProperty = DependencyProperty.Register(
         nameof(ModuleLabel), typeof(string), typeof(PageHeader), new PropertyMetadata(""));
+
+    public static readonly DependencyProperty EyebrowProperty = DependencyProperty.Register(
+        nameof(Eyebrow), typeof(string), typeof(PageHeader), new PropertyMetadata(""));
+
+    /// <summary>Nhãn nhỏ viết hoa phía trên tiêu đề (thiết kế canvas: .eyebrow).</summary>
+    public string Eyebrow
+    {
+        get => (string)GetValue(EyebrowProperty);
+        set => SetValue(EyebrowProperty, value);
+    }
 
     public string IconKey
     {

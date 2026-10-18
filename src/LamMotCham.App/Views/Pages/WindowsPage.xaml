@@ -3,79 +3,138 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
-
+    <!-- Mô-đun "windows" (QĐ-002) — bố cục canvas: "Thiết lập đề xuất" (lọc nhóm, công tắc) | "Trạng thái hệ thống" + "Nguyên tắc an toàn" -->
     <StackPanel>
-        <!-- Mô-đun "windows" (QĐ-002) -->
-        <c:PageHeader IconKey="gear" Heading="Cài đặt &amp; Tối ưu Windows" ModuleLabel="{Binding Module.Label}"
-                      Description="Giá trị cũ được lưu để hoàn tác. Không tắt Defender, Tường lửa, Windows Update.">
-            <StackPanel Orientation="Horizontal">
-                <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Content="Hoàn tác thay đổi" Margin="0,0,10,0" />
-                <Button Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Style="{StaticResource WhiteIconChip}" Width="24" Height="24" Margin="0,0,8,0">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=gear}" Width="18" Height="18" Style="{StaticResource IconImage}" />
-                        </Border>
-                        <TextBlock Text="{Binding ApplyLabel}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </c:PageHeader>
+        <c:PageHeader Eyebrow="CẤU HÌNH THIẾT BỊ" Heading="Tối ưu Windows" ModuleLabel="{Binding Module.Label}"
+                      Description="Kiểm tra từng lựa chọn trước khi áp dụng. Không tự động tắt các lớp bảo vệ hệ thống." />
 
-        <!-- Gọn như bản mẫu: mỗi nhóm một thẻ (2 cột), mỗi thiết lập một dòng. Mô tả và 6 điểm chi tiết ở tooltip. -->
-        <ItemsControl ItemsSource="{Binding Groups}" Focusable="False">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <c:AdaptiveGrid MinItemWidth="400" MaxColumns="2" Gap="14" RowGap="14" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type vm:SettingGroup}">
-                    <Border Style="{StaticResource Card}" Padding="16,12,16,10">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                                <TextBlock Text="{Binding Title}" Style="{StaticResource H3}" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <ItemsControl ItemsSource="{Binding Rows}" Focusable="False">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                        <DockPanel MinHeight="30" Background="Transparent">
-                                            <DockPanel.ToolTip>
-                                                <StackPanel MaxWidth="420">
-                                                    <TextBlock Text="{Binding Description}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                                    <TextBlock Text="{Binding CurrentText}" TextWrapping="Wrap" Margin="0,4,0,0" />
-                                                    <ItemsControl ItemsSource="{Binding Details}" Margin="0,6,0,0">
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="{x:Type vm:DetailItem}">
-                                                                <TextBlock TextWrapping="Wrap" Margin="0,1">
-                                                                    <Run Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=": " /><Run Text="{Binding Value, Mode=OneWay}" />
-                                                                </TextBlock>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </StackPanel>
-                                            </DockPanel.ToolTip>
-                                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsSelectable}" VerticalAlignment="Center"
-                                                      Margin="0,0,10,0" AutomationProperties.Name="{Binding Name}" />
-                                            <!-- Chỉ hiện kết quả sau khi chạy -->
-                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Button Style="{StaticResource TertiaryButton}" Content="Xem lỗi" FontSize="12" MinHeight="24" Padding="6,0"
-                                                        Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                        Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                                                <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22"
-                                                              Visibility="{Binding HasRun, Converter={StaticResource Vis}}" />
-                                                <TextBlock Text="chỉ kiểm tra" FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" Margin="8,0,0,0"
-                                                           Visibility="{Binding IsReadOnly, Converter={StaticResource Vis}}" />
+        <c:SplitPanel SideWidth="330" StackBelow="860" Gap="15">
+            <!-- Thiết lập đề xuất -->
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,12">
+                        <Border DockPanel.Dock="Right" Style="{StaticResource TagGreen}">
+                            <TextBlock Text="Ưu tiên an toàn" Style="{StaticResource TagGreenText}" />
+                        </Border>
+                        <TextBlock Text="Thiết lập đề xuất" FontSize="13" FontWeight="ExtraBold" VerticalAlignment="Center" />
+                    </DockPanel>
+
+                    <ItemsControl ItemsSource="{Binding Filters}" KeyboardNavigation.TabNavigation="Once" AutomationProperties.Name="Nhóm thiết lập" Margin="0,0,0,6">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:FilterChip}">
+                                <RadioButton Style="{StaticResource PillRadio}" GroupName="WindowsGroup" Content="{Binding Label}"
+                                             IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,2,8,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ItemsControl ItemsSource="{Binding VisibleRows}" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
+                                <Border Style="{StaticResource SettingRow}">
+                                    <DockPanel Background="Transparent">
+                                        <DockPanel.ToolTip>
+                                            <StackPanel MaxWidth="420">
+                                                <TextBlock Text="{Binding CurrentText}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <ItemsControl ItemsSource="{Binding Details}" Margin="0,6,0,0">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="{x:Type vm:DetailItem}">
+                                                            <TextBlock TextWrapping="Wrap" Margin="0,1">
+                                                                <Run Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=": " /><Run Text="{Binding Value, Mode=OneWay}" />
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                        </DockPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
+                                        </DockPanel.ToolTip>
+                                        <Border x:Name="Tile" DockPanel.Dock="Left" Style="{StaticResource IconTile}" Width="36" Height="36" Margin="0,0,12,0">
+                                            <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="19" Height="19" Style="{StaticResource IconImage}" />
+                                        </Border>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <Button Style="{StaticResource LinkButton}" Content="Xem lỗi"
+                                                    Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                    Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                            <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22" Margin="0,0,10,0"
+                                                          Visibility="{Binding HasRun, Converter={StaticResource Vis}}" />
+                                            <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding IsSelected}" AutomationProperties.Name="{Binding Name}"
+                                                      Visibility="{Binding IsSelectable, Converter={StaticResource Vis}}" />
+                                            <Button Style="{StaticResource LinkButton}" Content="Kiểm tra"
+                                                    Command="{Binding DataContext.ApplyOneCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                    Visibility="{Binding IsReadOnly, Converter={StaticResource Vis}}" />
+                                        </StackPanel>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource RowTitle}" />
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource RowSub}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsReadOnly}" Value="True">
+                                        <Setter TargetName="Tile" Property="Background" Value="{StaticResource TileGreenBrush}" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border Style="{StaticResource Note}" Margin="0,14,0,0">
+                        <TextBlock Style="{StaticResource NoteText}"
+                                   Text="ⓘ  Bật công tắc để chọn thay đổi. Chưa có gì thay đổi trên máy cho đến khi bấm Áp dụng và xác nhận. Rê chuột vào dòng để xem chi tiết." />
                     </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                        <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Content="Hoàn tác thay đổi" Margin="0,0,8,0" />
+                        <Button Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}">
+                            <TextBlock>
+                                <Run Text="{Binding ApplyLabel, Mode=OneWay}" /><Run Text="  →" />
+                            </TextBlock>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Trạng thái hệ thống + nguyên tắc -->
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Trạng thái hệ thống" FontSize="13" FontWeight="ExtraBold" Margin="0,0,0,12" />
+                    <DockPanel>
+                        <Border DockPanel.Dock="Left" Style="{StaticResource IconTile}" Width="43" Height="43" Margin="0,0,12,0">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="23" Height="23" Style="{StaticResource IconImage}" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding WindowsText}" FontSize="13" FontWeight="ExtraBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="Đọc từ máy này" FontSize="11" Foreground="{StaticResource Text2Brush}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Height="1" Background="{StaticResource LineBrush}" Margin="0,16" />
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <Ellipse Width="7" Height="7" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                            <TextBlock FontSize="12" Foreground="#596C84"><Run Text="{Binding SelectedCount, Mode=OneWay}" /> <Run Text="thay đổi đang chọn" /></TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <Ellipse Width="7" Height="7" Fill="{StaticResource WarningBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                            <TextBlock FontSize="12" Foreground="#596C84"><Run Text="{Binding AdminCount, Mode=OneWay}" /> <Run Text="thay đổi cần quyền quản trị (UAC)" /></TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <Ellipse Width="7" Height="7" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                            <TextBlock Text="Giá trị cũ được lưu trước khi đổi" FontSize="12" Foreground="#596C84" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBlock Text="Nguyên tắc an toàn" FontSize="13" FontWeight="ExtraBold" Margin="0,20,0,8" />
+                    <TextBlock FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" LineHeight="21">
+                        <Run Text="•  Không tắt Defender, Tường lửa, Windows Update." /><LineBreak />
+                        <Run Text="•  Không thay đổi khi chưa có xác nhận." /><LineBreak />
+                        <Run Text="•  Lưu giá trị cũ để hoàn tác (BitLocker bật lại trong Settings)." /><LineBreak />
+                        <Run Text="•  Đọc lại và xác minh sau mỗi thay đổi." />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </c:SplitPanel>
     </StackPanel>
 </UserControl>

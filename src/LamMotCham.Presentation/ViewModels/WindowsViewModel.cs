@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using LamMotCham.Presentation.Mvvm;
 using LamMotCham.Core.Logging;
 using LamMotCham.Core.Tasks;
@@ -17,11 +18,22 @@ public sealed class WindowsViewModel : ObservableObject
     private readonly MainViewModel _main;
     private readonly List<TaskRowViewModel> _rows;
     private bool _statesLoaded;
+    private string _filter = AllGroups;
+
+    public const string AllGroups = "Tất cả";
 
     public WindowsViewModel(MainViewModel main)
     {
         _main = main;
         _rows = [.. main.RowsIn(TaskCategory.WindowsSettings)];
+
+        main.Machine.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(MachineViewModel.Snapshot) or nameof(MachineViewModel.Checked))
+            {
+                OnPropertyChanged(nameof(WindowsText));
+            }
+        };
 
         // Đọc giá trị hiện tại khi mở trang lần đầu (không đọc lúc khởi động để mở app nhanh).
         main.PropertyChanged += (_, e) =>
@@ -40,6 +52,8 @@ public sealed class WindowsViewModel : ObservableObject
             (WindowsCatalog.GroupPerformance, "Nguồn điện và ứng dụng chạy cùng Windows.", "bolt"),
         ];
         Groups = [.. groups.Select(g => new SettingGroup(g.Title, g.Desc, g.Icon, [.. _rows.Where(r => r.Group == g.Title)]))];
+        Filters = [.. new[] { AllGroups }.Concat(groups.Select(g => g.Title)).Select(l => new FilterChip(l, () => _filter, SetFilter))];
+        ApplyFilter();
         foreach (var r in _rows)
         {
             r.PropertyChanged += (_, e) =>
@@ -48,6 +62,7 @@ public sealed class WindowsViewModel : ObservableObject
                 {
                     OnPropertyChanged(nameof(SelectedCount));
                     OnPropertyChanged(nameof(ApplyLabel));
+                    OnPropertyChanged(nameof(AdminCount));
                     Commands.InvalidateAll();
                 }
             };
@@ -72,6 +87,42 @@ public sealed class WindowsViewModel : ObservableObject
     }
 
     public IReadOnlyList<SettingGroup> Groups { get; }
+
+    /// <summary>Lọc theo nhóm (Tất cả + 4 nhóm).</summary>
+    public IReadOnlyList<FilterChip> Filters { get; }
+
+    /// <summary>Các dòng thiết lập theo bộ lọc đang chọn.</summary>
+    public ObservableCollection<TaskRowViewModel> VisibleRows { get; } = [];
+
+    /// <summary>Số thay đổi đang chọn cần quyền quản trị.</summary>
+    public int AdminCount => _rows.Count(r => r.IsSelected && r.IsSelectable && r.NeedsAdmin);
+
+    public string WindowsText => _main.Machine.WindowsShort;
+
+    private void SetFilter(string label)
+    {
+        if (string.Equals(_filter, label, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _filter = label;
+        foreach (var f in Filters)
+        {
+            f.Refresh();
+        }
+
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        VisibleRows.Clear();
+        foreach (var r in _rows.Where(r => _filter == AllGroups || r.Group == _filter))
+        {
+            VisibleRows.Add(r);
+        }
+    }
 
     public RelayCommand ApplyCommand { get; }
 

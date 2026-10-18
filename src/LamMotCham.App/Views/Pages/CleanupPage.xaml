@@ -3,96 +3,139 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
              xmlns:c="clr-namespace:LamMotCham.App.Controls">
+    <!-- Mô-đun "cleanup" (QĐ-002) — bố cục canvas: Kết quả phân tích | Tùy chọn an toàn -->
     <StackPanel>
-        <!-- Mô-đun "cleanup" (QĐ-002) -->
-        <c:PageHeader IconKey="sparkle" Heading="Dọn dẹp &amp; Hiệu năng" ModuleLabel="{Binding Module.Label}"
-                      Description="Quét để xem dung lượng trước khi xóa. Chỉ xóa trong các thư mục tạm đã liệt kê; tài liệu của người dùng không bị đụng tới.">
-            <Button Style="{StaticResource SecondaryButton}" Command="{Binding ScanCommand}">
+        <c:PageHeader Eyebrow="BẢO TRÌ THIẾT BỊ" Heading="Dọn dẹp &amp; hiệu năng" ModuleLabel="{Binding Module.Label}"
+                      Description="Xem trước các nhóm tệp có thể dọn trước khi xác nhận. Chỉ xóa trong các thư mục tạm đã liệt kê; tài liệu của người dùng không bị đụng tới.">
+            <Button Style="{StaticResource PrimaryButton}" Command="{Binding ScanCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=search}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,7,0" />
                     <TextBlock Text="{Binding ScanLabel}" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
         </c:PageHeader>
 
-        <Border Style="{StaticResource CardFlush}">
-            <StackPanel>
-                <Border Background="{StaticResource SubtleBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="16,8" CornerRadius="14,14,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="36" />
-                            <ColumnDefinition Width="44" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="140" />
-                            <ColumnDefinition Width="110" />
-                            <ColumnDefinition Width="100" />
-                            <ColumnDefinition Width="150" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="2" Text="MỤC" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="3" Text="MỨC AN TOÀN" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="4" Text="SỐ FILE" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="5" Text="DUNG LƯỢNG" Style="{StaticResource ColumnHeader}" />
-                        <TextBlock Grid.Column="6" Text="KẾT QUẢ" Style="{StaticResource ColumnHeader}" />
-                    </Grid>
-                </Border>
-                <ItemsControl ItemsSource="{Binding Items}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:CleanupItemViewModel}">
-                            <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="16,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="36" />
-                                        <ColumnDefinition Width="44" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="110" />
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="150" />
-                                    </Grid.ColumnDefinitions>
-                                    <CheckBox IsChecked="{Binding Row.IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
-                                    <Image Grid.Column="1" Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="24" Height="24" Style="{StaticResource IconImage}" HorizontalAlignment="Left" />
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding Scope}" Style="{StaticResource Secondary}" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding Note}" FontSize="12" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap"
-                                                   Visibility="{Binding Note, Converter={StaticResource NotEmpty}}" />
-                                    </StackPanel>
-                                    <c:StatusChip Grid.Column="3" State="{Binding SafetyKey}" />
-                                    <TextBlock Grid.Column="4" Text="{Binding Files}" FontSize="13" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="5" Text="{Binding Size}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                    <StackPanel Grid.Column="6" VerticalAlignment="Center">
-                                        <c:StatusChip State="{Binding Row.StateKey}" Text="{Binding Row.StateText}" Visibility="{Binding Row.HasRun, Converter={StaticResource Vis}}" />
-                                        <TextBlock Text="—" Foreground="{StaticResource Text2Brush}" Visibility="{Binding Row.HasRun, Converter={StaticResource Vis}, ConverterParameter=invert}" />
-                                    </StackPanel>
-                                </Grid>
+        <c:SplitPanel SideWidth="0" StackBelow="820" Gap="15">
+            <!-- Kết quả phân tích -->
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,6">
+                        <Grid DockPanel.Dock="Right">
+                            <Border Style="{StaticResource TagGreen}" Visibility="{Binding Scanned, Converter={StaticResource Vis}}">
+                                <TextBlock Text="Đã quét" Style="{StaticResource TagGreenText}" />
                             </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                            <Border Style="{StaticResource Tag}" Visibility="{Binding NotScanned, Converter={StaticResource Vis}}">
+                                <TextBlock Text="Chưa quét" Style="{StaticResource TagText}" />
+                            </Border>
+                        </Grid>
+                        <TextBlock Text="Kết quả phân tích" FontSize="13" FontWeight="ExtraBold" VerticalAlignment="Center" />
+                    </DockPanel>
 
-                <Grid Margin="16,14">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Chưa quét. Bấm “Quét và xem trước” để biết dung lượng có thể giải phóng." Style="{StaticResource Secondary}"
-                                   Visibility="{Binding NotScanned, Converter={StaticResource Vis}}" />
-                        <StackPanel Visibility="{Binding Scanned, Converter={StaticResource Vis}}">
-                            <TextBlock FontSize="14">
-                                <Run Text="Có thể giải phóng" /> <Run Text="{Binding TotalText, Mode=OneWay}" FontWeight="SemiBold" />
+                    <DockPanel Margin="0,8,0,4">
+                        <c:RingProgress DockPanel.Dock="Left" Value="{Binding SelectedPercent}" Text="{Binding SelectedShort}" Width="76" Height="76" Margin="0,0,16,0">
+                            <c:RingProgress.RingBrush>
+                                <SolidColorBrush Color="#438AFA" />
+                            </c:RingProgress.RingBrush>
+                        </c:RingProgress>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock FontSize="14" FontWeight="Bold" TextWrapping="Wrap">
+                                <Run Text="Có thể giải phóng" /> <Run Text="{Binding TotalText, Mode=OneWay}" />
                             </TextBlock>
-                            <TextBlock Text="{Binding ScannedAt}" Style="{StaticResource Meta}" />
+                            <TextBlock Text="{Binding ScannedAt}" FontSize="11" Foreground="{StaticResource Text2Brush}" Margin="0,4,0,0"
+                                       Visibility="{Binding Scanned, Converter={StaticResource Vis}}" />
+                            <TextBlock Text="Bấm “Quét và xem trước” để biết dung lượng từng nhóm. Chưa xóa gì cho đến khi xác nhận." FontSize="11"
+                                       Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                       Visibility="{Binding NotScanned, Converter={StaticResource Vis}}" />
                         </StackPanel>
-                    </StackPanel>
-                    <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Command="{Binding CleanCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=broom}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                            <TextBlock Text="{Binding CleanLabel}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
-            </StackPanel>
-        </Border>
+                    </DockPanel>
+
+                    <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:CleanupItemViewModel}">
+                                <Border Style="{StaticResource SettingRow}">
+                                    <DockPanel>
+                                        <CheckBox DockPanel.Dock="Left" IsChecked="{Binding Row.IsSelected}" VerticalAlignment="Center" Margin="0,0,10,0"
+                                                  AutomationProperties.Name="{Binding Name}" />
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <c:StatusChip State="{Binding Row.StateKey}" Text="{Binding Row.StateText}" Height="22" Margin="0,0,8,0"
+                                                          Visibility="{Binding Row.HasRun, Converter={StaticResource Vis}}" />
+                                            <TextBlock Text="{Binding Size}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <StackPanel VerticalAlignment="Center" ToolTip="{Binding Scope}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource RowTitle}" />
+                                                <c:StatusChip State="{Binding SafetyKey}" Height="20" Margin="8,0,0,0" />
+                                            </StackPanel>
+                                            <TextBlock Style="{StaticResource RowSub}">
+                                                <Run Text="{Binding Files, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Scope, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Note}" FontSize="11" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap"
+                                                       Visibility="{Binding Note, Converter={StaticResource NotEmpty}}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Grid Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Style="{StaticResource SecondaryButton}" Command="{Binding ScanCommand}" Content="{Binding ScanLabel}" HorizontalContentAlignment="Center" />
+                        <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Command="{Binding CleanCommand}" Content="{Binding CleanLabel}" HorizontalContentAlignment="Center" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Tùy chọn an toàn: nguyên tắc luôn áp dụng (không phải công tắc giả) -->
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Nguyên tắc an toàn" FontSize="13" FontWeight="ExtraBold" Margin="0,0,0,8" />
+                    <TextBlock Text="Luôn áp dụng khi dọn dẹp, không tắt được." FontSize="12" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,0,0,4" />
+                    <Border Style="{StaticResource SettingRow}">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource TagGreen}"><TextBlock Text="Luôn áp dụng" Style="{StaticResource TagGreenText}" /></Border>
+                            <StackPanel>
+                                <TextBlock Text="Bỏ qua tệp cá nhân" Style="{StaticResource RowTitle}" />
+                                <TextBlock Text="Tài liệu, ảnh, Desktop, Downloads không bị đụng tới" Style="{StaticResource RowSub}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource SettingRow}">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource TagGreen}"><TextBlock Text="Luôn áp dụng" Style="{StaticResource TagGreenText}" /></Border>
+                            <StackPanel>
+                                <TextBlock Text="Chỉ xóa trong thư mục tạm đã liệt kê" Style="{StaticResource RowTitle}" />
+                                <TextBlock Text="Không xóa mật khẩu, cookie hay dữ liệu đăng nhập" Style="{StaticResource RowSub}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource SettingRow}">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource TagGreen}"><TextBlock Text="Luôn áp dụng" Style="{StaticResource TagGreenText}" /></Border>
+                            <StackPanel>
+                                <TextBlock Text="Xem trước và xác nhận trước khi dọn" Style="{StaticResource RowTitle}" />
+                                <TextBlock Text="Hiện danh sách, số file và dung lượng trước thao tác" Style="{StaticResource RowSub}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource SettingRow}" BorderThickness="0">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource TagAmber}"><TextBlock Text="Cần xem" Style="{StaticResource TagAmberText}" /></Border>
+                            <StackPanel>
+                                <TextBlock Text="Thùng rác không chọn sẵn" Style="{StaticResource RowTitle}" />
+                                <TextBlock Text="Có thể chứa file khách muốn khôi phục — hỏi trước khi dọn" Style="{StaticResource RowSub}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                    <Border Style="{StaticResource Note}" Margin="0,10,0,0">
+                        <TextBlock Style="{StaticResource NoteText}" Text="ⓘ  File đang được dùng sẽ được bỏ qua. Mọi thao tác được ghi vào log." />
+                    </Border>
+                </StackPanel>
+            </Border>
+        </c:SplitPanel>
     </StackPanel>
 </UserControl>

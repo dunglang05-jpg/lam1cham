@@ -3,43 +3,72 @@
                     xmlns:c="clr-namespace:LamMotCham.App.Controls"
                     xmlns:conv="clr-namespace:LamMotCham.App.Converters">
 
-    <!-- Màu theo thiết kế v3 (canvas "Giao diện v3 — theo mô-đun") -->
-    <Color x:Key="PrimaryColor">#1F63F0</Color>
-    <Color x:Key="PrimaryHoverColor">#1A55D6</Color>
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#1F63F0" />
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#1A55D6" />
-    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1F4FC4" />
-    <SolidColorBrush x:Key="PrimaryTintBrush" Color="#EAF1FF" />
+    <!-- Màu theo thiết kế canvas "Làm 1 Chạm — UI Canvas" (lam1cham_canvas.html) -->
+    <Color x:Key="PrimaryColor">#1764E8</Color>
+    <Color x:Key="PrimaryHoverColor">#135DE0</Color>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#1764E8" />
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#135DE0" />
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#2369D8" />
+    <SolidColorBrush x:Key="PrimaryTintBrush" Color="#EAF2FF" />
     <SolidColorBrush x:Key="PrimarySoftBrush" Color="#F3F7FF" />
-    <SolidColorBrush x:Key="HeadingBrush" Color="#0F2552" />
-    <SolidColorBrush x:Key="TextBrush" Color="#0F1E3A" />
-    <SolidColorBrush x:Key="Text2Brush" Color="#5E6B82" />
-    <SolidColorBrush x:Key="Text3Brush" Color="#3B4A63" />
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F7FB" />
+    <SolidColorBrush x:Key="HeadingBrush" Color="#14294A" />
+    <SolidColorBrush x:Key="TextBrush" Color="#172944" />
+    <SolidColorBrush x:Key="Text2Brush" Color="#78879D" />
+    <SolidColorBrush x:Key="Text3Brush" Color="#526B8D" />
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#F4F7FC" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="SubtleBrush" Color="#F7F9FD" />
-    <SolidColorBrush x:Key="LineBrush" Color="#E4EAF3" />
-    <SolidColorBrush x:Key="LineSoftBrush" Color="#F1F4F9" />
-    <SolidColorBrush x:Key="ControlLineBrush" Color="#C9D3E3" />
-    <SolidColorBrush x:Key="OutlineBrush" Color="#C9D7F2" />
-    <SolidColorBrush x:Key="ChipGrayBrush" Color="#EEF1F6" />
-    <SolidColorBrush x:Key="ChipGrayTextBrush" Color="#4A5872" />
-    <SolidColorBrush x:Key="SuccessBrush" Color="#16803C" />
-    <SolidColorBrush x:Key="SuccessTextBrush" Color="#146C34" />
-    <SolidColorBrush x:Key="SuccessTintBrush" Color="#E9F7EF" />
-    <SolidColorBrush x:Key="SuccessLineBrush" Color="#BFE5CC" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#B7791F" />
-    <SolidColorBrush x:Key="WarningTextBrush" Color="#7A4F0F" />
-    <SolidColorBrush x:Key="WarningTintBrush" Color="#FDF4E3" />
-    <SolidColorBrush x:Key="ErrorBrush" Color="#C62828" />
-    <SolidColorBrush x:Key="ErrorTextBrush" Color="#A61F1F" />
-    <SolidColorBrush x:Key="ErrorTintBrush" Color="#FFF8F8" />
-    <SolidColorBrush x:Key="ErrorLineBrush" Color="#F1C4C4" />
-    <SolidColorBrush x:Key="InfoBrush" Color="#0B69A3" />
-    <SolidColorBrush x:Key="InfoTextBrush" Color="#23407A" />
-    <SolidColorBrush x:Key="InfoTintBrush" Color="#EEF4FF" />
-    <SolidColorBrush x:Key="DisabledBrush" Color="#E4E7EC" />
+    <SolidColorBrush x:Key="SubtleBrush" Color="#F8FAFF" />
+    <SolidColorBrush x:Key="LineBrush" Color="#E4EAF4" />
+    <SolidColorBrush x:Key="LineSoftBrush" Color="#EEF2F7" />
+    <SolidColorBrush x:Key="ControlLineBrush" Color="#DBE4F2" />
+    <SolidColorBrush x:Key="OutlineBrush" Color="#DBE4F2" />
+    <SolidColorBrush x:Key="ChipGrayBrush" Color="#F0F3F8" />
+    <SolidColorBrush x:Key="ChipGrayTextBrush" Color="#67768B" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#12A879" />
+    <SolidColorBrush x:Key="SuccessTextBrush" Color="#0B9466" />
+    <SolidColorBrush x:Key="SuccessTintBrush" Color="#E5F8F0" />
+    <SolidColorBrush x:Key="SuccessLineBrush" Color="#BFE9D8" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#F5A623" />
+    <SolidColorBrush x:Key="WarningTextBrush" Color="#A66A07" />
+    <SolidColorBrush x:Key="WarningTintBrush" Color="#FFF3DD" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="#D84A65" />
+    <SolidColorBrush x:Key="ErrorTextBrush" Color="#B4233F" />
+    <SolidColorBrush x:Key="ErrorTintBrush" Color="#FFF5F7" />
+    <SolidColorBrush x:Key="ErrorLineBrush" Color="#F6C7D0" />
+    <SolidColorBrush x:Key="InfoBrush" Color="#1764E8" />
+    <SolidColorBrush x:Key="InfoTextBrush" Color="#526B8D" />
+    <SolidColorBrush x:Key="InfoTintBrush" Color="#F0F6FF" />
+    <SolidColorBrush x:Key="DisabledBrush" Color="#E4E9F1" />
     <SolidColorBrush x:Key="OverlayBrush" Color="#6610213F" />
+
+    <!-- Thanh bên màu navy -->
+    <LinearGradientBrush x:Key="SidebarBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#103665" Offset="0" />
+        <GradientStop Color="#071F47" Offset="0.85" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="NavActiveBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#267CF4" Offset="0" />
+        <GradientStop Color="#1C65DF" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="NavTextBrush" Color="#BDD0ED" />
+    <SolidColorBrush x:Key="NavLabelBrush" Color="#7898C1" />
+    <SolidColorBrush x:Key="NavHoverBrush" Color="#1AFFFFFF" />
+    <LinearGradientBrush x:Key="PrimaryGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2C7CFA" Offset="0" />
+        <GradientStop Color="#135DE0" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ReadinessBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#144C9D" Offset="0" />
+        <GradientStop Color="#1E73EB" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Nền ô icon theo màu (ic.blue, ic.green, ...) -->
+    <SolidColorBrush x:Key="TileBlueBrush" Color="#E7F0FF" />
+    <SolidColorBrush x:Key="TileGreenBrush" Color="#DEF8ED" />
+    <SolidColorBrush x:Key="TileAmberBrush" Color="#FFF1D8" />
+    <SolidColorBrush x:Key="TilePurpleBrush" Color="#EEE7FF" />
+    <SolidColorBrush x:Key="TileCyanBrush" Color="#DEF7FA" />
+    <SolidColorBrush x:Key="TileRoseBrush" Color="#FFE9ED" />
 
     <FontFamily x:Key="UiFont">Segoe UI, Arial</FontFamily>
     <FontFamily x:Key="GlyphFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
@@ -65,7 +94,7 @@
 
     <!-- Chữ: không dưới 11 px cho thông tin cần đọc -->
     <Style x:Key="H1" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontSize" Value="25" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource HeadingBrush}" />
     </Style>
@@ -75,9 +104,21 @@
         <Setter Property="Foreground" Value="{StaticResource HeadingBrush}" />
     </Style>
     <Style x:Key="H3" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+    <!-- Nhãn nhỏ viết hoa màu xanh phía trên tiêu đề (eyebrow) -->
+    <Style x:Key="Eyebrow" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+    </Style>
+    <!-- Tiêu đề khu vực (Tác vụ nhanh, Tình trạng tổng thể) -->
+    <Style x:Key="SectionTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource HeadingBrush}" />
     </Style>
     <Style x:Key="Body" TargetType="TextBlock">
         <Setter Property="FontSize" Value="14" />
@@ -126,8 +167,8 @@
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="14" />
-        <Setter Property="Padding" Value="20,16" />
+        <Setter Property="CornerRadius" Value="15" />
+        <Setter Property="Padding" Value="18,17" />
     </Style>
     <Style x:Key="CardFlush" TargetType="Border" BasedOn="{StaticResource Card}">
         <Setter Property="Padding" Value="0" />
@@ -135,10 +176,56 @@
 
     <!-- Ô vuông nền xanh nhạt chứa icon -->
     <Style x:Key="IconTile" TargetType="Border">
-        <Setter Property="Width" Value="44" />
-        <Setter Property="Height" Value="44" />
+        <Setter Property="Width" Value="39" />
+        <Setter Property="Height" Value="39" />
         <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="Background" Value="{StaticResource PrimaryTintBrush}" />
+        <Setter Property="Background" Value="{StaticResource TileBlueBrush}" />
+    </Style>
+    <Style x:Key="IconTileGreen" TargetType="Border" BasedOn="{StaticResource IconTile}">
+        <Setter Property="Background" Value="{StaticResource TileGreenBrush}" />
+    </Style>
+    <Style x:Key="IconTileAmber" TargetType="Border" BasedOn="{StaticResource IconTile}">
+        <Setter Property="Background" Value="{StaticResource TileAmberBrush}" />
+    </Style>
+    <Style x:Key="IconTilePurple" TargetType="Border" BasedOn="{StaticResource IconTile}">
+        <Setter Property="Background" Value="{StaticResource TilePurpleBrush}" />
+    </Style>
+    <Style x:Key="IconTileCyan" TargetType="Border" BasedOn="{StaticResource IconTile}">
+        <Setter Property="Background" Value="{StaticResource TileCyanBrush}" />
+    </Style>
+    <Style x:Key="IconTileRose" TargetType="Border" BasedOn="{StaticResource IconTile}">
+        <Setter Property="Background" Value="{StaticResource TileRoseBrush}" />
+    </Style>
+
+    <!-- Ghi chú nền xanh nhạt (.note) -->
+    <Style x:Key="Note" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource InfoTintBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="13,10" />
+    </Style>
+    <Style x:Key="NoteText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource InfoTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- Dòng thiết lập (.setting-row): icon, chữ, điều khiển; đường kẻ dưới -->
+    <Style x:Key="SettingRow" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource LineSoftBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Padding" Value="0,11" />
+    </Style>
+    <Style x:Key="RowTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style x:Key="RowSub" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource Text2Brush}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="Margin" Value="0,2,0,0" />
     </Style>
 
     <!-- Ô trắng nhỏ chứa icon trên nút xanh -->
@@ -166,18 +253,18 @@
     <!-- Nút -->
     <Style x:Key="ButtonBase" TargetType="Button">
         <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="MinHeight" Value="40" />
-        <Setter Property="MinWidth" Value="40" />
-        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="MinWidth" Value="38" />
+        <Setter Property="Padding" Value="15,0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="{TemplateBinding Padding}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9" Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"
                                           RecognizesAccessKey="True" />
@@ -196,7 +283,7 @@
     </Style>
 
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource PrimaryGradientBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="White" />
@@ -220,7 +307,7 @@
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+        <Setter Property="Foreground" Value="#365170" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" />
@@ -258,29 +345,57 @@
         </Style.Triggers>
     </Style>
 
-    <!-- Mục điều hướng: đang chọn = nền xanh, chữ trắng -->
+    <!-- Mục điều hướng trên thanh bên navy: đang chọn = nền xanh gradient, chữ trắng đậm -->
     <Style x:Key="NavButton" TargetType="RadioButton">
         <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="Foreground" Value="#24324B" />
-        <Setter Property="Height" Value="44" />
-        <Setter Property="Margin" Value="0,0,0,4" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource NavTextBrush}" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Margin" Value="0,1" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="Bd" Background="Transparent" CornerRadius="10" Padding="10,0">
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="10" Padding="12,0">
                         <ContentPresenter VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#F1F4F9" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavHoverBrush}" />
+                            <Setter Property="Foreground" Value="White" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavActiveBrush}" />
                             <Setter Property="Foreground" Value="White" />
-                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Nút phụ trên thanh bên (Mở log, Mở báo cáo) -->
+    <Style x:Key="SideButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource NavTextBrush}" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="10" Padding="12,0">
+                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource NavHoverBrush}" />
+                            <Setter Property="Foreground" Value="White" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -321,7 +436,7 @@
         <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="#24324B" />
+        <Setter Property="Foreground" Value="#63748B" />
         <Setter Property="Height" Value="32" />
         <Setter Property="Margin" Value="0,0,6,0" />
         <Setter Property="Cursor" Value="Hand" />
@@ -329,7 +444,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="Bd" Background="{StaticResource SurfaceBrush}" BorderBrush="#DCE4F2" BorderThickness="1" CornerRadius="16" Padding="12,0">
+                    <Border x:Name="Bd" Background="{StaticResource SurfaceBrush}" BorderBrush="#E1E8F3" BorderThickness="1" CornerRadius="8" Padding="12,0">
                         <ContentPresenter VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -337,9 +452,9 @@
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimarySoftBrush}" />
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}" />
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-                            <Setter Property="Foreground" Value="White" />
+                            <Setter TargetName="Bd" Property="Background" Value="#EAF2FF" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="#CFE0FF" />
+                            <Setter Property="Foreground" Value="#1C60D4" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -347,33 +462,29 @@
         </Setter>
     </Style>
 
-    <!-- Tiêu đề trang (mỗi trang là một mô-đun, QĐ-002) -->
+    <!-- Tiêu đề trang (.page-heading): nhãn nhỏ, tiêu đề lớn + nhãn mô-đun, mô tả; nút ở bên phải -->
     <Style TargetType="c:PageHeader">
-        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="Margin" Value="0,0,0,18" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="c:PageHeader">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Border Style="{StaticResource IconTile}" Margin="0,0,14,0" VerticalAlignment="Center">
-                            <Image Width="26" Height="26" Style="{StaticResource IconImage}"
-                                   Source="{Binding IconKey, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThemeIcon}}" />
-                        </Border>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel VerticalAlignment="Top">
+                            <TextBlock Text="{TemplateBinding Eyebrow}" Style="{StaticResource Eyebrow}" Margin="0,0,0,5" />
                             <WrapPanel>
                                 <TextBlock Text="{TemplateBinding Heading}" Style="{StaticResource H1}" VerticalAlignment="Center" Margin="0,0,10,0" />
                                 <Border Style="{StaticResource GrayTag}">
                                     <TextBlock Text="{TemplateBinding ModuleLabel}" Style="{StaticResource GrayTagText}" />
                                 </Border>
                             </WrapPanel>
-                            <TextBlock Text="{TemplateBinding Description}" FontSize="13" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                            <TextBlock Text="{TemplateBinding Description}" FontSize="13" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,6,0,0" />
                         </StackPanel>
-                        <ContentPresenter Grid.Column="2" VerticalAlignment="Center" Margin="16,0,0,0" />
+                        <ContentPresenter Grid.Column="1" VerticalAlignment="Top" Margin="16,4,0,0" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -476,6 +587,75 @@
     <Style x:Key="GreenMeter" TargetType="ProgressBar" BasedOn="{StaticResource MeterBar}">
         <Setter Property="Height" Value="5" />
         <Setter Property="Foreground" Value="#2E9E5B" />
+    </Style>
+
+    <!-- Công tắc (.switch): bật = xanh lá -->
+    <Style x:Key="Switch" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="Track" Width="38" Height="22" CornerRadius="11" Background="#DBE2EC">
+                        <Ellipse x:Name="Thumb" Width="16" Height="16" Fill="White" HorizontalAlignment="Left" Margin="3,0,0,0">
+                            <Ellipse.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.18" Color="#102244" />
+                            </Ellipse.Effect>
+                        </Ellipse>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="#20B47F" />
+                            <Setter TargetName="Thumb" Property="Margin" Value="19,0,0,0" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Track" Property="Opacity" Value="0.45" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Nhãn nhỏ (.tag) -->
+    <Style x:Key="Tag" TargetType="Border">
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="7,3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Background" Value="{StaticResource ChipGrayBrush}" />
+    </Style>
+    <Style x:Key="TagGreen" TargetType="Border" BasedOn="{StaticResource Tag}">
+        <Setter Property="Background" Value="{StaticResource SuccessTintBrush}" />
+    </Style>
+    <Style x:Key="TagBlue" TargetType="Border" BasedOn="{StaticResource Tag}">
+        <Setter Property="Background" Value="{StaticResource PrimaryTintBrush}" />
+    </Style>
+    <Style x:Key="TagAmber" TargetType="Border" BasedOn="{StaticResource Tag}">
+        <Setter Property="Background" Value="{StaticResource WarningTintBrush}" />
+    </Style>
+    <Style x:Key="TagText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource ChipGrayTextBrush}" />
+    </Style>
+    <Style x:Key="TagGreenText" TargetType="TextBlock" BasedOn="{StaticResource TagText}">
+        <Setter Property="Foreground" Value="{StaticResource SuccessTextBrush}" />
+    </Style>
+    <Style x:Key="TagBlueText" TargetType="TextBlock" BasedOn="{StaticResource TagText}">
+        <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+    </Style>
+    <Style x:Key="TagAmberText" TargetType="TextBlock" BasedOn="{StaticResource TagText}">
+        <Setter Property="Foreground" Value="{StaticResource WarningTextBrush}" />
+    </Style>
+
+    <!-- Liên kết nhỏ (Xem tất cả mô-đun →) -->
+    <Style x:Key="LinkButton" TargetType="Button" BasedOn="{StaticResource TertiaryButton}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
     </Style>
 
 </ResourceDictionary>

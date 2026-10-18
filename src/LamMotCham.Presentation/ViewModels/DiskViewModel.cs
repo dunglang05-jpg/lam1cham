@@ -77,6 +77,9 @@ public sealed class DiskViewModel : ObservableObject
 
     public RelayCommand OpenDiskManagementCommand { get; }
 
+    /// <summary>"Làm mới thông tin": đọc lại thông tin máy (ổ đĩa, tài khoản, mã hóa).</summary>
+    public AsyncCommand RefreshCommand => _main.Machine.CheckCommand;
+
     /// <summary>Ổ NTFS có thể chia (ví dụ "C:").</summary>
     public ObservableCollection<string> SplitSources { get; } = ["C:"];
 

@@ -171,6 +171,12 @@ public sealed class MachineViewModel : ObservableObject
 
     public ObservableCollection<InfoRow> Status { get; } = [];
 
+    /// <summary>Thông số hiển thị dạng dải trên thẻ chào (Tổng quan): mọi dòng Status trừ "Máy" và "Quyền".</summary>
+    public ObservableCollection<InfoRow> Specs { get; } = [];
+
+    /// <summary>Hãng và model máy, hoặc lời nhắc khi chưa đọc.</summary>
+    public string ModelText => Status.FirstOrDefault(r => r.Label == "Máy")?.Value ?? "Chưa đọc thông tin máy";
+
     public MetricViewModel Ram { get; } = new("memory", "RAM còn trống");
 
     public MetricViewModel SystemDisk { get; } = new("disk", "Ổ hệ thống còn trống");
@@ -447,6 +453,13 @@ public sealed class MachineViewModel : ObservableObject
         Status.Add(new InfoRow("WinGet", _winGetVersion is null ? "Không khả dụng" : _winGetVersion + " · sẵn sàng"));
         Status.Add(new InfoRow("Quyền", _main.S.IsElevated ? "Quản trị viên" : "Người dùng (cần nâng quyền khi cài)"));
         Status.Add(new InfoRow("Mạng", NetworkInterface.GetIsNetworkAvailable() ? "Đã kết nối" : "Không có kết nối"));
+        Specs.Clear();
+        foreach (var row in Status.Where(r => r.Label is not "Máy" and not "Quyền"))
+        {
+            Specs.Add(row);
+        }
+
+        OnPropertyChanged(nameof(ModelText));
     }
 
     /// <summary>Tên CPU gọn cho một dòng: bỏ (R), (TM), chữ "CPU" và khoảng trắng thừa.</summary>

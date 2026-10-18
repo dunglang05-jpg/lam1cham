@@ -59,17 +59,18 @@ public partial class MainWindow : Window
         if (compact != IsCompact)
         {
             IsCompact = compact;
-            SidebarColumn.Width = new GridLength(compact ? 76 : 232);
+            SidebarColumn.Width = new GridLength(compact ? 64 : 232);
         }
 
-        // Màn hình thấp (laptop 1366×768 hoặc 1920×1080 phóng 150%): lề trên/dưới nhỏ để trang vừa một màn hình.
+        // Màn hình thấp (laptop 1366×768 hoặc 1920×1080 phóng 150%): thanh trên thấp hơn, ẩn chân trang, lề nhỏ.
         var shortScreen = height < ShortBelowHeight;
-        TopBarRow.Height = new GridLength(shortScreen ? 56 : 64);
+        TopBarRow.Height = new GridLength(shortScreen ? 58 : 66);
+        Footer.Visibility = shortScreen ? Visibility.Collapsed : Visibility.Visible;
         PageHost.Margin = (compact, shortScreen) switch
         {
-            (true, _) => new Thickness(18, 14, 18, 14),
-            (false, true) => new Thickness(24, 12, 24, 12),
-            _ => new Thickness(28, 24, 28, 24),
+            (true, _) => new Thickness(16),
+            (false, true) => new Thickness(22, 16, 22, 16),
+            _ => new Thickness(25),
         };
     }
 }

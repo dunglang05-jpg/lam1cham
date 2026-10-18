@@ -15,18 +15,18 @@ public sealed class StatusChip : Border
     public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
         nameof(Text), typeof(string), typeof(StatusChip), new PropertyMetadata(null, (d, _) => ((StatusChip)d).Update()));
 
-    private static readonly Brush GrayBg = Frozen("#EEF1F5");
-    private static readonly Brush GrayFg = Frozen("#3F4A5C");
-    private static readonly Brush BlueBg = Frozen("#EAF1FF");
-    private static readonly Brush BlueFg = Frozen("#1D55CC");
-    private static readonly Brush GreenBg = Frozen("#E8F5EC");
-    private static readonly Brush GreenFg = Frozen("#146C34");
-    private static readonly Brush RedBg = Frozen("#FDECEC");
-    private static readonly Brush RedFg = Frozen("#A61F1F");
-    private static readonly Brush AmberBg = Frozen("#FDF4E3");
-    private static readonly Brush AmberFg = Frozen("#7A4F0F");
-    private static readonly Brush InfoBg = Frozen("#E6F1F8");
-    private static readonly Brush InfoFg = Frozen("#0B5A8A");
+    private static readonly Brush GrayBg = Frozen("#F0F3F8");
+    private static readonly Brush GrayFg = Frozen("#67768B");
+    private static readonly Brush BlueBg = Frozen("#EAF2FF");
+    private static readonly Brush BlueFg = Frozen("#2369D8");
+    private static readonly Brush GreenBg = Frozen("#E5F8F0");
+    private static readonly Brush GreenFg = Frozen("#0B9466");
+    private static readonly Brush RedBg = Frozen("#FFE9ED");
+    private static readonly Brush RedFg = Frozen("#B4233F");
+    private static readonly Brush AmberBg = Frozen("#FFF3DD");
+    private static readonly Brush AmberFg = Frozen("#A66A07");
+    private static readonly Brush InfoBg = Frozen("#EAF2FF");
+    private static readonly Brush InfoFg = Frozen("#2369D8");
 
     private static readonly Dictionary<string, (string Glyph, Brush Bg, Brush Fg, string Label)> States = new(StringComparer.Ordinal)
     {
@@ -71,7 +71,7 @@ public sealed class StatusChip : Border
     public StatusChip()
     {
         Height = 24;
-        CornerRadius = new CornerRadius(12);
+        CornerRadius = new CornerRadius(6);
         Padding = new Thickness(9, 0, 10, 0);
         HorizontalAlignment = HorizontalAlignment.Left;
         VerticalAlignment = VerticalAlignment.Center;

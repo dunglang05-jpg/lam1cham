@@ -48,6 +48,9 @@ public sealed class NavItem(MainViewModel owner, Page page, string label, string
 
 public sealed record RecentItem(string Name, string Message, string Time, string StateKey);
 
+/// <summary>Một kết quả của ô "Tìm tính năng": bấm để mở đúng trang.</summary>
+public sealed record SearchHit(string Title, string Where, Page Page);
+
 /// <summary>Các thao tác cần nền tảng giao diện (WPF cung cấp).</summary>
 public interface IUiPlatform
 {
@@ -62,6 +65,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private readonly IUiPlatform _ui;
     private Page _page = Page.Overview;
+    private string _searchText = "";
+    private RelayCommand? _openSearchHit;
+    private readonly List<(string Key, SearchHit Hit)> _searchIndex;
     private object? _dialog;
     private bool _isRunning;
     private CancellationTokenSource? _runCts;
@@ -95,7 +101,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             new(this, Page.Disk, "Ổ đĩa & Tài khoản", "disk"),
             new(this, Page.Cleanup, "Dọn dẹp & Hiệu năng", "sparkle"),
             new(this, Page.Handover, "Kiểm tra & Bàn giao", "clipboard"),
+            new(this, Page.Modules, "Mô-đun & Cập nhật", "puzzle"),
         ];
+        _searchIndex = BuildSearchIndex();
 
         Machine = new MachineViewModel(this);
         Overview = new OverviewViewModel(this);
@@ -145,7 +153,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<NavItem> Nav { get; }
 
+    /// <summary>4 tác vụ gần nhất (Tổng quan › Hoạt động gần đây).</summary>
     public ObservableCollection<RecentItem> Recent { get; } = [];
+
+    public bool HasRecent => Recent.Count > 0;
 
     public MachineViewModel Machine { get; }
 
@@ -164,6 +175,40 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public ModulesViewModel Modules { get; }
 
     public RelayCommand GoModulesCommand { get; }
+
+    /// <summary>Tên trang hiện tại cho đường dẫn trên thanh trên cùng.</summary>
+    public string CurrentPageTitle => Nav.FirstOrDefault(n => n.Page == _page)?.Label ?? "Tổng quan";
+
+    /// <summary>Ô "Tìm tính năng": gõ tên tính năng/tác vụ, bấm kết quả để mở trang chứa nó.</summary>
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (Set(ref _searchText, value))
+            {
+                UpdateSearch();
+            }
+        }
+    }
+
+    public ObservableCollection<SearchHit> SearchHits { get; } = [];
+
+    public bool HasSearchHits => SearchHits.Count > 0;
+
+    public bool SearchNoHits => _searchText.Trim().Length > 0 && SearchHits.Count == 0;
+
+    public bool SearchOpen => _searchText.Trim().Length > 0;
+
+    public RelayCommand OpenSearchHitCommand => _openSearchHit ??= new RelayCommand(p =>
+    {
+        var hit = p as SearchHit ?? SearchHits.FirstOrDefault();
+        if (hit is not null)
+        {
+            CurrentPage = hit.Page;
+            SearchText = "";
+        }
+    });
 
     public RelayCommand OpenRunReportCommand { get; }
 
@@ -242,6 +287,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             {
                 OnPropertyChanged(nameof(CurrentPageViewModel));
                 OnPropertyChanged(nameof(ModulesSelected));
+                OnPropertyChanged(nameof(CurrentPageTitle));
                 foreach (var n in Nav)
                 {
                     n.Refresh();
@@ -574,10 +620,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Recent.Insert(0, new RecentItem(t.DisplayName, t.Reason ?? "", (t.FinishedAt ?? DateTimeOffset.Now).ToLocalTime().ToString("HH:mm · dd/MM", Vi), StateKeyOf(t.State, t.Kind)));
         }
 
-        while (Recent.Count > 8)
+        while (Recent.Count > 4)
         {
             Recent.RemoveAt(Recent.Count - 1);
         }
+
+        OnPropertyChanged(nameof(HasRecent));
     }
 
     private static string StateKeyOf(TaskState state, TaskKind kind) => state switch
@@ -673,5 +721,71 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             await Task.Delay(700);
             OnTick();
         }
+    }
+
+    private List<(string Key, SearchHit Hit)> BuildSearchIndex()
+    {
+        var hits = new List<SearchHit>();
+        foreach (var n in Nav)
+        {
+            hits.Add(new SearchHit(n.Label, "Trang", n.Page));
+        }
+
+        // Tính năng không nằm trong danh mục tác vụ.
+        hits.Add(new SearchHit("Chia ổ đĩa", "Ổ đĩa & Tài khoản", Page.Disk));
+        hits.Add(new SearchHit("Đổi tên máy tính", "Ổ đĩa & Tài khoản", Page.Disk));
+        hits.Add(new SearchHit("Khóa khôi phục BitLocker", "Ổ đĩa & Tài khoản", Page.Disk));
+        hits.Add(new SearchHit("Tạo báo cáo bàn giao", "Kiểm tra & Bàn giao", Page.Handover));
+        hits.Add(new SearchHit("Hoàn tác thay đổi Windows", "Cài đặt & Tối ưu", Page.Windows));
+        hits.Add(new SearchHit("Thông tin máy", "Tổng quan", Page.Overview));
+        hits.Add(new SearchHit("Thiết lập đầy đủ", "Tổng quan", Page.Overview));
+
+        foreach (var row in Rows.Values)
+        {
+            var page = row.Entry.Category switch
+            {
+                TaskCategory.Software => Page.Software,
+                TaskCategory.WindowsSettings => Page.Windows,
+                TaskCategory.DiskAndAccount => Page.Disk,
+                TaskCategory.Cleanup => Page.Cleanup,
+                _ => Page.Handover,
+            };
+            hits.Add(new SearchHit(row.Name, Nav.First(n => n.Page == page).Label, page));
+        }
+
+        return [.. hits.Select(h => (Fold(h.Title + " " + h.Where), h))];
+    }
+
+    private void UpdateSearch()
+    {
+        SearchHits.Clear();
+        var words = Fold(_searchText).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length > 0)
+        {
+            foreach (var (_, hit) in _searchIndex.Where(e => words.All(w => e.Key.Contains(w, StringComparison.Ordinal))).Take(8))
+            {
+                SearchHits.Add(hit);
+            }
+        }
+
+        OnPropertyChanged(nameof(HasSearchHits));
+        OnPropertyChanged(nameof(SearchNoHits));
+        OnPropertyChanged(nameof(SearchOpen));
+    }
+
+    /// <summary>Chữ thường, bỏ dấu tiếng Việt để tìm "bitlocker", "o dia", "tat bitlocker" đều ra.</summary>
+    internal static string Fold(string text)
+    {
+        var d = text.ToLowerInvariant().Replace('đ', 'd').Normalize(NormalizationForm.FormD);
+        var b = new StringBuilder(d.Length);
+        foreach (var ch in d)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark)
+            {
+                b.Append(ch);
+            }
+        }
+
+        return b.ToString().Normalize(NormalizationForm.FormC);
     }
 }
