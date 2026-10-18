@@ -53,13 +53,8 @@
             </StackPanel>
         </Border>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Margin="0,0,16,0">
+        <c:SplitPanel SideWidth="0" StackBelow="820" Gap="16">
+            <StackPanel>
                 <!-- Đổi tên máy -->
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
@@ -114,7 +109,7 @@
             </StackPanel>
 
             <!-- BitLocker -->
-            <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
                 <StackPanel>
                     <DockPanel Margin="0,0,0,12">
                         <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=lock}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
@@ -135,6 +130,6 @@
                     </Button>
                 </StackPanel>
             </Border>
-        </Grid>
+        </c:SplitPanel>
     </StackPanel>
 </UserControl>

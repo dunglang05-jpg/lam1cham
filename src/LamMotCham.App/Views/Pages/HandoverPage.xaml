@@ -93,12 +93,8 @@
             </StackPanel>
         </Border>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Border Style="{StaticResource CardFlush}" Margin="0,0,16,0" VerticalAlignment="Top">
+        <c:SplitPanel SideWidth="0" StackBelow="820" Gap="16">
+            <Border Style="{StaticResource CardFlush}" VerticalAlignment="Top">
                 <StackPanel>
                     <DockPanel Margin="16,14">
                         <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
@@ -107,7 +103,7 @@
                     <ItemsControl ItemsSource="{Binding SystemChecks}" ItemTemplate="{StaticResource CheckRow}" />
                 </StackPanel>
             </Border>
-            <Border Grid.Column="1" Style="{StaticResource CardFlush}" VerticalAlignment="Top">
+            <Border Style="{StaticResource CardFlush}" VerticalAlignment="Top">
                 <StackPanel>
                     <DockPanel Margin="16,14">
                         <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=chip}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
@@ -116,6 +112,6 @@
                     <ItemsControl ItemsSource="{Binding Hardware}" ItemTemplate="{StaticResource CheckRow}" />
                 </StackPanel>
             </Border>
-        </Grid>
+        </c:SplitPanel>
     </StackPanel>
 </UserControl>

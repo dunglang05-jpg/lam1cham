@@ -366,12 +366,12 @@
                                    Source="{Binding IconKey, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ThemeIcon}}" />
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{TemplateBinding Heading}" Style="{StaticResource H1}" VerticalAlignment="Center" />
-                                <Border Style="{StaticResource GrayTag}" Margin="10,0,0,0">
+                            <WrapPanel>
+                                <TextBlock Text="{TemplateBinding Heading}" Style="{StaticResource H1}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <Border Style="{StaticResource GrayTag}">
                                     <TextBlock Text="{TemplateBinding ModuleLabel}" Style="{StaticResource GrayTagText}" />
                                 </Border>
-                            </StackPanel>
+                            </WrapPanel>
                             <TextBlock Text="{TemplateBinding Description}" FontSize="13" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" Margin="0,2,0,0" />
                         </StackPanel>
                         <ContentPresenter Grid.Column="2" VerticalAlignment="Center" Margin="16,0,0,0" />
