@@ -4,21 +4,21 @@
                     xmlns:conv="clr-namespace:LamMotCham.App.Converters">
 
     <!-- Màu theo thiết kế v3 (canvas "Giao diện v3 — theo mô-đun") -->
-    <Color x:Key="PrimaryColor">#1F63F0</Color>
-    <Color x:Key="PrimaryHoverColor">#1A55D6</Color>
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#1F63F0" />
-    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#1A55D6" />
-    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1F4FC4" />
+    <Color x:Key="PrimaryColor">#246BFD</Color>
+    <Color x:Key="PrimaryHoverColor">#1D55CC</Color>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#246BFD" />
+    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#1D55CC" />
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1D55CC" />
     <SolidColorBrush x:Key="PrimaryTintBrush" Color="#EAF1FF" />
     <SolidColorBrush x:Key="PrimarySoftBrush" Color="#F3F7FF" />
-    <SolidColorBrush x:Key="HeadingBrush" Color="#0F2552" />
-    <SolidColorBrush x:Key="TextBrush" Color="#0F1E3A" />
-    <SolidColorBrush x:Key="Text2Brush" Color="#5E6B82" />
-    <SolidColorBrush x:Key="Text3Brush" Color="#3B4A63" />
+    <SolidColorBrush x:Key="HeadingBrush" Color="#172B4D" />
+    <SolidColorBrush x:Key="TextBrush" Color="#23314D" />
+    <SolidColorBrush x:Key="Text2Brush" Color="#667085" />
+    <SolidColorBrush x:Key="Text3Brush" Color="#475467" />
     <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F7FB" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="SubtleBrush" Color="#F7F9FD" />
-    <SolidColorBrush x:Key="LineBrush" Color="#E4EAF3" />
+    <SolidColorBrush x:Key="SubtleBrush" Color="#F8FAFD" />
+    <SolidColorBrush x:Key="LineBrush" Color="#E6EAF0" />
     <SolidColorBrush x:Key="LineSoftBrush" Color="#F1F4F9" />
     <SolidColorBrush x:Key="ControlLineBrush" Color="#C9D3E3" />
     <SolidColorBrush x:Key="OutlineBrush" Color="#C9D7F2" />
@@ -126,7 +126,7 @@
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="20,16" />
     </Style>
     <Style x:Key="CardFlush" TargetType="Border" BasedOn="{StaticResource Card}">
