@@ -21,28 +21,28 @@
             </StackPanel>
         </c:PageHeader>
 
-        <!-- Mỗi nhóm một tab ngang -->
-        <TabControl Style="{StaticResource PageTabs}" ItemsSource="{Binding Groups}" SelectedIndex="0" AutomationProperties.Name="Nhóm thiết lập">
-            <TabControl.ItemTemplate>
+        <ItemsControl ItemsSource="{Binding Groups}">
+            <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:SettingGroup}">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-                        <Border Style="{StaticResource TabCount}">
-                            <TextBlock Text="{Binding Rows.Count}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ChipGrayTextBrush}" VerticalAlignment="Center" />
-                        </Border>
-                    </StackPanel>
-                </DataTemplate>
-            </TabControl.ItemTemplate>
-            <TabControl.ContentTemplate>
-                <DataTemplate DataType="{x:Type vm:SettingGroup}">
-                    <Border Style="{StaticResource CardFlush}">
+                    <Border Style="{StaticResource CardFlush}" Margin="0,0,0,12">
                         <StackPanel>
-                            <TextBlock Text="{Binding Description}" Style="{StaticResource Secondary}" Margin="16,10" />
+                            <Grid Margin="16,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Width="30" Height="30" CornerRadius="8" Background="{StaticResource PrimaryTintBrush}" Margin="0,0,10,0">
+                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" />
+                                </Border>
+                                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}" Style="{StaticResource H3}" Margin="0,0,10,0" />
+                                    <TextBlock Text="{Binding Description}" Style="{StaticResource Secondary}" VerticalAlignment="Center" />
+                                </WrapPanel>
+                            </Grid>
                             <ItemsControl ItemsSource="{Binding Rows}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                        <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="16,10">
+                                        <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,1,0,0" Padding="16,6">
                                             <StackPanel>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
@@ -107,7 +107,7 @@
                         </StackPanel>
                     </Border>
                 </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </StackPanel>
 </UserControl>

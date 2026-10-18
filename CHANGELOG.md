@@ -2,6 +2,24 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.9.0 — 18/10/2026
+
+Theo PO: **mỗi mô-đun một tab ngang**, bỏ tab con trong từng trang, nội dung gọn hơn.
+
+**Khung ứng dụng (`shell`) 0.5.0**
+- Bỏ thanh menu dọc bên trái; thay bằng thanh tab ngang dưới thanh tiêu đề: Tổng quan · Phần mềm · Tối ưu Windows · Ổ đĩa & Tài khoản · Dọn dẹp · Bàn giao · Mô-đun & Cập nhật. Cửa sổ hẹp: tab chỉ hiện biểu tượng.
+- "Log" và "Báo cáo" chuyển lên thanh tiêu đề. Nội dung trang rộng thêm ~230 px.
+- Bỏ kiểu tab con (`PageTabs`) của 0.8.2.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.4.2**
+- Bỏ tab con; các nhóm xếp liền một trang như trước, tiêu đề nhóm một dòng, dòng thiết lập thấp hơn. Chi tiết 6 điểm vẫn đóng sẵn.
+
+**Ổ đĩa & Tài khoản (`disk`) 0.3.2**, **Kiểm tra & Bàn giao (`handover`) 0.3.4**
+- Bỏ tab con, trở lại một trang.
+
+**Tổng quan (`overview`) 0.5.2**
+- Thông tin máy chia 2 cột (khung rộng hơn) để trang vẫn vừa màn hình khi có thêm thanh tab.
+
 ## 0.8.2 — 18/10/2026
 
 Tinh gọn: chia trang dài thành **tab ngang**, mỗi lần chỉ hiện một nhóm.

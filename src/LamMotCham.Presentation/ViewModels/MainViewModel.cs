@@ -89,12 +89,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Rows = services.Catalog.Select(e => new TaskRowViewModel(e)).ToDictionary(r => r.Id, StringComparer.Ordinal);
         Nav =
         [
+            // Mỗi mô-đun một tab trên thanh ngang; tên ngắn để vừa màn hình 1280 px.
             new(this, Page.Overview, "Tổng quan", "home"),
-            new(this, Page.Software, "Phần mềm thiết yếu", "download"),
-            new(this, Page.Windows, "Cài đặt & Tối ưu", "gear"),
+            new(this, Page.Software, "Phần mềm", "download"),
+            new(this, Page.Windows, "Tối ưu Windows", "gear"),
             new(this, Page.Disk, "Ổ đĩa & Tài khoản", "disk"),
-            new(this, Page.Cleanup, "Dọn dẹp & Hiệu năng", "sparkle"),
-            new(this, Page.Handover, "Kiểm tra & Bàn giao", "clipboard"),
+            new(this, Page.Cleanup, "Dọn dẹp", "sparkle"),
+            new(this, Page.Handover, "Bàn giao", "clipboard"),
+            new(this, Page.Modules, "Mô-đun & Cập nhật", "refresh"),
         ];
 
         Machine = new MachineViewModel(this);

@@ -33,6 +33,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition x:Name="TopBarRow" Height="64" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -70,6 +71,18 @@
                             Command="{Binding ElevateCommand}" ToolTip="Mở lại ứng dụng với quyền quản trị (Windows sẽ hỏi UAC)"
                             Visibility="{Binding IsElevated, Converter={StaticResource Vis}, ConverterParameter=invert}" />
                     <Border Width="1" Height="22" Margin="12,0,6,0" Background="{StaticResource LineBrush}" />
+                    <Button Style="{StaticResource QuietButton}" Command="{Binding OpenLogsCommand}" ToolTip="Mở thư mục log">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=doc}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
+                            <TextBlock Text="Log" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource QuietButton}" Command="{Binding OpenReportsCommand}" ToolTip="Mở thư mục báo cáo">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
+                            <TextBlock Text="Báo cáo" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                     <Button Style="{StaticResource QuietButton}" Command="{Binding HelpCommand}">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=info}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,6,0" />
@@ -80,84 +93,41 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="SidebarColumn" Width="232" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- THANH BÊN -->
-            <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,1,0">
-                <DockPanel Margin="14,18">
-                    <StackPanel DockPanel.Dock="Bottom">
-                        <Button Command="{Binding GoModulesCommand}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}" ToolTip="Mô-đun &amp; Cập nhật"
-                                AutomationProperties.Name="Mô-đun và cập nhật">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{Binding ModulesSelected, Converter={StaticResource ActiveSoftBg}}"
-                                            BorderBrush="{Binding ModulesSelected, Converter={StaticResource ActiveBorder}}"
-                                            BorderThickness="1.5" CornerRadius="12" Padding="14,12">
-                                        <ContentPresenter />
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                                    <TextBlock Text="Mô-đun &amp; Cập nhật" FontSize="13" FontWeight="Bold" Foreground="{StaticResource HeadingBrush}" VerticalAlignment="Center" Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}" />
-                                </StackPanel>
-                                <Grid Margin="0,8,0,0" Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="70" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="Phiên bản" FontSize="12" Foreground="{StaticResource Text2Brush}" />
-                                    <TextBlock Grid.Column="1" Text="{Binding AppVersion}" FontSize="12" Foreground="{StaticResource Text3Brush}" />
-                                    <TextBlock Grid.Row="1" Text="Mô-đun" FontSize="12" Foreground="{StaticResource Text2Brush}" Margin="0,3,0,0" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ModuleCountText}" FontSize="12" Foreground="{StaticResource Text3Brush}" Margin="0,3,0,0" />
-                                </Grid>
+        <!-- THANH MÔ-ĐUN: mỗi mô-đun một tab ngang -->
+        <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1" Padding="16,6">
+            <ItemsControl ItemsSource="{Binding Nav}" KeyboardNavigation.TabNavigation="Once" AutomationProperties.Name="Mô-đun">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:NavItem}">
+                        <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                     AutomationProperties.Name="{Binding Label}" ToolTip="{Binding Label}">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Width="28" Height="28" CornerRadius="7" Margin="0,0,8,0"
+                                        Background="{Binding IsSelected, Converter={StaticResource NavTileBg}}">
+                                    <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="20" Height="20" Style="{StaticResource IconImage}" />
+                                </Border>
+                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}" />
                             </StackPanel>
-                        </Button>
-                        <StackPanel Orientation="Horizontal" Margin="4,10,0,0" Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}">
-                            <Button Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="30" Content="Mở log" Command="{Binding OpenLogsCommand}" />
-                            <Button Style="{StaticResource TertiaryButton}" FontSize="12" MinHeight="30" Content="Mở báo cáo" Command="{Binding OpenReportsCommand}" />
-                        </StackPanel>
-                    </StackPanel>
+                        </RadioButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
 
-                    <ItemsControl ItemsSource="{Binding Nav}" KeyboardNavigation.TabNavigation="Once">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:NavItem}">
-                                <RadioButton Style="{StaticResource NavButton}" GroupName="Nav" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                             AutomationProperties.Name="{Binding Label}" ToolTip="{Binding Label}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Border Width="28" Height="28" CornerRadius="7" Margin="0,0,12,0"
-                                                Background="{Binding IsSelected, Converter={StaticResource NavTileBg}}">
-                                            <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" />
-                                        </Border>
-                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}" />
-                                    </StackPanel>
-                                </RadioButton>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </DockPanel>
-            </Border>
-
-            <!-- KHU VỰC MÔ-ĐUN -->
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
-                <ContentControl x:Name="PageHost" Content="{Binding CurrentPageViewModel}" Margin="28,24" Focusable="False" />
-            </ScrollViewer>
-        </Grid>
+        <!-- KHU VỰC MÔ-ĐUN -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <ContentControl x:Name="PageHost" Content="{Binding CurrentPageViewModel}" Margin="28,24" Focusable="False" />
+        </ScrollViewer>
 
         <!-- ĐANG THỰC HIỆN / KẾT QUẢ -->
-        <views:RunOverlay Grid.RowSpan="2" Visibility="{Binding DockVisible, Converter={StaticResource Vis}}" />
+        <views:RunOverlay Grid.RowSpan="3" Visibility="{Binding DockVisible, Converter={StaticResource Vis}}" />
 
         <!-- HỘP THOẠI (nằm trên cùng, kể cả khi đang chạy) -->
-        <Grid Grid.RowSpan="2" Background="{StaticResource OverlayBrush}" Visibility="{Binding HasDialog, Converter={StaticResource Vis}}">
+        <Grid Grid.RowSpan="3" Background="{StaticResource OverlayBrush}" Visibility="{Binding HasDialog, Converter={StaticResource Vis}}">
             <Border MaxWidth="600" Margin="24" Background="{StaticResource SurfaceBrush}" CornerRadius="16" Padding="24"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Border.Effect>
@@ -170,7 +140,7 @@
         </Grid>
 
         <!-- MÀN HÌNH KHỞI ĐỘNG: các bước nạp thật (cấu hình, pin, mạng, WinGet) -->
-        <Grid Grid.RowSpan="2" Background="{StaticResource BackgroundBrush}" Visibility="{Binding Machine.IsStarting, Converter={StaticResource Vis}}">
+        <Grid Grid.RowSpan="3" Background="{StaticResource BackgroundBrush}" Visibility="{Binding Machine.IsStarting, Converter={StaticResource Vis}}">
             <Border MaxWidth="520" Margin="24" Background="{StaticResource SurfaceBrush}" CornerRadius="16" Padding="32,28"
                     HorizontalAlignment="Center" VerticalAlignment="Center" AutomationProperties.Name="Đang khởi động">
                 <Border.Effect>
