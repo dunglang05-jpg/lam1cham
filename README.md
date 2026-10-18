@@ -12,8 +12,8 @@ Bản hiện tại: **0.2.0 — thử nghiệm nội bộ.** Chưa ký số, ch�
 |---|---|---|
 | Tổng quan | Đọc thông tin máy (Windows, kích hoạt, RAM, ổ đĩa, mạng, WinGet), chọn gói thao tác nhanh: Thiết lập đầy đủ / Chỉ cài phần mềm / Chỉ tối ưu Windows / Chỉ kiểm tra | Chỉ đọc cho đến khi bấm Bắt đầu và xác nhận |
 | Cài phần mềm | 10 gói qua WinGet: Chrome, Brave, UniKey, 7-Zip, Adobe Reader, SumatraPDF, VLC, Microsoft 365, Zalo, Zoom | Chỉ ID đã duyệt; tự bỏ qua gói đã có; chỉ báo **Thành công** khi `winget list` thấy gói sau cài; Hủy không ép tắt trình cài đặt |
-| Thiết lập Windows | Múi giờ, đồng bộ giờ, hiện đuôi file, Explorer mở "This PC", icon desktop, taskbar trái, tắt quảng cáo/gợi ý, thời gian tắt màn hình/ngủ | Lưu giá trị cũ để hoàn tác; **không** tắt Defender, Tường lửa, Windows Update |
-| Ổ đĩa và tài khoản | Danh sách ổ, sức khỏe ổ, trạng thái BitLocker, đổi tên máy | Không chia ổ, định dạng, giải mã BitLocker hay xóa tài khoản; không đọc khóa khôi phục |
+| Thiết lập Windows | Múi giờ, đồng bộ giờ, hiện đuôi file, Explorer mở "This PC", icon desktop, taskbar trái, tắt quảng cáo/gợi ý, thời gian tắt màn hình/ngủ, tắt BitLocker (chọn sẵn) | Lưu giá trị cũ để hoàn tác; **không** tắt Defender, Tường lửa, Windows Update; tắt BitLocker chỉ chạy sau khi tick "khách đồng ý" trong hộp xác nhận, không đọc khóa khôi phục |
+| Ổ đĩa và tài khoản | Danh sách ổ, sức khỏe ổ, trạng thái BitLocker, chia ổ đĩa, đổi tên máy | Chia ổ chỉ sau khi xem trước và xác nhận riêng; không định dạng hay xóa phân vùng/tài khoản |
 | Dọn dẹp | Temp người dùng, Temp Windows, bộ nhớ đệm thumbnail, Thùng rác | Quét và xem trước trước khi xóa; Thùng rác không chọn sẵn và có cảnh báo riêng |
 | Kiểm tra bàn giao | 7 điều kiện bàn giao, kiểm tra hệ thống, phần cứng thử tay (camera, loa, mic, bàn phím, touchpad, cổng) | Báo cáo HTML/JSON lưu tại máy, không tự tải lên |
 

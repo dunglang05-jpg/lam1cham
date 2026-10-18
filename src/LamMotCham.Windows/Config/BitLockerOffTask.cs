@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using LamMotCham.Core.Logging;
 using LamMotCham.Core.Tasks;
@@ -82,24 +81,13 @@ public static class BitLockerReader
 }
 
 /// <summary>
-/// Tắt BitLocker (giải mã) một ổ. Chỉ chạy sau khi kỹ thuật viên xác nhận riêng; không bao giờ nằm trong gói nhanh.
-/// Giải mã chạy nền trong Windows, có thể mất nhiều phút; tác vụ xác minh rằng Windows đã bắt đầu giải mã.
-/// Không đọc, hiển thị hay ghi log khóa khôi phục.
+/// Tắt BitLocker (giải mã) mọi ổ đang mã hóa — một thiết lập trong mô-đun Tối ưu Windows, nằm trong gói Thiết lập đầy đủ.
+/// Chỉ chạy sau hộp xác nhận có ô "khách đồng ý tắt mã hóa". Ổ dữ liệu trước; ổ Windows chỉ khi ổ dữ liệu đã giải mã xong.
+/// Giải mã chạy nền trong Windows; tác vụ xác minh Windows đã bắt đầu giải mã. Không đọc, hiển thị hay ghi log khóa khôi phục.
 /// </summary>
-public sealed class BitLockerOffTask : ITaskModule
+public sealed class BitLockerOffTask : ITaskModule, IDescribesCurrentState
 {
-    private const string StatusScript = """
-        $ErrorActionPreference = 'Stop'
-        $r = [ordered]@{ ok = $true }
-        try {
-          $ev = Get-CimInstance -Namespace 'root\cimv2\Security\MicrosoftVolumeEncryption' -ClassName Win32_EncryptableVolume -Filter "DriveLetter='__L__:'"
-          if (-not $ev) { throw 'Không tìm thấy ổ.' }
-          $cs = Invoke-CimMethod -InputObject $ev -MethodName GetConversionStatus
-          $r.conversion = [int]$cs.ConversionStatus
-          $r.percent = [double]$cs.EncryptionPercentage
-        } catch { $r.ok = $false; $r.error = [string]$_.Exception.Message }
-        $r | ConvertTo-Json -Compress
-        """;
+    public const string TaskId = "win.bitlocker.off";
 
     private const string DecryptScript = """
         $ErrorActionPreference = 'Stop'
@@ -124,98 +112,113 @@ public sealed class BitLockerOffTask : ITaskModule
         $r | ConvertTo-Json -Compress
         """;
 
-    public BitLockerOffTask(char letter, bool isOsVolume)
+    private List<BitLockerVolume> _targets = [];
+
+    public TaskDescriptor Descriptor { get; } = new()
     {
-        letter = char.ToUpperInvariant(letter);
-        if (!DiskSplitPlanner.IsValidLetter(letter))
-        {
-            throw new ArgumentException("Ký tự ổ không hợp lệ.", nameof(letter));
-        }
-
-        Letter = letter;
-        IsOsVolume = isOsVolume;
-        Descriptor = new TaskDescriptor
-        {
-            Id = "win.bitlocker.off." + char.ToLowerInvariant(letter),
-            DisplayName = $"Tắt BitLocker ổ {letter}:",
-            Version = 1,
-            Risk = RiskLevel.Reversible,
-            RequiresConfirmation = true,
-            Privilege = PrivilegeLevel.Administrator,
-            Kind = TaskKind.Configuration,
-            Timeout = TimeSpan.FromMinutes(2),
-            Rollback = RollbackSupport.NotPossible,
-            RollbackNote = "Không tự bật lại. Bật lại trong Settings › Privacy & security › Device encryption, hoặc Control Panel › BitLocker Drive Encryption.",
-        };
-    }
-
-    public char Letter { get; }
-
-    public bool IsOsVolume { get; }
-
-    public TaskDescriptor Descriptor { get; }
+        Id = TaskId,
+        DisplayName = "Tắt BitLocker (giải mã ổ đĩa)",
+        Version = 2,
+        Risk = RiskLevel.Reversible,
+        RequiresConfirmation = true,
+        Privilege = PrivilegeLevel.Administrator,
+        Kind = TaskKind.Configuration,
+        Timeout = TimeSpan.FromMinutes(3),
+        Rollback = RollbackSupport.NotPossible,
+        RollbackNote = "Không tự bật lại. Bật lại trong Settings › Privacy & security › Device encryption, hoặc Control Panel › BitLocker Drive Encryption.",
+    };
 
     public async Task<PreconditionResult> CheckPreconditionsAsync(TaskContext context, CancellationToken cancellationToken)
     {
-        var (conversion, percent, error) = await ReadStatusAsync(cancellationToken).ConfigureAwait(false);
-        return conversion switch
+        var (volumes, error) = await BitLockerReader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        if (error is not null)
         {
-            null => PreconditionResult.NotMet(error ?? "Không đọc được trạng thái BitLocker."),
-            0 => PreconditionResult.AlreadyInDesiredState($"Ổ {Letter}: không mã hóa."),
-            3 => PreconditionResult.AlreadyInDesiredState($"Ổ {Letter}: đang giải mã (còn {percent:0}%)."),
-            5 => PreconditionResult.NotMet($"Ổ {Letter}: giải mã đang tạm dừng. Tiếp tục trong Control Panel › BitLocker."),
-            _ => PreconditionResult.Met(),
-        };
+            return PreconditionResult.NotMet(error);
+        }
+
+        // Ổ dữ liệu trước, ổ Windows sau cùng.
+        _targets = [.. volumes.Where(v => v.CanTurnOff).OrderBy(v => v.IsOsVolume).ThenBy(v => v.Letter)];
+        if (_targets.Count > 0)
+        {
+            return PreconditionResult.Met();
+        }
+
+        var decrypting = volumes.Where(v => v.Conversion is 3 or 5).ToList();
+        return PreconditionResult.AlreadyInDesiredState(decrypting.Count > 0
+            ? "Đang giải mã nền: " + string.Join(", ", decrypting.Select(v => $"{v.Letter}: {v.StateText}")) + "."
+            : "Không ổ nào đang bật BitLocker.");
     }
 
     public async Task<ExecuteResult> ExecuteAsync(TaskContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        context.Log.Info($"Tắt BitLocker ổ {Letter}: (bắt đầu giải mã).", Descriptor.Id);
-        using var doc = await PowerShellRunner.RunJsonAsync(Script(DecryptScript), cancellationToken).ConfigureAwait(false);
-        var root = doc.RootElement;
-        if (root.GetProperty("ok").GetBoolean())
+        var started = new List<char>();
+        var notes = new List<string>();
+        foreach (var v in _targets)
         {
-            return ExecuteResult.Completed($"Windows đã bắt đầu giải mã ổ {Letter}:.");
+            context.Log.Info($"Tắt BitLocker ổ {v.Letter}: (bắt đầu giải mã).", Descriptor.Id);
+            using var doc = await PowerShellRunner.RunJsonAsync(
+                DecryptScript.Replace("__L__", v.Letter.ToString(), StringComparison.Ordinal), cancellationToken).ConfigureAwait(false);
+            var root = doc.RootElement;
+            if (root.GetProperty("ok").GetBoolean())
+            {
+                started.Add(v.Letter);
+                continue;
+            }
+
+            var code = root.TryGetProperty("code", out var c) ? c.GetInt64() : -1;
+            var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
+            notes.Add(code switch
+            {
+                -2 => $"ổ {v.Letter}: chờ ổ dữ liệu giải mã xong rồi chạy lại",
+                0x80310029 => $"ổ {v.Letter}: còn khóa tự mở khóa của ổ dữ liệu",
+                _ => $"ổ {v.Letter}: " + (error ?? $"mã 0x{code:X8}"),
+            });
         }
 
-        var code = root.TryGetProperty("code", out var c) ? c.GetInt64() : -1;
-        var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
-        return ExecuteResult.Failed(
-            (code switch
-            {
-                -2 => $"Ổ dữ liệu vẫn đang mã hóa hoặc đang giải mã. Chờ các ổ dữ liệu giải mã xong rồi bấm “Tắt BitLocker…” lại để tắt ổ {Letter}:.",
-                0x80310029 => "Ổ Windows còn khóa tự mở khóa của ổ dữ liệu. Tắt BitLocker ổ dữ liệu, chờ giải mã xong rồi thử lại.",
-                0x80310001 => "Ổ chưa được bật BitLocker.",
-                _ => $"Windows không tắt được BitLocker ổ {Letter}:" + (error is null ? $" (mã 0x{code:X8})." : $" ({error})."),
-            }),
-            errorCode: code.ToString("X", CultureInfo.InvariantCulture));
+        return started.Count == 0 && notes.Count > 0 && !notes.TrueForAll(n => n.Contains("chờ ổ dữ liệu", StringComparison.Ordinal))
+            ? ExecuteResult.Failed("Windows không tắt được BitLocker: " + string.Join("; ", notes) + ".")
+            : ExecuteResult.Completed(started.Count > 0
+                ? "Windows đã bắt đầu giải mã ổ " + string.Join(", ", started.Select(l => l + ":")) + "."
+                : "Chưa giải mã ổ nào.");
     }
 
     public async Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken)
     {
-        var (conversion, percent, error) = await ReadStatusAsync(cancellationToken).ConfigureAwait(false);
-        return conversion switch
+        var (volumes, error) = await BitLockerReader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        if (error is not null)
         {
-            0 => VerifyResult.Passed($"Ổ {Letter}: đã giải mã xong."),
-            3 => VerifyResult.Passed($"Ổ {Letter}: đang giải mã nền (còn {percent:0}%). Máy dùng bình thường; không tắt nguồn đột ngột cho đến khi xong."),
-            5 => VerifyResult.Attention($"Ổ {Letter}: giải mã đang tạm dừng (còn {percent:0}%)."),
-            null => VerifyResult.Inconclusive(error ?? "Không đọc lại được trạng thái BitLocker."),
-            _ => VerifyResult.Failed($"Ổ {Letter}: chưa chuyển sang giải mã (trạng thái {conversion})."),
-        };
+            return VerifyResult.Inconclusive(error);
+        }
+
+        var states = _targets.Select(t => volumes.FirstOrDefault(v => v.Letter == t.Letter) ?? t).ToList();
+        var done = states.Where(v => v.Conversion is 0 or 3).ToList();
+        var left = states.Except(done).ToList();
+        var summary = string.Join("; ", states.Select(v => $"{v.Letter}: {v.StateText}"));
+        if (left.Count == 0)
+        {
+            return VerifyResult.Passed(summary + ". Giải mã chạy nền; máy dùng bình thường, không tắt nguồn đột ngột cho đến khi xong.");
+        }
+
+        return left.TrueForAll(v => v.IsOsVolume) && done.Count > 0
+            ? VerifyResult.Attention(summary + ". Ổ Windows tắt được khi ổ dữ liệu giải mã xong — chạy lại mục này sau.")
+            : VerifyResult.Failed(summary + ". Chưa chuyển sang giải mã.");
     }
 
     public Task<VerifyResult> RollbackAsync(TaskContext context, CancellationToken cancellationToken) =>
         Task.FromResult(VerifyResult.Inconclusive(Descriptor.RollbackNote!));
 
-    private string Script(string template) => template.Replace("__L__", Letter.ToString(), StringComparison.Ordinal);
-
-    private async Task<(int? Conversion, double Percent, string? Error)> ReadStatusAsync(CancellationToken cancellationToken)
+    public async Task<string> DescribeCurrentStateAsync(CancellationToken cancellationToken)
     {
-        using var doc = await PowerShellRunner.RunJsonAsync(Script(StatusScript), cancellationToken).ConfigureAwait(false);
-        var root = doc.RootElement;
-        return root.GetProperty("ok").GetBoolean()
-            ? (root.GetProperty("conversion").GetInt32(), root.GetProperty("percent").GetDouble(), null)
-            : (null, 0, root.TryGetProperty("error", out var e) ? e.GetString() : null);
+        var (volumes, error) = await BitLockerReader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        if (error is not null)
+        {
+            return error.StartsWith("Cần quyền", StringComparison.Ordinal) ? "Cần quyền quản trị để đọc" : "Chưa đọc được";
+        }
+
+        var encrypted = volumes.Where(v => v.Conversion != 0).ToList();
+        return encrypted.Count == 0
+            ? "Không ổ nào mã hóa"
+            : string.Join("; ", encrypted.Select(v => $"{v.Letter}: {v.StateText}"));
     }
 }

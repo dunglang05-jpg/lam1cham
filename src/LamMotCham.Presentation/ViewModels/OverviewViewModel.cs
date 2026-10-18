@@ -208,6 +208,8 @@ public sealed class OverviewViewModel : ObservableObject
         var installs = rows.Count(r => r.Entry.Category == TaskCategory.Software);
         var changes = rows.Count(r => !r.IsReadOnly && r.Entry.Category != TaskCategory.Software);
         var checks = rows.Count(r => r.IsReadOnly);
+        var bitLocker = WindowsViewModel.HasBitLockerOff(rows);
+        const string wingetTerms = "Đồng ý để Làm 1 Chạm chấp nhận điều khoản của nguồn WinGet và của từng gói thay cho người dùng máy này.";
         _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận trước khi chạy", "shield", "Bắt đầu chạy",
             async () => await _main.RunAsync(rows, _pack.Label))
         {
@@ -215,13 +217,22 @@ public sealed class OverviewViewModel : ObservableObject
             Facts =
             [
                 new DialogFact("Phần mềm", installs == 0 ? "Không cài phần mềm." : $"{installs} gói qua WinGet, cài im lặng; gói đã có sẽ được bỏ qua."),
-                new DialogFact("Thay đổi Windows", changes == 0 ? "Không thay đổi cấu hình." : $"{changes} thay đổi, đều lưu giá trị cũ để hoàn tác (trừ dọn file)."),
+                new DialogFact("Thay đổi Windows", changes == 0 ? "Không thay đổi cấu hình." : bitLocker
+                    ? $"{changes} thay đổi, gồm tắt BitLocker. Thiết lập lưu giá trị cũ để hoàn tác (trừ dọn file và BitLocker)."
+                    : $"{changes} thay đổi, đều lưu giá trị cũ để hoàn tác (trừ dọn file)."),
                 new DialogFact("Kiểm tra", $"{checks} mục chỉ đọc."),
                 new DialogFact("Quyền", _main.IsElevated ? "Đang chạy quyền quản trị." : "Đang chạy quyền người dùng; Windows có thể hỏi UAC cho từng gói."),
                 new DialogFact("Khởi động lại", "Ứng dụng không tự khởi động lại. Nếu cần, hàng đợi dừng và hỏi bạn."),
             ],
-            RequireAgreement = installs > 0,
-            AgreementText = "Đồng ý để Làm 1 Chạm chấp nhận điều khoản của nguồn WinGet và của từng gói thay cho người dùng máy này.",
+            Warning = bitLocker ? WindowsViewModel.BitLockerWarning : null,
+            WarningIsDanger = bitLocker,
+            RequireAgreement = installs > 0 || bitLocker,
+            AgreementText = (installs > 0, bitLocker) switch
+            {
+                (true, true) => WindowsViewModel.BitLockerAgreement + " " + wingetTerms,
+                (false, true) => WindowsViewModel.BitLockerAgreement,
+                _ => wingetTerms,
+            },
         });
     }
 

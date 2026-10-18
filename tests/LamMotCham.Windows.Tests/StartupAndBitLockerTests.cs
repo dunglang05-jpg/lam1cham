@@ -4,7 +4,9 @@ using System.Text.RegularExpressions;
 using LamMotCham.Core.Tasks;
 using LamMotCham.Windows.Checks;
 using LamMotCham.Windows.Config;
+using LamMotCham.Windows.Infrastructure;
 using LamMotCham.Windows.Probe;
+using LamMotCham.Windows.Software;
 using Xunit;
 
 namespace LamMotCham.Windows.Tests;
@@ -85,15 +87,23 @@ public sealed class BitLockerTests
     }
 
     [Fact]
-    public void Turn_off_task_requires_confirmation_and_is_never_in_a_pack()
+    public void Turn_off_is_a_windows_setting_in_full_setup()
     {
-        var entry = WindowsCatalog.TurnOffBitLocker(new BitLockerVolume('C', true, 1, 100, 1));
+        var catalog = WindowsCatalog.Build(new CatalogServices(
+            new InventoryProvider(),
+            new WinGetClient(() => null),
+            new RollbackStore(Path.Combine(Path.GetTempPath(), "lmc-rb-" + Guid.NewGuid().ToString("N")))));
+        var entry = Assert.Single(catalog, e => e.Module.Descriptor.Id == BitLockerOffTask.TaskId);
         var d = entry.Module.Descriptor;
 
+        Assert.Equal(TaskCategory.WindowsSettings, entry.Category);
+        Assert.Equal(WindowsCatalog.GroupPrivacy, entry.Group);
+        Assert.True(entry.IsInPack(TaskPack.FullSetup));
+        Assert.False(entry.IsInPack(TaskPack.SoftwareOnly));
         Assert.True(d.RequiresConfirmation);
+        Assert.NotEqual(RiskLevel.Destructive, d.Risk);
         Assert.Equal(PrivilegeLevel.Administrator, d.Privilege);
         Assert.Empty(d.Validate());
-        Assert.All(Enum.GetValues<TaskPack>(), p => Assert.False(entry.IsInPack(p)));
-        Assert.Throws<ArgumentException>(() => new BitLockerOffTask('1', true));
+        Assert.IsAssignableFrom<IDescribesCurrentState>(entry.Module);
     }
 }

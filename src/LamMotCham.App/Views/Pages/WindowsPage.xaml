@@ -2,13 +2,12 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:LamMotCham.Presentation.ViewModels;assembly=LamMotCham.Presentation"
-             xmlns:c="clr-namespace:LamMotCham.App.Controls"
-             xmlns:cfg="clr-namespace:LamMotCham.Windows.Config;assembly=LamMotCham.Windows">
+             xmlns:c="clr-namespace:LamMotCham.App.Controls">
 
     <StackPanel>
         <!-- Mô-đun "windows" (QĐ-002) -->
         <c:PageHeader IconKey="gear" Heading="Cài đặt &amp; Tối ưu Windows" ModuleLabel="{Binding Module.Label}"
-                      Description="Giá trị cũ được lưu lại trước khi đổi để hoàn tác. Defender, Tường lửa và Windows Update không bị tắt.">
+                      Description="Giá trị cũ được lưu lại trước khi đổi để hoàn tác. Defender, Tường lửa và Windows Update không bị tắt. Tắt BitLocker nằm trong nhóm Quyền riêng tư, được chọn sẵn.">
             <StackPanel Orientation="Horizontal">
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding UndoCommand}" Content="Hoàn tác thay đổi" Margin="0,0,10,0" />
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}">
@@ -21,51 +20,6 @@
                 </Button>
             </StackPanel>
         </c:PageHeader>
-
-        <!-- BitLocker: đọc trạng thái khi mở trang; tắt chỉ sau khi xác nhận riêng -->
-        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-            <StackPanel>
-                <DockPanel>
-                    <Border Style="{StaticResource IconTile}" Width="40" Height="40" CornerRadius="10" Margin="0,0,12,0" VerticalAlignment="Top">
-                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=lock}" Width="24" Height="24" Style="{StaticResource IconImage}" />
-                    </Border>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
-                        <Button Style="{StaticResource TertiaryButton}" Content="{Binding BitLockerReadLabel}" Command="{Binding ReadBitLockerCommand}" Margin="0,0,8,0" />
-                        <Button Style="{StaticResource SecondaryButton}" Command="{Binding TurnOffBitLockerCommand}" BorderBrush="{StaticResource ErrorLineBrush}" Foreground="{StaticResource ErrorTextBrush}">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=lock}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                                <TextBlock Text="Tắt BitLocker…" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Mã hóa ổ đĩa (BitLocker)" Style="{StaticResource H3}" />
-                        <TextBlock Text="{Binding BitLockerMessage}" Style="{StaticResource Secondary}" />
-                    </StackPanel>
-                </DockPanel>
-                <ItemsControl ItemsSource="{Binding BitLockerVolumes}" Margin="52,10,0,0"
-                              Visibility="{Binding BitLockerVolumes.Count, Converter={StaticResource NotEmpty}}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type cfg:BitLockerVolume}">
-                            <Border Background="{StaticResource SubtleBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="10" Padding="12,8" Margin="0,0,10,8">
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=disk}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
-                                    <TextBlock FontSize="13" VerticalAlignment="Center">
-                                        <Run Text="{Binding DriveText, Mode=OneWay}" FontWeight="Bold" />
-                                        <Run Text=" · " Foreground="{StaticResource Text2Brush}" /><Run Text="{Binding StateText, Mode=OneWay}" />
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
 
         <ItemsControl ItemsSource="{Binding Groups}">
             <ItemsControl.ItemTemplate>

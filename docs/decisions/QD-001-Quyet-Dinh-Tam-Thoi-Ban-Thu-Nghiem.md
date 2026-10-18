@@ -62,3 +62,13 @@ PO yêu cầu thêm "tắt BitLocker" vào mô-đun Tối ưu Windows. Tài li�
 | Xác minh | Trạng thái chuyển sang "đang giải mã" hoặc "đã giải mã". |
 | Bảo mật | Không đọc, hiển thị, ghi log khóa khôi phục. Không tự bật lại; hướng dẫn bật lại trong Settings/Control Panel. |
 | Rủi ro còn lại | Dữ liệu không còn được mã hóa sau khi tắt; chưa kiểm thử trên máy thật có nhiều ổ mã hóa. |
+
+## Cập nhật 18/10/2026 — Tắt BitLocker nằm trong Thiết lập đầy đủ (bản 0.7.0)
+
+PO yêu cầu tắt BitLocker là một thiết lập bình thường, không có khung riêng, và áp dụng luôn khi bấm **Thiết lập đầy đủ**. Thay thế dòng "Xác nhận" ở bảng trên:
+
+| Điểm | Quyết định |
+|---|---|
+| Vị trí | Dòng "Tắt BitLocker (giải mã ổ đĩa)" trong nhóm Quyền riêng tư của mô-đun Windows, chọn sẵn; nằm trong gói Thiết lập đầy đủ và Chỉ tối ưu Windows. |
+| Xác nhận | Vẫn không chạy ngầm: hộp xác nhận của gói/Áp dụng có cảnh báo đỏ và bắt buộc tick "Khách hàng đã đồng ý tắt mã hóa ổ đĩa (BitLocker)". Đây là bước xác nhận theo tài liệu 03. |
+| Không đổi | Ổ dữ liệu trước, ổ Windows sau; xác minh trạng thái; không đọc/ghi log khóa khôi phục; không tự bật lại. Mức rủi ro vẫn R1 (không mất dữ liệu). |

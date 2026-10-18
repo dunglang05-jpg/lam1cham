@@ -26,11 +26,11 @@ public static class ModuleCatalog
 {
     public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.4.0", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
-    public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.4.0", "home", "Thông tin máy, chọn gói thiết lập");
+    public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.4.1", "home", "Thông tin máy, chọn gói thiết lập");
 
     public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.2.2", "download", "Cài qua WinGet, xác minh sau khi cài");
 
-    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.3.0", "gear", "Thiết lập Windows có hoàn tác, tắt BitLocker");
+    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.4.0", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
 
     public static AppModule Disk { get; } = new("disk", "Ổ đĩa & Tài khoản", "Ổ đĩa", "0.3.0", "disk", "Xem ổ đĩa, chia ổ, BitLocker, đổi tên máy");
 

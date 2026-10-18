@@ -2,6 +2,17 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.7.0 — 18/10/2026
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.4.0** — Tắt BitLocker thành một thiết lập
+- Bỏ khung BitLocker riêng. "Tắt BitLocker (giải mã ổ đĩa)" là một dòng trong nhóm Quyền riêng tư & Thông báo, **được chọn sẵn**, nên gói **Thiết lập đầy đủ** (và Chỉ tối ưu Windows) áp dụng luôn. Bỏ chọn dòng này nếu khách muốn giữ mã hóa.
+- Một tác vụ cho mọi ổ: tự tìm ổ đang mã hóa, ổ dữ liệu trước, ổ Windows sau; ổ Windows chưa tắt được (ổ dữ liệu còn đang giải mã) thì báo "Cần chú ý" và hướng dẫn chạy lại sau.
+- Cột "Hiện tại" hiện trạng thái BitLocker từng ổ. Máy không bật BitLocker → "Đã đúng", không làm gì.
+- Hộp xác nhận "Áp dụng" có cảnh báo đỏ và bắt buộc tick "Khách hàng đã đồng ý tắt mã hóa ổ đĩa" khi có dòng này.
+
+**Tổng quan (`overview`) 0.4.1**
+- Hộp "Xác nhận trước khi chạy" của gói nhanh: khi gói có tắt BitLocker thì hiện cảnh báo đỏ và ô tick khách đồng ý (gộp cùng ô đồng ý điều khoản WinGet).
+
 ## 0.6.0 — 18/10/2026
 
 **Khung ứng dụng (`shell`) 0.4.0**

@@ -51,18 +51,6 @@ public static class WindowsCatalog
         SelectedByDefault = false,
     };
 
-    /// <summary>Tắt BitLocker một ổ: chỉ tạo sau khi xác nhận riêng; không bao giờ nằm trong gói nhanh.</summary>
-    public static TaskCatalogEntry TurnOffBitLocker(BitLockerVolume volume) => new()
-    {
-        Module = new BitLockerOffTask(volume.Letter, volume.IsOsVolume),
-        Category = TaskCategory.WindowsSettings,
-        Group = GroupPrivacy,
-        Description = "Giải mã ổ đĩa. Dữ liệu không còn được BitLocker bảo vệ.",
-        Impact = TaskImpact.Medium,
-        IconKey = "lock",
-        SelectedByDefault = false,
-    };
-
     /// <summary>Chia ổ (R3): chỉ tạo sau khi xem trước và xác nhận riêng; không bao giờ nằm trong gói nhanh.</summary>
     public static TaskCatalogEntry SplitDisk(DiskSplitPlan plan) => new()
     {
@@ -150,6 +138,12 @@ public static class WindowsCatalog
             GroupPrivacy, "Không dùng dữ liệu chẩn đoán để gợi ý.", "lock",
             new TaskDetails("Đặt TailoredExperiencesWithDiagnosticDataEnabled = 0.", "Tôn trọng quyền riêng tư của khách.", "Không có.",
                 "Người dùng thường", "Không tắt việc gửi dữ liệu chẩn đoán bắt buộc.", "Giá trị cũ được lưu lại."));
+        yield return Setting(new BitLockerOffTask(), GroupPrivacy, "Giải mã các ổ đang bật BitLocker / mã hóa thiết bị.", "lock",
+            new TaskDetails("Yêu cầu Windows giải mã các ổ đang mã hóa: ổ dữ liệu trước, ổ Windows sau.",
+                "Tránh khách bị khóa máy và mất dữ liệu khi không biết khóa khôi phục.",
+                "Quyền quản trị; có ổ đang mã hóa. Ổ Windows chỉ tắt sau khi ổ dữ liệu đã giải mã xong.", "Quản trị viên",
+                "Dữ liệu không còn được mã hóa. Giải mã chạy nền từ vài phút đến hơn một giờ; máy vẫn dùng được.",
+                "Không tự bật lại. Bật lại trong Settings › Privacy & security › Device encryption."), impact: TaskImpact.Medium);
 
         yield return Setting(new PowerTimeoutsTask(store), GroupPerformance, "Cắm sạc: màn hình 15 phút, ngủ 30 phút. Pin: 5 và 15 phút.", "bolt",
             new TaskDetails("Đổi 4 giá trị thời gian của gói nguồn đang dùng.", "Tiết kiệm pin, tránh máy nóng khi gập.",
