@@ -56,7 +56,10 @@ public sealed class PowerTimeoutsTask(RollbackStore store, PowerTimeouts? target
 
         store.SaveIfAbsent(Descriptor.Id, new Dictionary<string, string?>
         {
-            ["sa"] = Str(current.ScreenAc), ["sd"] = Str(current.ScreenDc), ["la"] = Str(current.SleepAc), ["ld"] = Str(current.SleepDc),
+            ["sa"] = Str(current.ScreenAc),
+            ["sd"] = Str(current.ScreenDc),
+            ["la"] = Str(current.SleepAc),
+            ["ld"] = Str(current.SleepDc),
         });
 
         var error = Write(_target);

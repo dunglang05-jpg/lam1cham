@@ -361,13 +361,13 @@ public sealed class TaskOrchestrator
                 return AttemptResult.Final(TaskState.Skipped, pre.Reason ?? "Điều kiện chạy không đạt.");
 
             case PreconditionOutcome.AlreadyInDesiredState:
-            {
-                var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
-                return MapVerify(
-                    verify,
-                    "Đã ở trạng thái mong muốn, không thay đổi.",
-                    "Precondition báo đã đúng nhưng xác minh không đạt.");
-            }
+                {
+                    var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
+                    return MapVerify(
+                        verify,
+                        "Đã ở trạng thái mong muốn, không thay đổi.",
+                        "Precondition báo đã đúng nhưng xác minh không đạt.");
+                }
 
             case PreconditionOutcome.Met:
                 break;
@@ -382,26 +382,26 @@ public sealed class TaskOrchestrator
         switch (exec.Outcome)
         {
             case ExecuteOutcome.Failed:
-            {
-                var reason = exec.ErrorCode is null ? exec.Reason : $"{exec.Reason} (mã lỗi {exec.ErrorCode})";
-                return exec.IsTransient
-                    ? AttemptResult.Retryable(reason ?? "Lỗi tạm thời.")
-                    : AttemptResult.Final(TaskState.Failed, reason ?? "Thực hiện thất bại.");
-            }
+                {
+                    var reason = exec.ErrorCode is null ? exec.Reason : $"{exec.Reason} (mã lỗi {exec.ErrorCode})";
+                    return exec.IsTransient
+                        ? AttemptResult.Retryable(reason ?? "Lỗi tạm thời.")
+                        : AttemptResult.Final(TaskState.Failed, reason ?? "Thực hiện thất bại.");
+                }
 
             case ExecuteOutcome.CompletedRebootRequired:
                 return AttemptResult.Final(TaskState.WaitingForReboot, exec.Reason ?? "Cần khởi động lại máy để hoàn tất.");
 
             case ExecuteOutcome.Completed:
-            {
-                var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
-                if (verify.Outcome == VerifyOutcome.Passed && verify.Detail is null)
                 {
-                    verify = verify with { Detail = exec.Reason };
-                }
+                    var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
+                    if (verify.Outcome == VerifyOutcome.Passed && verify.Detail is null)
+                    {
+                        verify = verify with { Detail = exec.Reason };
+                    }
 
-                return MapVerify(verify, null, "Xác minh không đạt.");
-            }
+                    return MapVerify(verify, null, "Xác minh không đạt.");
+                }
 
             default:
                 throw new InvalidOperationException($"Kết quả execute không hợp lệ: {exec.Outcome}.");
