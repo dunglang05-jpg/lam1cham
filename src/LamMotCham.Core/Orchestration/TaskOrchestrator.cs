@@ -153,8 +153,11 @@ public sealed class TaskOrchestrator
             }
             else
             {
-                outcome = await WaitForResourcesAsync(task, progress, userToken).ConfigureAwait(false)
-                    ?? await RunSingleAsync(task, progress, userToken).ConfigureAwait(false);
+                // Kiểm tra chỉ đọc rất nhẹ: không chờ ngưỡng RAM (ngưỡng bảo vệ cài đặt và thay đổi cấu hình).
+                var waitOutcome = d.Kind == TaskKind.Check
+                    ? null
+                    : await WaitForResourcesAsync(task, progress, userToken).ConfigureAwait(false);
+                outcome = waitOutcome ?? await RunSingleAsync(task, progress, userToken).ConfigureAwait(false);
 
                 if (outcome.State == TaskState.WaitingForReboot)
                 {

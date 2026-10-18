@@ -2,6 +2,27 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.3.0 — 18/10/2026
+
+**Tổng quan & Gói nhanh (`overview`) 0.3.0**
+- Khi mở ứng dụng chỉ đọc cấu hình máy (model, CPU, RAM, ổ hệ thống, Windows) và pin; không còn tự chạy toàn bộ kiểm tra (trước đây 20 bước, rất lâu).
+- Nút "Đọc thông tin máy" / "Đọc lại" thay cho "Kiểm tra máy".
+
+**Kiểm tra & Bàn giao (`handover`) 0.3.0**
+- Các bước kiểm tra chỉ chạy khi bấm "Bắt đầu kiểm tra" (nút chính của trang).
+
+**Lõi điều phối tác vụ (`engine`) 0.2.1** — sửa lỗi
+- Bước kiểm tra chỉ đọc không còn chờ ngưỡng RAM trống (máy ít RAM bị treo ở "Đang chờ RAM khả dụng vượt 20%"). Ngưỡng RAM vẫn áp dụng cho cài phần mềm và thay đổi cấu hình.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.2.1**
+- Giá trị hiện tại của các thiết lập được đọc khi mở trang lần đầu, không đọc lúc khởi động.
+
+**Phần mềm thiết yếu (`software`) 0.2.1**
+- "Kiểm tra trạng thái cài" chỉ đọc trạng thái phần mềm.
+
+**Ổ đĩa & Tài khoản (`disk`) 0.2.1**, **Khung ứng dụng (`shell`) 0.2.2**
+- Sửa chữ hướng dẫn theo cách đọc thông tin mới.
+
 ## 0.2.1 — 18/10/2026
 
 **Khung ứng dụng (`shell`) 0.2.1** — sửa lỗi

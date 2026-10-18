@@ -65,7 +65,7 @@
                     <!-- Chưa kiểm tra -->
                     <StackPanel Visibility="{Binding Machine.Unchecked, Converter={StaticResource Vis}}">
                         <TextBlock Style="{StaticResource Body}" FontSize="13" Foreground="{StaticResource Text2Brush}"
-                                   Text="Chưa đọc thông tin máy. Kiểm tra để đọc phiên bản Windows, quyền, mạng và WinGet." />
+                                   Text="Chưa đọc thông tin máy. Bấm để đọc cấu hình (CPU, RAM, ổ đĩa, Windows) và pin." />
                         <Button Style="{StaticResource PrimaryButton}" Command="{Binding Machine.CheckCommand}" HorizontalAlignment="Left" Margin="0,14,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <Border Style="{StaticResource WhiteIconChip}" Width="24" Height="24" Margin="0,0,8,0">
@@ -178,7 +178,7 @@
                     </Button>
                     <TextBlock Text="{Binding StartNote}" FontSize="12" Foreground="{StaticResource Text2Brush}" HorizontalAlignment="Center" Margin="0,8,0,0"
                                Visibility="{Binding Machine.Checked, Converter={StaticResource Vis}}" />
-                    <TextBlock Text="Bấm “Kiểm tra máy” ở khung Thông tin máy trước khi bắt đầu." FontSize="12" Foreground="{StaticResource Text2Brush}"
+                    <TextBlock Text="Đang đọc thông tin máy… hoặc bấm “Đọc thông tin máy” ở khung bên phải." FontSize="12" Foreground="{StaticResource Text2Brush}"
                                HorizontalAlignment="Center" Margin="0,8,0,0"
                                Visibility="{Binding Machine.Unchecked, Converter={StaticResource Vis}}" />
                     <Button Style="{StaticResource TertiaryButton}" FontSize="12" Command="{Binding OpenLastReportCommand}" HorizontalAlignment="Center" Margin="0,4,0,0">

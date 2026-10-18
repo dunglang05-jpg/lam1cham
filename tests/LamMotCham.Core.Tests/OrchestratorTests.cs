@@ -357,6 +357,20 @@ public sealed class OrchestratorTests
     }
 
     [Fact]
+    public async Task Read_only_checks_do_not_wait_for_memory()
+    {
+        var options = new OrchestratorOptions { ResourcePollInterval = TimeSpan.FromMinutes(1), MaxResourceWait = TimeSpan.FromMinutes(3) };
+        var check = new FakeTask("check", TaskKind.Check);
+        var change = new FakeTask("change");
+        var report = await Factory.Orchestrator(out _, new ScriptedGovernor(Enumerable.Repeat(false, 50).ToArray()), null, options).RunAsync([check, change]);
+
+        Assert.Equal(TaskState.Success, report.Of("check").State);
+        Assert.Equal(1, check.ExecuteCalls);
+        Assert.Equal(TaskState.NeedsAttention, report.Of("change").State);
+        Assert.Equal(0, change.ExecuteCalls);
+    }
+
+    [Fact]
     public async Task Gives_up_when_resources_never_recover()
     {
         var options = new OrchestratorOptions { ResourcePollInterval = TimeSpan.FromMinutes(1), MaxResourceWait = TimeSpan.FromMinutes(3) };

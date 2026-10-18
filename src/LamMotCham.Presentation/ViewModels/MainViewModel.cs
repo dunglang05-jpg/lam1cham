@@ -120,7 +120,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         OpenReportsCommand = new RelayCommand(() => ShellActions.OpenFolder(WindowsEnvironment.ReportsDirectory));
         HelpCommand = new RelayCommand(() => ShowDialog(new ListDialogViewModel(this, "Trợ giúp", "info",
         [
-            new DialogItem("Quy trình", "Kiểm tra máy → chọn phần mềm → cài đặt → tác vụ Windows → kiểm tra bàn giao."),
+            new DialogItem("Quy trình", "Đọc thông tin máy → chọn phần mềm → cài đặt → tác vụ Windows → kiểm tra bàn giao."),
             new DialogItem("Trạng thái", "Thành công chỉ hiện khi ứng dụng đã đọc lại và xác minh. Cần chú ý nghĩa là cần người xem."),
             new DialogItem("An toàn", "Ứng dụng không tắt Defender, Tường lửa, Windows Update; không tự phân vùng ổ đĩa hay khởi động lại."),
             new DialogItem("Nhật ký", WindowsEnvironment.LogsDirectory),

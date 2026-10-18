@@ -35,15 +35,20 @@
     <StackPanel>
         <!-- Mô-đun "handover" (QĐ-002) -->
         <c:PageHeader IconKey="clipboard" Heading="Kiểm tra &amp; Bàn giao" ModuleLabel="{Binding Module.Label}"
-                      Description="Máy chỉ sẵn sàng bàn giao khi các điều kiện dưới đây đạt. Phần cứng cần thử tay rồi xác nhận.">
+                      Description="Bấm “Bắt đầu kiểm tra” để kiểm tra Windows, bảo mật, driver, pin và phần cứng. Phần cứng cần thử tay rồi xác nhận.">
             <StackPanel Orientation="Horizontal">
-                <Button Style="{StaticResource SecondaryButton}" Command="{Binding RecheckCommand}" Content="Kiểm tra lại tất cả" Margin="0,0,10,0" />
-                <Button Style="{StaticResource PrimaryButton}" Command="{Binding CreateReportCommand}">
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding CreateReportCommand}" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
+                        <TextBlock Text="Tạo báo cáo bàn giao" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding RecheckCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Border Style="{StaticResource WhiteIconChip}" Width="24" Height="24" Margin="0,0,8,0">
-                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=report}" Width="18" Height="18" Style="{StaticResource IconImage}" />
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="18" Height="18" Style="{StaticResource IconImage}" />
                         </Border>
-                        <TextBlock Text="Tạo báo cáo bàn giao" VerticalAlignment="Center" />
+                        <TextBlock Text="Bắt đầu kiểm tra" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </StackPanel>

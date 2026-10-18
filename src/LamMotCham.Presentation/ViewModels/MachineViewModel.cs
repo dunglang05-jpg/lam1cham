@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using LamMotCham.Presentation.Mvvm;
 using LamMotCham.Core.Logging;
 using LamMotCham.Core.Tasks;
+using LamMotCham.Windows.Checks;
 using LamMotCham.Windows.Cleanup;
 using LamMotCham.Windows.Probe;
 using LamMotCham.Windows.Resources;
@@ -92,7 +93,7 @@ public sealed class MachineViewModel : ObservableObject
 
     public bool Unchecked => !_checked;
 
-    public string CheckButtonText => _isChecking ? "Đang kiểm tra…" : (_checked ? "Kiểm tra lại" : "Kiểm tra máy");
+    public string CheckButtonText => _isChecking ? "Đang đọc…" : (_checked ? "Đọc lại" : "Đọc thông tin máy");
 
     public string CheckedAt
     {
@@ -154,16 +155,20 @@ public sealed class MachineViewModel : ObservableObject
             IsChecking = false;
         }
 
-        // Chạy toàn bộ kiểm tra chỉ đọc (dùng chung dữ liệu vừa thu thập) và đọc trạng thái hiện tại.
-        var checks = _main.Rows.Values.Where(r => r.IsReadOnly).ToList();
-        await _main.RunAsync(checks, "Kiểm tra máy", quiet: true);
-        await RefreshCurrentStatesAsync();
+        // Chỉ đọc cấu hình và pin. Các bước kiểm tra đầy đủ chạy khi kỹ thuật viên bấm thực hiện ở mô-đun Kiểm tra & Bàn giao;
+        // trạng thái cài phần mềm đọc khi bấm "Kiểm tra trạng thái cài" (WinGet chậm).
     }
 
-    public async Task RefreshCurrentStatesAsync()
+    /// <summary>Đọc trạng thái hiện tại của các mục; <paramref name="only"/> giới hạn theo nhóm.</summary>
+    public async Task RefreshCurrentStatesAsync(TaskCategory? only = null)
     {
         foreach (var row in _main.Rows.Values)
         {
+            if (only is { } category && row.Entry.Category != category)
+            {
+                continue;
+            }
+
             if (row.Entry.Module is not IDescribesCurrentState describer)
             {
                 continue;
@@ -250,11 +255,27 @@ public sealed class MachineViewModel : ObservableObject
     {
         Status.Clear();
         var s = _snapshot!;
-        Status.Add(new InfoRow("Windows", $"{s.Str("osCaption")?.Replace("Microsoft ", "", StringComparison.Ordinal)} {s.Str("osDisplayVersion")} · build {s.Num("osBuild")}.{s.Num("osUbr")}"));
-        Status.Add(new InfoRow("Kiến trúc", RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant()));
+        Status.Add(new InfoRow("Máy", $"{s.Str("manufacturer")} {s.Str("model")}".Trim() is { Length: > 0 } model ? model : "Không đọc được"));
+        Status.Add(new InfoRow("CPU", s.Str("cpu") ?? "Không đọc được"));
+        Status.Add(new InfoRow("RAM", s.Num("totalRamBytes") is { } ram ? CleanupTask.FormatBytes(ram) : "Không đọc được"));
+        Status.Add(new InfoRow("Ổ hệ thống", SystemDriveText()));
+        Status.Add(new InfoRow("Windows", $"{s.Str("osCaption")?.Replace("Microsoft ", "", StringComparison.Ordinal)} {s.Str("osDisplayVersion")} · {RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant()}"));
+        Status.Add(new InfoRow("Pin", InventoryChecks.Battery(s).Detail ?? "Không đọc được"));
+        Status.Add(new InfoRow("WinGet", _winGetVersion is null ? "Không khả dụng" : _winGetVersion + " · sẵn sàng"));
         Status.Add(new InfoRow("Quyền", _main.S.IsElevated ? "Quản trị viên" : "Người dùng — cần nâng quyền khi cài"));
         Status.Add(new InfoRow("Mạng", NetworkInterface.GetIsNetworkAvailable() ? "Đã kết nối" : "Không có kết nối"));
-        Status.Add(new InfoRow("WinGet", _winGetVersion is null ? "Không khả dụng" : _winGetVersion + " · sẵn sàng"));
-        Status.Add(new InfoRow("Máy", $"{s.Str("manufacturer")} {s.Str("model")}".Trim()));
+    }
+
+    private static string SystemDriveText()
+    {
+        try
+        {
+            var drive = new DriveInfo(Path.GetPathRoot(Environment.SystemDirectory) ?? "C:\\");
+            return $"{drive.Name.TrimEnd('\\')} {CleanupTask.FormatBytes(drive.TotalSize)} (còn {CleanupTask.FormatBytes(drive.AvailableFreeSpace)})";
+        }
+        catch (IOException)
+        {
+            return "Không đọc được";
+        }
     }
 }

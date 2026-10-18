@@ -72,7 +72,7 @@ public sealed class SoftwareViewModel : ObservableObject
 
         InstallCommand = new RelayCommand(AskInstall, () => CanInstall);
         PlanCommand = new RelayCommand(ShowPlan);
-        RefreshStatusCommand = new AsyncCommand(() => main.Machine.RefreshCurrentStatesAsync(), () => !main.IsRunning);
+        RefreshStatusCommand = new AsyncCommand(() => main.Machine.RefreshCurrentStatesAsync(TaskCategory.Software), () => !main.IsRunning);
         RecheckCommand = new AsyncCommand(main.Machine.CheckAsync, () => !main.IsRunning);
         OpenStoreCommand = new RelayCommand(() => ShellActions.OpenUri("ms-windows-store://pdp/?productid=9NBLGGH4NNS1"));
         ToggleTechCommand = new RelayCommand(() => TechOpen = !TechOpen);

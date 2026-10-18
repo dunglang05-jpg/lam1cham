@@ -14,7 +14,7 @@
                     <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=disk}" Width="26" Height="26" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
                     <TextBlock Text="Ổ đĩa" Style="{StaticResource H3}" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock Text="Chưa đọc thông tin ổ đĩa. Bấm “Kiểm tra máy” ở trang Tổng quan." Style="{StaticResource Secondary}" Margin="16,0,16,16"
+                <TextBlock Text="Chưa đọc thông tin ổ đĩa. Bấm “Đọc thông tin máy” ở trang Tổng quan." Style="{StaticResource Secondary}" Margin="16,0,16,16"
                            Visibility="{Binding HasDrives, Converter={StaticResource Vis}, ConverterParameter=invert}" />
                 <ItemsControl ItemsSource="{Binding Drives}">
                     <ItemsControl.ItemTemplate>

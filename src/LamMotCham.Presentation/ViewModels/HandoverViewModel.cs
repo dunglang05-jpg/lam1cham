@@ -108,7 +108,7 @@ public sealed class HandoverViewModel : ObservableObject
         var m = _main.Machine;
         var c = Conditions;
         c[0].StateKey = m.Checked ? "pass" : "unchecked";
-        c[0].Evidence = m.Checked ? "Đọc lúc " + m.CheckedAt : "Chưa chạy “Kiểm tra máy”.";
+        c[0].Evidence = m.Checked ? "Đọc lúc " + m.CheckedAt : "Chưa đọc thông tin máy.";
 
         var sw = _main.RowsIn(TaskCategory.Software).Where(r => r.HasRun).ToList();
         var swOk = sw.Count(r => r.State == TaskState.Success);

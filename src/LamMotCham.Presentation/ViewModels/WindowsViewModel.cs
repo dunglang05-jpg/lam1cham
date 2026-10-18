@@ -15,11 +15,22 @@ public sealed class WindowsViewModel : ObservableObject
 
     private readonly MainViewModel _main;
     private readonly List<TaskRowViewModel> _rows;
+    private bool _statesLoaded;
 
     public WindowsViewModel(MainViewModel main)
     {
         _main = main;
         _rows = [.. main.RowsIn(TaskCategory.WindowsSettings)];
+
+        // Đọc giá trị hiện tại khi mở trang lần đầu (không đọc lúc khởi động để mở app nhanh).
+        main.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.CurrentPage) && main.CurrentPage == Page.Windows && !_statesLoaded && !main.IsRunning)
+            {
+                _statesLoaded = true;
+                _ = main.Machine.RefreshCurrentStatesAsync(TaskCategory.WindowsSettings);
+            }
+        };
         (string Title, string Desc, string Icon)[] groups =
         [
             (WindowsCatalog.GroupMaintenance, "Giờ hệ thống và trạng thái cập nhật.", "refresh"),

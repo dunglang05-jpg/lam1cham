@@ -21,7 +21,7 @@ public sealed class DiskViewModel : ObservableObject
     private string _newName = "";
     private string _encryptionKey = "unchecked";
     private string _encryptionText = "Chưa kiểm tra";
-    private string _encryptionDetail = "Bấm “Kiểm tra máy” ở Tổng quan để đọc trạng thái mã hóa.";
+    private string _encryptionDetail = "Bấm “Bắt đầu kiểm tra” ở Kiểm tra & Bàn giao để đọc trạng thái mã hóa.";
 
     public DiskViewModel(MainViewModel main)
     {
