@@ -70,7 +70,17 @@ jobs:
         run: dotnet format LamMotCham.sln --verify-no-changes --no-restore
 
       - name: Đóng gói EXE portable
-        run: dotnet publish src/LamMotCham.App/LamMotCham.App.csproj -p:PublishProfile=win-x64
+        shell: pwsh
+        run: |
+          dotnet publish src/LamMotCham.App/LamMotCham.App.csproj -p:PublishProfile=win-x64 2>&1 | Tee-Object -FilePath publish.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            $errs = Select-String -Path publish.log -Pattern '(: error |error NU|error NETSDK|error MSB)' |
+              ForEach-Object { $_.Line.Trim().Replace("$env:GITHUB_WORKSPACE\", '') } | Sort-Object -Unique
+            $msg = (($errs | Select-Object -First 100) | ForEach-Object { $_.Replace('%', '%25') }) -join '%0A'
+            Write-Output "::error title=Publish: $($errs.Count) lỗi::$msg"
+            exit $code
+          }
 
       - name: Tính SHA-256
         shell: pwsh

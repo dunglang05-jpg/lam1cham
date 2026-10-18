@@ -17,7 +17,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <!-- Chỉ khóa khi lock file đã được commit; lần restore đầu tiên sẽ tạo lock file. -->
-    <RestoreLockedMode Condition="Exists('$(MSBuildProjectDirectory)\packages.lock.json')">true</RestoreLockedMode>
+    <!-- RestoreLockedMode bật lại khi packages.lock.json (gồm cả RID win-x64) đã được commit. -->
+    <RestoreLockedMode Condition="'$(LmcLockedRestore)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
 </Project>
