@@ -12,6 +12,16 @@ public sealed class SplitPanel : Panel
     public static readonly DependencyProperty SideWidthProperty = DependencyProperty.Register(
         nameof(SideWidth), typeof(double), typeof(SplitPanel), new FrameworkPropertyMetadata(320.0, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
+    /// <summary>Tỷ lệ bề rộng cột phụ (0–0.9). Khác 0 thì dùng thay cho SideWidth, ví dụ 0.4 = cột chính 60%, cột phụ 40%.</summary>
+    public static readonly DependencyProperty SideRatioProperty = DependencyProperty.Register(
+        nameof(SideRatio), typeof(double), typeof(SplitPanel), new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsMeasure));
+
+    public double SideRatio
+    {
+        get => (double)GetValue(SideRatioProperty);
+        set => SetValue(SideRatioProperty, value);
+    }
+
     public static readonly DependencyProperty GapProperty = DependencyProperty.Register(
         nameof(Gap), typeof(double), typeof(SplitPanel), new FrameworkPropertyMetadata(18.0, FrameworkPropertyMetadataOptions.AffectsMeasure));
 
@@ -96,6 +106,12 @@ public sealed class SplitPanel : Panel
     private (double Main, double Side) Widths(double width)
     {
         var usable = Math.Max(0, width - Gap);
+        if (SideRatio > 0)
+        {
+            var ratioSide = usable * Math.Min(SideRatio, 0.9);
+            return (usable - ratioSide, ratioSide);
+        }
+
         if (SideWidth <= 0)
         {
             return (usable / 2, usable / 2);

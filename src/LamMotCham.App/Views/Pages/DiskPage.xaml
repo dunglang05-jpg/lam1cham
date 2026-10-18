@@ -82,7 +82,7 @@
                                             <Border Style="{StaticResource TagGreen}" Margin="0,0,8,0" Visibility="{Binding IsCurrent, Converter={StaticResource Vis}}">
                                                 <TextBlock Text="Đang dùng" Style="{StaticResource TagGreenText}" />
                                             </Border>
-                                            <Button Style="{StaticResource SecondaryButton}" MinHeight="30" FontSize="12" Padding="12,0" Content="✎  Sửa"
+                                            <Button Style="{StaticResource PrimaryButton}" MinHeight="30" FontSize="12" Padding="12,0" Content="✎  Sửa"
                                                     Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
                                                     Visibility="{Binding IsLocal, Converter={StaticResource Vis}}" AutomationProperties.Name="Sửa tài khoản" />
                                             <Border Style="{StaticResource Tag}" Visibility="{Binding IsLocal, Converter={StaticResource Vis}, ConverterParameter=invert}"

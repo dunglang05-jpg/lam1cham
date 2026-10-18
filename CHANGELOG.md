@@ -2,6 +2,18 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.12.1 — 19/10/2026
+
+**Tổng quan (`overview`) 0.7.1**
+- Thẻ Một chạm chiếm 60% bề ngang, thẻ thiết bị 40%; thông số (pin, Windows, CPU) xuống dòng thay vì bị cắt "…".
+- Nút "Bắt đầu thiết lập đầy đủ" đổi sang xanh lá nổi trên nền xanh dương; nút "Bắt đầu" của các gói đổi sang xanh dương.
+
+**Ổ đĩa & Tài khoản (`disk`) 0.6.1** — nút "Sửa" tài khoản đổi sang xanh dương.
+
+**Khung ứng dụng (`shell`) 0.8.1** — dùng chung
+- Nút phụ không còn nền trắng: nền xanh nhạt, chữ xanh (dễ nhận ra là nút bấm).
+- `SplitPanel` thêm `SideRatio` (chia cột theo tỷ lệ).
+
 ## 0.12.0 — 19/10/2026
 
 **Khung ứng dụng (`shell`) 0.8.0**

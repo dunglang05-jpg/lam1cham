@@ -57,6 +57,12 @@
         <GradientStop Color="#2C7CFA" Offset="0" />
         <GradientStop Color="#135DE0" Offset="1" />
     </LinearGradientBrush>
+    <!-- Nút thực thi trên nền xanh (thẻ Một chạm): xanh lá nổi bật -->
+    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#1FC48A" Offset="0" />
+        <GradientStop Color="#0E9466" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#0C8A5E" />
     <LinearGradientBrush x:Key="ReadinessBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="#144C9D" Offset="0" />
         <GradientStop Color="#1E73EB" Offset="1" />
@@ -303,14 +309,15 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
 
+    <!-- Nút phụ: nền xanh nhạt, chữ xanh (không dùng nền trắng để dễ nhận ra là nút bấm) -->
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ButtonBase}">
-        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource OutlineBrush}" />
+        <Setter Property="Background" Value="#EAF2FF" />
+        <Setter Property="BorderBrush" Value="#CFE0FF" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="#365170" />
+        <Setter Property="Foreground" Value="#1C60D4" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimarySoftBrush}" />
+                <Setter Property="Background" Value="#DCEAFF" />
             </Trigger>
         </Style.Triggers>
     </Style>

@@ -8,7 +8,8 @@
         <c:PageHeader Eyebrow="BẢNG ĐIỀU KHIỂN" Heading="Xin chào! Sẵn sàng cho laptop mới." ModuleLabel="{Binding Module.Label}"
                       Description="Một chạm để thiết lập đầy đủ, hoặc chọn từng gói bên dưới. Mọi bước được xác minh trước khi báo thành công." />
 
-        <c:SplitPanel SideWidth="340" StackBelow="820" Gap="14">
+        <!-- Một chạm 60% | thiết bị 40% để thông số (pin, Windows) không bị cắt -->
+        <c:SplitPanel SideRatio="0.4" StackBelow="820" Gap="14">
             <!-- MỘT CHẠM: thẻ chính, nổi bật -->
             <Border CornerRadius="16" Background="{StaticResource ReadinessBrush}" Padding="24,20">
                 <StackPanel>
@@ -79,15 +80,17 @@
                                 AutomationProperties.Name="Bắt đầu thiết lập đầy đủ">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border x:Name="Bd" Background="White" CornerRadius="10" Padding="18,12">
+                                    <Border x:Name="Bd" Background="{StaticResource AccentGradientBrush}" CornerRadius="10" Padding="18,12">
                                         <StackPanel Orientation="Horizontal">
-                                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=bolt}" Width="20" Height="20" Style="{StaticResource IconImage}" Margin="0,0,10,0" />
-                                            <TextBlock Text="Bắt đầu thiết lập đầy đủ   →" FontSize="15" FontWeight="Bold" Foreground="#1256BE" VerticalAlignment="Center" />
+                                            <Border Width="26" Height="26" CornerRadius="7" Background="White" Margin="0,0,10,0">
+                                                <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=bolt}" Width="18" Height="18" Style="{StaticResource IconImage}" />
+                                            </Border>
+                                            <TextBlock Text="Bắt đầu thiết lập đầy đủ   →" FontSize="15" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Bd" Property="Background" Value="#F0F6FF" />
+                                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentHoverBrush}" />
                                         </Trigger>
                                         <Trigger Property="IsEnabled" Value="False">
                                             <Setter TargetName="Bd" Property="Opacity" Value="0.6" />
@@ -115,7 +118,7 @@
                             <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=laptop}" Width="22" Height="22" Style="{StaticResource IconImage}" />
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Machine.ModelText}" FontSize="14" FontWeight="ExtraBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Machine.ModelText}" />
+                            <TextBlock Text="{Binding Machine.ModelText}" FontSize="14" FontWeight="ExtraBold" TextWrapping="Wrap" />
                             <TextBlock FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis">
                                 <Run Text="Tên máy:" /> <Run Text="{Binding Machine.ComputerName, Mode=OneWay}" FontWeight="SemiBold" />
                             </TextBlock>
@@ -128,7 +131,7 @@
                                     <DockPanel>
                                         <Image DockPanel.Dock="Left" Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,8,0" />
                                         <TextBlock DockPanel.Dock="Left" Text="{Binding Label}" Width="74" FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Value}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" />
                                     </DockPanel>
                                 </Border>
                             </DataTemplate>
@@ -162,7 +165,7 @@
                             <Border x:Name="Tile" DockPanel.Dock="Left" Style="{StaticResource IconTile}" Margin="0,0,12,0" VerticalAlignment="Center">
                                 <Image Source="{Binding IconKey, Converter={StaticResource Icon}}" Width="22" Height="22" Style="{StaticResource IconImage}" />
                             </Border>
-                            <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryButton}" Command="{Binding StartCommand}" MinHeight="32" FontSize="12" Padding="12,0"
+                            <Button DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Command="{Binding StartCommand}" MinHeight="32" FontSize="12" Padding="12,0"
                                     VerticalAlignment="Center" Margin="10,0,0,0" Content="Bắt đầu →" AutomationProperties.Name="{Binding Title}" />
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
