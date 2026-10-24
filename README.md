@@ -25,7 +25,7 @@ Dữ liệu ứng dụng: `%LOCALAPPDATA%\LamMotCham\` (Logs, Reports, Rollback)
 
 **Cách 1 — GitHub Actions (khuyến nghị).** Mỗi lần push lên `main`, workflow `ci` chạy trên `windows-latest`, build + test rồi đính kèm artifact `LamMotCham-win-x64` (gồm `LamMotCham.exe` và `.sha256`).
 
-**Phát hành.** Gắn tag `vX.Y.Z` lên commit đã qua CI trên `main` (phiên bản trong `Directory.Build.props` phải trùng tag): workflow `ci` build lại từ tag rồi tạo GitHub Release kèm `LamMotCham.exe`, `.sha256` và ghi chú từ `docs/release/X.Y.Z.md`.
+**Phát hành.** *Actions › ci › Run workflow* trên nhánh `main`, nhập phiên bản `X.Y.Z` (phải trùng `Version` trong `Directory.Build.props`, có ghi chú `docs/release/X.Y.Z.md`): CI build + test, tạo tag `vX.Y.Z` và GitHub Release kèm `LamMotCham.exe`, `.sha256`. Đẩy tag `vX.Y.Z` lên cũng phát hành như vậy.
 
 **Khóa máy chủ đăng nhập.** EXE cần khóa truy cập `api.php` (giá trị `API_KEY` trong `config.php` trên hosting). Khóa không nằm trong mã nguồn: đặt secret **`LMC_API_KEY`** ở *Settings › Secrets and variables › Actions* của repo để bản build từ GitHub Actions có khóa. Thiếu khóa thì vẫn build được nhưng màn hình đăng nhập báo "chưa được cấu hình máy chủ đăng nhập".
 
