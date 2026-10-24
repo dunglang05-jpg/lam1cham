@@ -18,8 +18,250 @@
             <ColumnDefinition Width="7*" />
         </Grid.ColumnDefinitions>
 
-        <!-- BẢNG THƯƠNG HIỆU (cùng nền với thanh bên) -->
-        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
+        <!-- BẢNG THƯƠNG HIỆU (cùng nền với thanh bên) + hiệu ứng vũ trụ nhẹ: sao, sao nhấp nháy, tinh vân, sao băng, hành tinh trôi.
+             Chỉ hoạt ảnh độ mờ/vị trí (rẻ, không làm nặng máy); không nhận chuột. -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}" ClipToBounds="True">
+            <Grid>
+                <Viewbox Stretch="UniformToFill" IsHitTestVisible="False" AutomationProperties.Name="Nền vũ trụ">
+                    <Canvas Width="400" Height="640">
+                        <!-- Tinh vân -->
+                        <Ellipse Canvas.Left="170" Canvas.Top="-120" Width="360" Height="300">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#557C4DFF" Offset="0" />
+                                    <GradientStop Color="#007C4DFF" Offset="1" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Ellipse Canvas.Left="-160" Canvas.Top="330" Width="380" Height="320">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#40268CFF" Offset="0" />
+                                    <GradientStop Color="#00268CFF" Offset="1" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Ellipse Canvas.Left="210" Canvas.Top="520" Width="260" Height="200">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#26FF5AC8" Offset="0" />
+                                    <GradientStop Color="#00FF5AC8" Offset="1" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <!-- Sao tĩnh -->
+                            <Ellipse Canvas.Left="181" Canvas.Top="358" Width="1.4" Height="1.4" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="203" Canvas.Top="375" Width="1" Height="1" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="190" Canvas.Top="392" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="179" Canvas.Top="94" Width="1.4" Height="1.4" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="237" Canvas.Top="254" Width="1.4" Height="1.4" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="259" Canvas.Top="398" Width="1.4" Height="1.4" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="27" Canvas.Top="124" Width="1" Height="1" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="16" Canvas.Top="297" Width="1.4" Height="1.4" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="334" Canvas.Top="332" Width="2" Height="2" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="200" Canvas.Top="423" Width="1.4" Height="1.4" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="163" Canvas.Top="352" Width="1" Height="1" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="128" Canvas.Top="149" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="32" Canvas.Top="488" Width="1.4" Height="1.4" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="336" Canvas.Top="248" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="88" Canvas.Top="590" Width="1" Height="1" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="151" Canvas.Top="452" Width="1.4" Height="1.4" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="226" Canvas.Top="129" Width="2" Height="2" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="136" Canvas.Top="201" Width="1" Height="1" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="301" Canvas.Top="79" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="8" Canvas.Top="298" Width="1.4" Height="1.4" Fill="White" Opacity="0.5" />
+                            <Ellipse Canvas.Left="271" Canvas.Top="123" Width="1.4" Height="1.4" Fill="White" Opacity="0.5" />
+                            <Ellipse Canvas.Left="390" Canvas.Top="490" Width="1.4" Height="1.4" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="50" Canvas.Top="270" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="110" Canvas.Top="618" Width="1.4" Height="1.4" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="395" Canvas.Top="16" Width="1" Height="1" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="394" Canvas.Top="384" Width="1.4" Height="1.4" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="21" Canvas.Top="96" Width="1.4" Height="1.4" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="8" Canvas.Top="390" Width="1" Height="1" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="33" Canvas.Top="61" Width="1.4" Height="1.4" Fill="White" Opacity="0.5" />
+                            <Ellipse Canvas.Left="10" Canvas.Top="237" Width="1.4" Height="1.4" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="54" Canvas.Top="375" Width="1.4" Height="1.4" Fill="White" Opacity="0.5" />
+                            <Ellipse Canvas.Left="344" Canvas.Top="120" Width="1" Height="1" Fill="White" Opacity="0.6" />
+                            <Ellipse Canvas.Left="360" Canvas.Top="521" Width="1" Height="1" Fill="White" Opacity="0.5" />
+                            <Ellipse Canvas.Left="66" Canvas.Top="402" Width="1.4" Height="1.4" Fill="White" Opacity="0.5" />
+                            <Ellipse Canvas.Left="273" Canvas.Top="249" Width="1.4" Height="1.4" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="35" Canvas.Top="34" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="205" Canvas.Top="165" Width="2" Height="2" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="105" Canvas.Top="525" Width="1.4" Height="1.4" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="119" Canvas.Top="115" Width="2" Height="2" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="54" Canvas.Top="307" Width="2" Height="2" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="245" Canvas.Top="181" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="31" Canvas.Top="264" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                            <Ellipse Canvas.Left="22" Canvas.Top="182" Width="1.4" Height="1.4" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="385" Canvas.Top="62" Width="1" Height="1" Fill="White" Opacity="0.75" />
+                            <Ellipse Canvas.Left="388" Canvas.Top="419" Width="2" Height="2" Fill="White" Opacity="0.9" />
+                            <Ellipse Canvas.Left="233" Canvas.Top="93" Width="1" Height="1" Fill="White" Opacity="0.35" />
+                        <!-- Sao nhấp nháy -->
+                            <Ellipse Canvas.Left="190" Canvas.Top="232" Width="3" Height="3" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:0.1">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:2.1" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="252" Canvas.Top="309" Width="2" Height="2" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:0.8">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:2.8" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="39" Canvas.Top="349" Width="3" Height="3" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:2.3">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:2.8" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="290" Canvas.Top="90" Width="2" Height="2" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:0.9">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:3.1" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="270" Canvas.Top="569" Width="2" Height="2" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:1.0">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:3.0" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="338" Canvas.Top="365" Width="3" Height="3" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:1.0">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:2.6" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="15" Canvas.Top="55" Width="2.4" Height="2.4" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:0.3">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:1.7" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="344" Canvas.Top="461" Width="3" Height="3" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:1.8">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:2.2" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="184" Canvas.Top="297" Width="3" Height="3" Fill="#DDE9FF">
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard BeginTime="0:0:1.3">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15" Duration="0:0:2.5" AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                        <!-- Sao băng: lướt chéo mỗi 7 giây -->
+                        <Rectangle Width="70" Height="1.5" Opacity="0" RadiusX="1" RadiusY="1">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00FFFFFF" Offset="0" />
+                                    <GradientStop Color="#FFFFFFFF" Offset="1" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                            <Rectangle.RenderTransform>
+                                <TransformGroup>
+                                    <RotateTransform Angle="28" />
+                                    <TranslateTransform x:Name="MeteorMove" X="60" Y="40" />
+                                </TransformGroup>
+                            </Rectangle.RenderTransform>
+                            <Rectangle.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever" Duration="0:0:7">
+                                            <DoubleAnimation Storyboard.TargetName="MeteorMove" Storyboard.TargetProperty="X" From="40" To="300" BeginTime="0:0:2" Duration="0:0:0.9" />
+                                            <DoubleAnimation Storyboard.TargetName="MeteorMove" Storyboard.TargetProperty="Y" From="30" To="168" BeginTime="0:0:2" Duration="0:0:0.9" />
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" BeginTime="0:0:2">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.15" Value="0.95" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.9" Value="0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Rectangle.Triggers>
+                        </Rectangle>
+                        <!-- Hành tinh có vành, trôi lên xuống chậm -->
+                        <Canvas Canvas.Left="300" Canvas.Top="96">
+                            <Canvas.RenderTransform>
+                                <TranslateTransform x:Name="PlanetFloat" />
+                            </Canvas.RenderTransform>
+                            <Canvas.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="PlanetFloat" Storyboard.TargetProperty="Y" From="-5" To="5" Duration="0:0:4" AutoReverse="True" RepeatBehavior="Forever">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <SineEase EasingMode="EaseInOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Canvas.Triggers>
+                            <Ellipse Width="46" Height="46">
+                                <Ellipse.Fill>
+                                    <RadialGradientBrush GradientOrigin="0.32,0.28" Center="0.4,0.4" RadiusX="0.7" RadiusY="0.7">
+                                        <GradientStop Color="#B9C7FF" Offset="0" />
+                                        <GradientStop Color="#5B7CFF" Offset="0.35" />
+                                        <GradientStop Color="#4B2FD0" Offset="0.7" />
+                                        <GradientStop Color="#1B0F5A" Offset="1" />
+                                    </RadialGradientBrush>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <Ellipse Canvas.Left="-12" Canvas.Top="17" Width="70" Height="12" Stroke="#99B4C8FF" StrokeThickness="1.4">
+                                <Ellipse.RenderTransform>
+                                    <RotateTransform Angle="-18" CenterX="35" CenterY="6" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </Canvas>
+                    </Canvas>
+                </Viewbox>
             <DockPanel Margin="36,34,36,26">
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
                     <Image Source="pack://application:,,,/Assets/logo.png" Width="42" Height="42" Style="{StaticResource IconImage}" />
@@ -92,10 +334,11 @@
                     </Viewbox>
 
                     <TextBlock Text="Thiết lập laptop mới chỉ với một chạm" FontSize="22" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="29" />
-                    <TextBlock Text="Cài phần mềm thiết yếu, tối ưu Windows, kiểm tra phần cứng và xuất báo cáo bàn giao — tự động, xác minh từng bước, không báo thành công giả."
+                    <TextBlock Text="Cài phần mềm thiết yếu, tối ưu Windows, kiểm tra phần cứng và xuất báo cáo bàn giao — tự động, xác minh từng bước."
                                FontSize="13" Foreground="#BCD0EE" TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="20" />
                 </StackPanel>
             </DockPanel>
+            </Grid>
         </Border>
 
         <!-- BIỂU MẪU -->

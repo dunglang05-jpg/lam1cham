@@ -5,7 +5,7 @@ Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-
 ## 1.0.1 — 24/10/2026
 
 **Tài khoản & Đăng nhập (`account`) 0.1.1**
-- Màn hình đăng nhập: bảng bên trái thay ba dòng thông tin tài khoản bằng phần giới thiệu ngắn về phần mềm và hình minh họa laptop đang chạy mã thiết lập (vẽ vector, con trỏ nhấp nháy). Biểu mẫu đăng nhập/đăng ký không đổi.
+- Màn hình đăng nhập: bảng bên trái thay ba dòng thông tin tài khoản bằng phần giới thiệu ngắn về phần mềm và hình minh họa laptop đang chạy mã thiết lập (vẽ vector, con trỏ nhấp nháy), trên nền vũ trụ: sao, sao nhấp nháy, tinh vân, sao băng và hành tinh trôi nhẹ (chỉ hoạt ảnh độ mờ/vị trí, không làm nặng máy). Biểu mẫu đăng nhập/đăng ký không đổi.
 
 ## 1.0.0 — 24/10/2026
 
