@@ -37,6 +37,36 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Mô-đun account: báo rõ bản build có khóa máy chủ đăng nhập hay không, và khóa có được máy chủ chấp nhận.
+      # Không in khóa (GitHub tự che secret trong log). Không làm hỏng build nếu máy chủ tạm không phản hồi.
+      - name: Kiểm tra khóa máy chủ đăng nhập
+        shell: pwsh
+        run: |
+          $title = 'Khóa máy chủ đăng nhập'
+          if ([string]::IsNullOrWhiteSpace($env:LMC_API_KEY)) {
+            Write-Output "::warning title=$title::Chưa có secret LMC_API_KEY. EXE build ra sẽ báo chưa cấu hình máy chủ đăng nhập."
+            exit 0
+          }
+          $endpoint = 'https://dunglam.top/api.php'
+          try {
+            # So với một khóa chắc chắn sai: máy chủ trả lời khác nhau nghĩa là khóa thật được chấp nhận
+            # (không phụ thuộc bảng mã của thông báo tiếng Việt).
+            $ask = {
+              param($key)
+              $body = @{ key = $key; action = 'kiem-tra-khoa' } | ConvertTo-Json -Compress
+              (Invoke-RestMethod -Uri $endpoint -Method Post -ContentType 'application/json; charset=utf-8' -Body $body -TimeoutSec 20).message
+            }
+            $real = & $ask $env:LMC_API_KEY
+            $wrong = & $ask ('sai-' + [guid]::NewGuid().ToString('N'))
+            if ($real -eq $wrong) {
+              Write-Output "::warning title=$title::Máy chủ $endpoint từ chối khóa trong secret LMC_API_KEY. Đối chiếu với API_KEY trong config.php trên hosting."
+            } else {
+              Write-Output "::notice title=$title::Đã nạp từ secret LMC_API_KEY và máy chủ $endpoint chấp nhận khóa."
+            }
+          } catch {
+            Write-Output "::notice title=$title::Đã nạp từ secret LMC_API_KEY; chưa kiểm tra được với máy chủ ($($_.Exception.Message))."
+          }
+
       - name: Restore
         run: dotnet restore LamMotCham.sln
 
