@@ -90,6 +90,24 @@
                             </Button>
                         </StackPanel>
                     </Border>
+                    <!-- Mô-đun "account": người đang đăng nhập + đăng xuất (phiên chỉ trong lần chạy này) -->
+                    <DockPanel Margin="12,2,6,4" ToolTip="{Binding AccountRoleText}"
+                               Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                        <Border Width="30" Height="30" CornerRadius="15" Background="#1FFFFFFF" BorderBrush="#33FFFFFF" BorderThickness="1">
+                            <TextBlock Text="{Binding AccountInitial}" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="9,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding AccountName}" FontSize="12" FontWeight="Bold" Foreground="White" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding AccountRoleText}" FontSize="10" Foreground="#9FB7DA" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Button Style="{StaticResource SideButton}" Command="{Binding SignOutCommand}" ToolTip="Đăng xuất" AutomationProperties.Name="Đăng xuất" Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=user}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,11,0" />
+                            <TextBlock Text="Đăng xuất" VerticalAlignment="Center"
+                                       Visibility="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                        </StackPanel>
+                    </Button>
                     <TextBlock Text="{Binding AppVersion}" FontSize="10" Foreground="{StaticResource NavLabelBrush}" HorizontalAlignment="Center" />
                 </StackPanel>
 

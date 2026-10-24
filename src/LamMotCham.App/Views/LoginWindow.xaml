@@ -1,0 +1,130 @@
+<Window x:Class="LamMotCham.App.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Làm 1 Chạm · Đăng nhập"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Width="920" Height="600" MinWidth="760" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="14"
+        Foreground="{StaticResource TextBrush}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+    <!-- Mô-đun "account" (QĐ-002): đăng nhập / đăng ký trước khi vào ứng dụng.
+         Mật khẩu lấy trực tiếp từ PasswordBox (code-behind), không qua binding. Phiên chỉ giữ trong lần chạy này. -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="7*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- BẢNG THƯƠNG HIỆU (cùng nền với thanh bên) -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
+            <DockPanel Margin="36,34,36,26">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                    <Image Source="pack://application:,,,/Assets/logo.png" Width="42" Height="42" Style="{StaticResource IconImage}" />
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Làm 1 Chạm" FontSize="19" FontWeight="ExtraBold" Foreground="White" />
+                        <TextBlock Text="Một chạm – Sẵn sàng sử dụng" FontSize="11" Foreground="#ADC8EF" Margin="0,1,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding AppVersion}" FontSize="11" Foreground="{StaticResource NavLabelBrush}" />
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Đăng nhập để bắt đầu thiết lập máy" FontSize="24" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="31" />
+                    <TextBlock Text="Tài khoản dùng chung với trang quản trị Làm 1 Chạm. Nhân viên mới đăng ký và chờ quản trị viên duyệt."
+                               FontSize="13" Foreground="#BCD0EE" TextWrapping="Wrap" Margin="0,10,0,22" LineHeight="20" />
+                    <StackPanel>
+                        <StackPanel.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="13" />
+                                <Setter Property="Foreground" Value="#E3ECFA" />
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </StackPanel.Resources>
+                        <DockPanel Margin="0,0,0,12">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=shield}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,11,0" />
+                            <TextBlock Text="Tài khoản do quản trị viên cấp và duyệt" />
+                        </DockPanel>
+                        <DockPanel Margin="0,0,0,12">
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=lock}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,11,0" />
+                            <TextBlock Text="Mật khẩu không lưu trên máy" />
+                        </DockPanel>
+                        <DockPanel>
+                            <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=clock}" Width="18" Height="18" Style="{StaticResource IconImage}" Margin="0,0,11,0" />
+                            <TextBlock Text="Thoát phần mềm là tự đăng xuất" />
+                        </DockPanel>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- BIỂU MẪU -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Focusable="False">
+            <StackPanel Width="380" VerticalAlignment="Center" Margin="0,28">
+                <!-- Chọn chế độ -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <RadioButton Style="{StaticResource PillRadio}" GroupName="LoginMode" Content="Đăng nhập"
+                                 IsChecked="{Binding IsSignInMode, Mode=TwoWay}" IsEnabled="{Binding IsIdle}"
+                                 AutomationProperties.Name="Chế độ đăng nhập" />
+                    <RadioButton Style="{StaticResource PillRadio}" GroupName="LoginMode" Content="Đăng ký tài khoản mới"
+                                 IsChecked="{Binding IsRegisterMode, Mode=TwoWay}" IsEnabled="{Binding IsIdle}"
+                                 AutomationProperties.Name="Chế độ đăng ký" />
+                </StackPanel>
+
+                <TextBlock Text="{Binding Title}" Style="{StaticResource H1}" />
+                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Secondary}" Margin="0,4,0,18" />
+
+                <!-- Họ tên (chỉ khi đăng ký) -->
+                <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource Vis}}">
+                    <TextBlock Text="Họ và tên" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text2Brush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="FullNameBox" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"
+                             AutomationProperties.Name="Họ và tên" />
+                    <TextBlock Text="Viết có dấu, chỉ gồm chữ cái, ví dụ: Nguyễn Văn An." FontSize="11" Foreground="{StaticResource Text2Brush}" Margin="0,3,0,12" />
+                </StackPanel>
+
+                <TextBlock Text="Tên đăng nhập / mã kho" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text2Brush}" Margin="0,0,0,4" />
+                <TextBox x:Name="UsernameBox" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" MaxLength="30"
+                         AutomationProperties.Name="Tên đăng nhập hoặc mã kho" />
+                <TextBlock Text="3–30 ký tự: chữ không dấu, số và . _ -" FontSize="11" Foreground="{StaticResource Text2Brush}" Margin="0,3,0,12"
+                           Visibility="{Binding IsRegisterMode, Converter={StaticResource Vis}}" />
+                <Border Height="12" Visibility="{Binding IsSignInMode, Converter={StaticResource Vis}}" />
+
+                <TextBlock Text="Mật khẩu" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text2Brush}" Margin="0,0,0,4" />
+                <PasswordBox x:Name="PasswordBox" PasswordChanged="OnPasswordChanged" MinHeight="40" MaxLength="64"
+                             AutomationProperties.Name="Mật khẩu" />
+
+                <!-- Nhập lại mật khẩu (chỉ khi đăng ký) -->
+                <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource Vis}}" Margin="0,12,0,0">
+                    <TextBlock Text="Nhập lại mật khẩu" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource Text2Brush}" Margin="0,0,0,4" />
+                    <PasswordBox x:Name="PasswordConfirmBox" PasswordChanged="OnPasswordConfirmChanged" MinHeight="40" MaxLength="64"
+                                 AutomationProperties.Name="Nhập lại mật khẩu" />
+                    <TextBlock Text="6–64 ký tự, không có khoảng trắng." FontSize="11" Foreground="{StaticResource Text2Brush}" Margin="0,3,0,0" />
+                </StackPanel>
+
+                <!-- Thông báo -->
+                <Border Background="{StaticResource ErrorTintBrush}" BorderBrush="{StaticResource ErrorLineBrush}" BorderThickness="1" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                        Visibility="{Binding Problem, Converter={StaticResource NotEmpty}}">
+                    <TextBlock Text="{Binding Problem}" FontSize="12" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" />
+                </Border>
+                <Border Background="{StaticResource WarningTintBrush}" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                        Visibility="{Binding Notice, Converter={StaticResource NotEmpty}}">
+                    <TextBlock Text="{Binding Notice}" FontSize="12" Foreground="{StaticResource WarningTextBrush}" TextWrapping="Wrap" />
+                </Border>
+                <Border Background="{StaticResource SuccessTintBrush}" BorderBrush="{StaticResource SuccessLineBrush}" BorderThickness="1" CornerRadius="9" Padding="12,9" Margin="0,14,0,0"
+                        Visibility="{Binding Success, Converter={StaticResource NotEmpty}}">
+                    <TextBlock Text="{Binding Success}" FontSize="12" Foreground="{StaticResource SuccessTextBrush}" TextWrapping="Wrap" />
+                </Border>
+
+                <Button Style="{StaticResource HeroButton}" Content="{Binding PrimaryText}" Command="{Binding SubmitCommand}" IsDefault="True"
+                        Margin="0,18,0,0" HorizontalAlignment="Stretch" AutomationProperties.Name="{Binding PrimaryText}" />
+
+                <TextBlock FontSize="11" Foreground="{StaticResource Text3Brush}" Margin="0,16,0,0" TextWrapping="Wrap">
+                    <Run Text="Máy chủ: " /><Run Text="{Binding ServerText, Mode=OneWay}" FontWeight="SemiBold" /><Run Text="   ·   Mã máy: " /><Run Text="{Binding MachineText, Mode=OneWay}" FontFamily="{StaticResource MonoFont}" />
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

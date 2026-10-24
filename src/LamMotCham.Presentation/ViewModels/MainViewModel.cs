@@ -57,6 +57,9 @@ public interface IUiPlatform
     void Shutdown();
 
     void SetClipboard(string text);
+
+    /// <summary>Đăng xuất và mở lại phần mềm ở màn hình đăng nhập.</summary>
+    void RestartForSignIn();
 }
 
 public sealed class MainViewModel : ObservableObject, IDisposable
@@ -138,6 +141,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ToggleLogCommand = new RelayCommand(() => LogOpen = !LogOpen);
         CancelRunCommand = new RelayCommand(AskCancel, () => IsRunning && !_cancelRequested);
         HideDockCommand = new RelayCommand(() => DockVisible = false, () => !IsRunning);
+        SignOutCommand = new RelayCommand(AskSignOut, () => !IsRunning);
 
         AsyncCommand.ErrorHandler = ex =>
         {
@@ -270,6 +274,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public RelayCommand HideDockCommand { get; }
 
+    /// <summary>Mô-đun "account": đăng xuất (phiên chỉ nằm trong bộ nhớ; thoát phần mềm cũng tự đăng xuất).</summary>
+    public RelayCommand SignOutCommand { get; }
+
+    public string AccountName => S.Account.Current?.DisplayName ?? "";
+
+    public string AccountRoleText => S.Account.Current is { } s ? s.RoleText + " · " + s.Username : "";
+
+    public string AccountInitial => S.Account.Current?.Initial ?? "?";
+
     public string AppVersion => "v" + S.Version;
 
     public bool IsElevated => S.IsElevated;
@@ -383,6 +396,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public DateTimeOffset? LastHandoverReportAt { get; private set; }
 
     public void ShowDialog(DialogViewModel dialog) => Dialog = dialog;
+
+    private void AskSignOut() => ShowDialog(new ConfirmDialogViewModel(this, "Đăng xuất?", "user", "Đăng xuất",
+        () =>
+        {
+            _ui.RestartForSignIn();
+            return Task.CompletedTask;
+        },
+        "Ở lại")
+    {
+        Lead = "Phần mềm sẽ mở lại ở màn hình đăng nhập. Nhật ký và báo cáo đã lưu không bị xóa.",
+    });
 
     public void CloseDialog(DialogViewModel dialog)
     {

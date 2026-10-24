@@ -24,7 +24,9 @@ public sealed record AppModule(string Id, string Name, string ShortName, string 
 /// </summary>
 public static class ModuleCatalog
 {
-    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.8.1", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
+    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.9.0", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
+
+    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.1.0", "user", "Đăng nhập, đăng ký với máy chủ; phiên chỉ trong lần chạy");
 
     public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.1", "home", "Thông tin máy, chọn gói thiết lập");
 
@@ -44,7 +46,7 @@ public static class ModuleCatalog
 
     public static AppModule Catalog { get; } = new("catalog", "Danh mục phần mềm", "Danh mục", SoftwareCatalog.DataVersion, "list", "Gói WinGet đã duyệt và logo ứng dụng", IsData: true);
 
-    public static IReadOnlyList<AppModule> All { get; } = [Shell, Overview, Software, Windows, Disk, Cleanup, Handover, Engine, Modules, Catalog];
+    public static IReadOnlyList<AppModule> All { get; } = [Shell, Account, Overview, Software, Windows, Disk, Cleanup, Handover, Engine, Modules, Catalog];
 
     /// <summary>Số mô-đun mã nguồn (không tính dữ liệu).</summary>
     public static int CodeModuleCount => All.Count(m => !m.IsData);

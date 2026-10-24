@@ -24,6 +24,10 @@ jobs:
     name: Build, test và đóng gói (win-x64)
     runs-on: windows-latest
     timeout-minutes: 30
+    env:
+      # Khóa truy cập máy chủ đăng nhập (mô-đun account), nạp vào EXE lúc build. Đặt trong Settings › Secrets › Actions.
+      # PR từ fork không có secret: vẫn build/test được, EXE báo chưa cấu hình máy chủ đăng nhập.
+      LMC_API_KEY: ${{ secrets.LMC_API_KEY }}
     steps:
       - name: Lấy mã nguồn
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

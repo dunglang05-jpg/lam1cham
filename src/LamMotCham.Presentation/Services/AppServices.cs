@@ -24,7 +24,9 @@ public sealed class AppServices : IDisposable
         RollbackStore rollback,
         WindowsResourceMonitor monitor,
         TaskOrchestrator orchestrator,
-        IReadOnlyList<TaskCatalogEntry> catalog)
+        IReadOnlyList<TaskCatalogEntry> catalog,
+        string version,
+        AccountService account)
     {
         Memory = memory;
         Log = log;
@@ -35,7 +37,8 @@ public sealed class AppServices : IDisposable
         Orchestrator = orchestrator;
         Catalog = catalog;
         IsElevated = WindowsEnvironment.IsElevated();
-        Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "0.1.0";
+        Version = version;
+        Account = account;
     }
 
     public InMemoryRunLogger Memory { get; }
@@ -58,6 +61,9 @@ public sealed class AppServices : IDisposable
 
     public string Version { get; }
 
+    /// <summary>Mô-đun "account": đăng nhập với máy chủ Web Admin; phiên chỉ trong bộ nhớ.</summary>
+    public AccountService Account { get; }
+
     public static AppServices Create()
     {
         var memory = new InMemoryRunLogger(2_000);
@@ -78,11 +84,17 @@ public sealed class AppServices : IDisposable
         var governor = new ResourceGovernor(monitor);
         var orchestrator = new TaskOrchestrator(log, governor);
         var catalog = WindowsCatalog.Build(new CatalogServices(inventory, winGet, rollback));
+        var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "0.1.0";
+        var account = AccountService.CreateDefault(log, version);
         log.Info("Khởi động Làm 1 Chạm.");
-        return new AppServices(memory, log, inventory, winGet, rollback, monitor, orchestrator, catalog);
+        return new AppServices(memory, log, inventory, winGet, rollback, monitor, orchestrator, catalog, version, account);
     }
 
-    public void Dispose() => Inventory.Dispose();
+    public void Dispose()
+    {
+        Account.Dispose();
+        Inventory.Dispose();
+    }
 }
 
 /// <summary>Các thao tác mở file, thư mục, trang cài đặt — chỉ với đích cố định hoặc do ứng dụng tạo ra.</summary>

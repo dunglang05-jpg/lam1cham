@@ -19,11 +19,15 @@ Bản hiện tại: **0.2.0 — thử nghiệm nội bộ.** Chưa ký số, ch�
 
 Dữ liệu ứng dụng: `%LOCALAPPDATA%\LamMotCham\` (Logs, Reports, Rollback). Log đã che mật khẩu, token, khóa BitLocker, product key.
 
+**Đăng nhập (mô-đun `account`).** Mở phần mềm là vào màn hình đăng nhập, dùng tài khoản của Web Admin (dunglam.top). Nhân viên mới bấm **Đăng ký tài khoản mới** rồi chờ quản trị viên duyệt ở trang Admin › Tài khoản. Phiên chỉ giữ trong lần chạy: thoát phần mềm là đăng xuất, không lưu gì trên máy.
+
 ## Lấy file EXE
 
 **Cách 1 — GitHub Actions (khuyến nghị).** Mỗi lần push lên `main`, workflow `ci` chạy trên `windows-latest`, build + test rồi đính kèm artifact `LamMotCham-win-x64` (gồm `LamMotCham.exe` và `.sha256`).
 
-**Cách 2 — tự build trên Windows.** Cài [.NET SDK 10](https://dotnet.microsoft.com/download/dotnet/10.0), rồi chạy:
+**Khóa máy chủ đăng nhập.** EXE cần khóa truy cập `api.php` (giá trị `API_KEY` trong `config.php` trên hosting). Khóa không nằm trong mã nguồn: đặt secret **`LMC_API_KEY`** ở *Settings › Secrets and variables › Actions* của repo để bản build từ GitHub Actions có khóa. Thiếu khóa thì vẫn build được nhưng màn hình đăng nhập báo "chưa được cấu hình máy chủ đăng nhập".
+
+**Cách 2 — tự build trên Windows.** Cài [.NET SDK 10](https://dotnet.microsoft.com/download/dotnet/10.0), đặt biến môi trường `LMC_API_KEY` (khóa máy chủ, xem trên), rồi chạy:
 
 ```cmd
 build.cmd
