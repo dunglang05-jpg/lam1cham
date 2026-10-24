@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
+using LamMotCham.Presentation.ViewModels;
 
 namespace LamMotCham.App;
 
@@ -30,6 +32,18 @@ public partial class MainWindow : Window
         FitToScreen();
         SizeChanged += (_, _) => UpdateCompact();
         UpdateCompact();
+    }
+
+    /// <summary>Đang chạy tác vụ thì không đóng ngay: hỏi lại, dừng sau bước hiện tại, ghi báo cáo rồi mới đóng.</summary>
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+        if (DataContext is MainViewModel vm && !vm.ConfirmClose())
+        {
+            e.Cancel = true;
+        }
+
+        base.OnClosing(e);
     }
 
     /// <summary>true khi cửa sổ hẹp: thanh bên thu gọn, lề nhỏ hơn.</summary>

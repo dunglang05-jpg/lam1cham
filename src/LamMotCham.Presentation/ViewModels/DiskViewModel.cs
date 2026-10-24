@@ -236,7 +236,7 @@ public sealed class DiskViewModel : ObservableObject
         _main.ShowDialog(new ConfirmDialogViewModel(_main, "Đổi tên máy", "laptop", "Đổi tên", async () =>
         {
             var entry = WindowsCatalog.Rename(name);
-            await _main.RunAsync([new TaskRowViewModel(entry) { IsSelected = true }], "Đổi tên máy");
+            await _main.RunAsync([new TaskRowViewModel(entry) { IsSelected = true }], "Đổi tên máy", confirmed: true);
         }, "Hủy")
         {
             Facts =
@@ -335,7 +335,7 @@ public sealed class DiskViewModel : ObservableObject
         var src = plan.Probe.DriveLetter;
         _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận chia ổ đĩa", "disk", "Chia ổ", async () =>
         {
-            await _main.RunAsync([new TaskRowViewModel(WindowsCatalog.SplitDisk(plan)) { IsSelected = true }], "Chia ổ đĩa");
+            await _main.RunAsync([new TaskRowViewModel(WindowsCatalog.SplitDisk(plan)) { IsSelected = true }], "Chia ổ đĩa", confirmed: true);
             ClearPlan();
             await _main.Machine.CheckAsync();
         }, "Hủy")

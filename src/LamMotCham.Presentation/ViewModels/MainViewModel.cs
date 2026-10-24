@@ -84,6 +84,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private int _runTotal;
     private int _runDone;
     private bool _cancelRequested;
+    private bool _closeAfterRun;
     private double _runPercent;
     private int _doneSuccess;
     private int _doneSkipped;
@@ -437,7 +438,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <param name="rows">Các task cần chạy.</param>
     /// <param name="title">Tên lượt chạy.</param>
     /// <param name="quiet">true: tự đóng hộp kết quả nếu mọi tác vụ ổn (dùng cho lượt chỉ đọc như Kiểm tra máy).</param>
-    public async Task<RunReport?> RunAsync(IReadOnlyList<TaskRowViewModel> rows, string title, bool quiet = false)
+    /// <param name="confirmed">true: người dùng vừa xác nhận đúng danh sách này trong hộp xác nhận (bắt buộc với task cần xác nhận riêng).</param>
+    public async Task<RunReport?> RunAsync(IReadOnlyList<TaskRowViewModel> rows, string title, bool quiet = false, bool confirmed = false)
     {
         ArgumentNullException.ThrowIfNull(rows);
         if (IsRunning || rows.Count == 0)
@@ -500,7 +502,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             var modules = rows.Select(r => r.Entry.Module).ToList();
             var token = _runCts.Token;
-            report = await Task.Run(() => S.Orchestrator.RunAsync(modules, progress, token));
+            report = await Task.Run(() => S.Orchestrator.RunAsync(modules, confirmed, progress, token));
             foreach (var outcome in report.Tasks)
             {
                 if (byId.TryGetValue(outcome.TaskId, out var row))
@@ -527,6 +529,23 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             ShowDialog(new ErrorDialogViewModel(this, "Không thể bắt đầu", "Danh sách tác vụ không hợp lệ.",
                 "Chưa có tác vụ nào được chạy.", "Bỏ chọn các mục liên quan rồi thử lại.", string.Join(Environment.NewLine, ex.Errors)));
         }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // Lượt chạy dừng giữa chừng vì lỗi không lường trước: không để dòng tác vụ treo ở "Đang chạy" và vẫn ghi báo cáo.
+            S.Log.Error($"Lượt chạy dừng bất thường: {ex.GetType().Name}: {ex.Message}");
+            foreach (var r in rows.Where(r => r.State is null or TaskState.Pending or TaskState.Running))
+            {
+                r.Apply(new TaskStatusUpdate(r.Id, TaskState.NeedsAttention, "Lượt chạy dừng bất thường; tác vụ này chưa được xác minh.", 0));
+            }
+
+            LastRunReportPath = WriteReport(
+                new RunReport { StartedAt = _runStarted, FinishedAt = DateTimeOffset.Now, Tasks = [.. rows.Select(r => r.ToOutcome())] },
+                "lượt chạy dừng bất thường");
+            DockSummary = "Lượt chạy dừng bất thường — xem log.";
+            ShowDialog(new ErrorDialogViewModel(this, "Lượt chạy dừng bất thường", ex.Message,
+                "Các tác vụ chưa chạy xong được đánh dấu Cần chú ý.", "Xem log, kiểm tra máy rồi chạy lại các mục còn lại.",
+                $"{ex.GetType().Name}{Environment.NewLine}Log: {WindowsEnvironment.LogsDirectory}", "attention"));
+        }
         finally
         {
             IsRunning = false;
@@ -537,6 +556,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             RefreshLog();
             Handover.Refresh();
             Software.RefreshQueue();
+        }
+
+        if (CloseIfRequested())
+        {
+            return report;
         }
 
         if (quiet && report is not null && report.HaltReason == RunHaltReason.None && DoneProblems == 0)
@@ -559,6 +583,76 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         return report;
+    }
+
+    /// <summary>
+    /// Gọi khi người dùng đóng cửa sổ. Trả về false (không đóng) khi đang chạy: hỏi lại, nếu đồng ý thì dừng sau bước
+    /// hiện tại, ghi báo cáo rồi tự đóng — không bỏ dở tác vụ (cài phần mềm, chia ổ…) mà không có báo cáo.
+    /// </summary>
+    public bool ConfirmClose()
+    {
+        if (!IsRunning)
+        {
+            return true;
+        }
+
+        if (!_closeAfterRun)
+        {
+            ShowDialog(new ConfirmDialogViewModel(this, "Đang chạy tác vụ", "alert", "Dừng rồi thoát", () =>
+            {
+                _closeAfterRun = true;
+                S.Log.Info("Người dùng đóng ứng dụng khi đang chạy: dừng sau bước hiện tại rồi thoát.");
+                if (!_cancelRequested && _runCts is not null)
+                {
+                    _cancelRequested = true;
+                    _runCts.Cancel();
+                }
+
+                DockSummary = "Đang dừng sau bước hiện tại, ghi báo cáo rồi tự đóng…";
+                return Task.CompletedTask;
+            }, "Tiếp tục chạy")
+            {
+                Lead = "Thoát ngay sẽ bỏ dở tác vụ đang chạy mà không có báo cáo. Phần mềm sẽ hoàn tất bước hiện tại " +
+                       "(trình cài đặt và thao tác ổ đĩa không bị cưỡng chế dừng), ghi báo cáo rồi tự đóng.",
+                Warning = "Không tắt máy hay rút sạc khi đang chia ổ đĩa hoặc cài phần mềm.",
+            });
+        }
+
+        return false;
+    }
+
+    /// <summary>Chạy thao tác ngoài hàng đợi (ví dụ hoàn tác) nhưng vẫn khóa không cho lượt khác chạy chồng.</summary>
+    public async Task RunExclusiveAsync(Func<Task> work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+        if (IsRunning)
+        {
+            return;
+        }
+
+        IsRunning = true;
+        try
+        {
+            await work();
+        }
+        finally
+        {
+            IsRunning = false;
+        }
+
+        CloseIfRequested();
+    }
+
+    private bool CloseIfRequested()
+    {
+        if (!_closeAfterRun)
+        {
+            return false;
+        }
+
+        _closeAfterRun = false;
+        _ui.Shutdown();
+        return true;
     }
 
     public void ShowRowError(TaskRowViewModel row)

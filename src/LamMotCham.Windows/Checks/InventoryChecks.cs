@@ -157,12 +157,16 @@ public static class InventoryChecks
                 : VerifyResult.Inconclusive("Không đọc được danh sách card mạng.");
         }
 
+        // Chỉ "đã kết nối" mới là bằng chứng Wi-Fi hoạt động; thấy card mà chưa kết nối thì cần thử thật (tài liệu 03).
         var a = wifi[0];
         var up = string.Equals(InventorySnapshot.Str(a, "status"), "Up", StringComparison.OrdinalIgnoreCase);
-        return VerifyResult.Passed($"{InventorySnapshot.Str(a, "desc")} · {(up ? "đã kết nối" : "chưa kết nối")}.");
+        return up
+            ? VerifyResult.Passed($"{InventorySnapshot.Str(a, "desc")} · đã kết nối.")
+            : VerifyResult.RequiresPhysicalCheck($"Thấy {InventorySnapshot.Str(a, "desc")} nhưng chưa kết nối. Cần kết nối thử một mạng Wi-Fi.");
     }
 
-    public static VerifyResult Bluetooth(InventorySnapshot s) => DeviceClass(s, "Bluetooth", "Bluetooth", manual: false);
+    /// <summary>Phát hiện được thiết bị Bluetooth chưa chứng minh nó hoạt động: cần kỹ thuật viên ghép thử.</summary>
+    public static VerifyResult Bluetooth(InventorySnapshot s) => DeviceClass(s, "Bluetooth", "Bluetooth", manual: true);
 
     public static VerifyResult Camera(InventorySnapshot s)
     {

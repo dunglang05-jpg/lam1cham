@@ -50,6 +50,12 @@ public sealed class RegistryValuesTask : ITaskModule, IDescribesCurrentState
 
     public Task<PreconditionResult> CheckPreconditionsAsync(TaskContext context, CancellationToken cancellationToken)
     {
+        // HKCU của tiến trình là của tài khoản đang chạy ứng dụng: chạy nhầm tài khoản thì không được ghi.
+        if (UserContext.DifferentUserReason is { } otherUser)
+        {
+            return Task.FromResult(PreconditionResult.NotMet(otherUser));
+        }
+
         if (_precondition?.Invoke() is { Outcome: not PreconditionOutcome.Met } blocked)
         {
             return Task.FromResult(blocked);
@@ -84,19 +90,24 @@ public sealed class RegistryValuesTask : ITaskModule, IDescribesCurrentState
 
     public Task<VerifyResult> RollbackAsync(TaskContext context, CancellationToken cancellationToken)
     {
+        if (UserContext.DifferentUserReason is { } otherUser)
+        {
+            return Task.FromResult(VerifyResult.Inconclusive(otherUser));
+        }
+
         var saved = _store.Load(Descriptor.Id);
         if (saved is null)
         {
             return Task.FromResult(VerifyResult.Inconclusive("Không có giá trị cũ đã lưu để hoàn tác."));
         }
 
-        foreach (var v in _values)
+        var expected = _values.ToDictionary(v => v, v => OldValue(saved, v));
+        foreach (var (v, old) in expected)
         {
             using var key = Registry.CurrentUser.CreateSubKey(v.SubKey, writable: true);
-            if (saved.TryGetValue(v.StoreKey, out var text) && text is not null &&
-                int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var oldValue))
+            if (old is { } value)
             {
-                key.SetValue(v.Name, oldValue, RegistryValueKind.DWord);
+                key.SetValue(v.Name, value, RegistryValueKind.DWord);
             }
             else
             {
@@ -105,9 +116,23 @@ public sealed class RegistryValuesTask : ITaskModule, IDescribesCurrentState
         }
 
         NativeMethods.NotifyShellSettingsChanged();
+
+        // Đọc lại: chỉ báo đã khôi phục khi mọi giá trị khớp; chưa khớp thì giữ bản lưu để thử lại.
+        var wrong = expected.Where(e => Read(e.Key) != e.Value).Select(e => e.Key.Name).ToList();
+        if (wrong.Count > 0)
+        {
+            return Task.FromResult(VerifyResult.Failed("Đọc lại chưa khớp giá trị cũ: " + string.Join(", ", wrong) + "."));
+        }
+
         _store.Clear(Descriptor.Id);
-        return Task.FromResult(VerifyResult.Passed("Đã khôi phục giá trị cũ."));
+        return Task.FromResult(VerifyResult.Passed("Đã khôi phục giá trị cũ và đọc lại khớp."));
     }
+
+    private static int? OldValue(IReadOnlyDictionary<string, string?> saved, RegistryDword v) =>
+        saved.TryGetValue(v.StoreKey, out var text) && text is not null &&
+        int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var oldValue)
+            ? oldValue
+            : null;
 
     public Task<string> DescribeCurrentStateAsync(CancellationToken cancellationToken) =>
         Task.FromResult("Hiện tại: " + _describe([.. _values.Select(Read)]));

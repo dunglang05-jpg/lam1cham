@@ -175,6 +175,6 @@ public static partial class DiskSplitPlanner
 
     private static string Display(string? fs) => string.IsNullOrWhiteSpace(fs) ? "không rõ" : fs;
 
-    [GeneratedRegex(@"^[A-Za-z0-9 _\-]{1,32}$", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
+    [GeneratedRegex(@"^[A-Za-z0-9 _\-]{1,32}\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
     private static partial Regex LabelRegex();
 }

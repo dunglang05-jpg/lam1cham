@@ -56,6 +56,6 @@ public static partial class SoftwareCatalog
     public static SoftwarePackage? Find(string winGetId) =>
         All.FirstOrDefault(p => string.Equals(p.WinGetId, winGetId, StringComparison.Ordinal));
 
-    [GeneratedRegex(@"^[A-Za-z0-9][A-Za-z0-9.\-_+]{1,127}$", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
+    [GeneratedRegex(@"^[A-Za-z0-9][A-Za-z0-9.\-_+]{1,127}\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
     private static partial Regex SafeIdRegex();
 }

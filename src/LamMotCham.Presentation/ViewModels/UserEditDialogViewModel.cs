@@ -28,7 +28,7 @@ public sealed class UserEditDialogViewModel : DialogViewModel
             var entries = BuildEntries();
             Close();
             ClearPasswords();
-            await main.RunAsync([.. entries.Select(e => new TaskRowViewModel(e) { IsSelected = true })], "Sửa tài khoản " + account.Name);
+            await main.RunAsync([.. entries.Select(e => new TaskRowViewModel(e) { IsSelected = true })], "Sửa tài khoản " + account.Name, confirmed: true);
             await afterRun();
         }, () => CanSave);
     }

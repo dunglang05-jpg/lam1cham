@@ -79,8 +79,20 @@ public sealed class TaskOrchestrator
         return errors;
     }
 
+    /// <summary>Chạy hàng đợi chưa qua hộp xác nhận: task cần xác nhận riêng (<see cref="TaskDescriptor.RequiresConfirmation"/>) bị từ chối.</summary>
+    public Task<RunReport> RunAsync(
+        IReadOnlyList<ITaskModule> tasks,
+        IProgress<TaskStatusUpdate>? progress = null,
+        CancellationToken cancellationToken = default) =>
+        RunAsync(tasks, confirmedByUser: false, progress, cancellationToken);
+
+    /// <param name="tasks">Các task cần chạy.</param>
+    /// <param name="confirmedByUser">true khi người dùng vừa xác nhận đúng danh sách này trong hộp xác nhận.</param>
+    /// <param name="progress">Nhận cập nhật trạng thái.</param>
+    /// <param name="cancellationToken">Hủy lượt chạy.</param>
     public async Task<RunReport> RunAsync(
         IReadOnlyList<ITaskModule> tasks,
+        bool confirmedByUser,
         IProgress<TaskStatusUpdate>? progress = null,
         CancellationToken cancellationToken = default)
     {
@@ -94,6 +106,13 @@ public sealed class TaskOrchestrator
         try
         {
             var errors = ValidateQueue(tasks);
+            if (errors.Count == 0 && !confirmedByUser)
+            {
+                // Lớp chặn thứ hai: không dựa hoàn toàn vào giao diện để hỏi xác nhận trước task rủi ro.
+                errors = [.. tasks.Where(t => t.Descriptor.RequiresConfirmation)
+                    .Select(t => $"Task '{t.Descriptor.Id}' cần người dùng xác nhận trước khi chạy.")];
+            }
+
             if (errors.Count > 0)
             {
                 throw new QueueValidationException(errors);
@@ -305,6 +324,17 @@ public sealed class TaskOrchestrator
                 return userToken.IsCancellationRequested
                     ? Finish(task, TaskState.Cancelled, "Người dùng đã hủy khi task đang chạy.", attempt, startedAt)
                     : Finish(task, TaskState.Failed, $"Quá thời gian cho phép ({d.Timeout.TotalSeconds:0} giây).", attempt, startedAt);
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Task tự hủy vì lý do riêng (timeout nội bộ, thư viện mạng...), không do người dùng hay hàng đợi.
+                // Không để văng khỏi hàng đợi; task có thể đã thay đổi máy nên không coi là thất bại chắc chắn.
+                return Finish(
+                    task,
+                    TaskState.NeedsAttention,
+                    $"Tác vụ dừng bất thường ({ex.GetType().Name}: {ex.Message}). Không xác minh được kết quả; kiểm tra lại trên máy.",
+                    attempt,
+                    startedAt);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

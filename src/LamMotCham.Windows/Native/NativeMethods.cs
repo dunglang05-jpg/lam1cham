@@ -186,4 +186,17 @@ internal static class NativeMethods
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool CloseHandle(IntPtr handle);
+
+    internal const int WtsUserName = 5;
+    internal const int WtsDomainName = 7;
+
+    /// <summary>Đọc thông tin phiên đăng nhập (tên người dùng đang ngồi trước máy) của một phiên Windows.</summary>
+    [DllImport("wtsapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool WTSQuerySessionInformationW(IntPtr server, int sessionId, int infoClass, out IntPtr buffer, out int bytesReturned);
+
+    [DllImport("wtsapi32.dll")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    internal static extern void WTSFreeMemory(IntPtr memory);
 }

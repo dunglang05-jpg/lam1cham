@@ -152,7 +152,7 @@ public sealed class CleanupViewModel : ObservableObject
         var recycle = picked.Any(i => !i.Group.IsSafe);
         _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận dọn dẹp", "broom", "Dọn dẹp", async () =>
         {
-            await _main.RunAsync([.. picked.Select(i => i.Row)], "Dọn dẹp");
+            await _main.RunAsync([.. picked.Select(i => i.Row)], "Dọn dẹp", confirmed: true);
             await ScanAsync();
         }, "Hủy")
         {

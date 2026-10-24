@@ -88,6 +88,6 @@ public sealed partial class RenameComputerTask : ITaskModule, IDescribesCurrentS
         return key?.GetValue("NV Hostname") as string;
     }
 
-    [GeneratedRegex("^[A-Za-z0-9](?:[A-Za-z0-9-]{0,13}[A-Za-z0-9])?$", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
+    [GeneratedRegex(@"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,13}[A-Za-z0-9])?\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
     private static partial Regex NameRegex();
 }

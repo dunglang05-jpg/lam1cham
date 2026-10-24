@@ -86,12 +86,15 @@ public sealed class PowerTimeoutsTask(RollbackStore store, PowerTimeouts? target
 
         var old = new PowerTimeouts(U(s, "sa"), U(s, "sd"), U(s, "la"), U(s, "ld"));
         var error = Write(old);
-        if (error == 0)
+        var now = ReadCurrent();
+        if (error != 0 || now != old)
         {
-            store.Clear(Descriptor.Id);
+            // Giữ bản lưu để có thể hoàn tác lại.
+            return Task.FromResult(VerifyResult.Failed($"Không khôi phục được ({now?.ToString() ?? "không đọc lại được"})."));
         }
 
-        return Task.FromResult(error == 0 ? VerifyResult.Passed("Đã khôi phục.") : VerifyResult.Failed("Không khôi phục được."));
+        store.Clear(Descriptor.Id);
+        return Task.FromResult(VerifyResult.Passed($"Đã khôi phục và đọc lại khớp: {now}."));
     }
 
     public Task<string> DescribeCurrentStateAsync(CancellationToken cancellationToken) =>

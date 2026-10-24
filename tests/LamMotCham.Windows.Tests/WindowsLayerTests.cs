@@ -96,7 +96,7 @@ public sealed class WinGetTests
     public async Task Package_outside_catalog_is_refused_before_running_anything()
     {
         var client = new WinGetClient(() => @"C:\Fake\winget.exe");
-        await Assert.ThrowsAsync<ArgumentException>(() => client.InstallAsync("Evil.Package", CancellationToken.None));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.InstallAsync("Evil.Package", machineScope: true, CancellationToken.None));
     }
 
     [Fact]
