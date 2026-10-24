@@ -2,6 +2,11 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.0.1 — 24/10/2026
+
+**Tài khoản & Đăng nhập (`account`) 0.1.1**
+- Màn hình đăng nhập: bảng bên trái thay ba dòng thông tin tài khoản bằng phần giới thiệu ngắn về phần mềm và hình minh họa laptop đang chạy mã thiết lập (vẽ vector, con trỏ nhấp nháy). Biểu mẫu đăng nhập/đăng ký không đổi.
+
 ## 1.0.0 — 24/10/2026
 
 Bản chính thức đầu tiên, gồm toàn bộ tính năng và sửa lỗi đến 0.14.0. Không đổi mã chức năng so với 0.14.0; phiên bản các mô-đun giữ nguyên.
