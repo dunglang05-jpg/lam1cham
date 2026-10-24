@@ -54,7 +54,7 @@ public static class BitLockerReader
         {
             var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
             return ([], error is not null && (error.Contains("Access", StringComparison.OrdinalIgnoreCase) || error.Contains("denied", StringComparison.OrdinalIgnoreCase))
-                ? "Cần quyền quản trị để đọc BitLocker. Bấm “Nâng quyền quản trị…”."
+                ? "Cần quyền quản trị để đọc BitLocker. Mở lại phần mềm và chọn Yes khi Windows hỏi quyền."
                 : "Không đọc được BitLocker: " + error);
         }
 

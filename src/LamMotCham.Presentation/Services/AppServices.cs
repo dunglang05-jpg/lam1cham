@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using LamMotCham.Core.Logging;
@@ -103,45 +102,34 @@ public static class ShellActions
     public static void OpenFolder(string path)
     {
         Directory.CreateDirectory(path);
-        Process.Start(new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"))
-        {
-            UseShellExecute = false,
-            ArgumentList = { path },
-        })?.Dispose();
+        ViaExplorer(path);
     }
 
+    /// <summary>Mở file (báo cáo HTML...) bằng ứng dụng mặc định, với quyền người dùng thường.</summary>
     public static void OpenFile(string path)
     {
         if (File.Exists(path))
         {
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true })?.Dispose();
+            ViaExplorer(path);
         }
     }
 
     public static void OpenUri(string uri)
     {
         // Chỉ các URI cố định trong ứng dụng (ms-settings, ms-windows-store, trang hỗ trợ của Microsoft).
-        Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true })?.Dispose();
+        ViaExplorer(uri);
     }
 
-    /// <summary>Khởi động lại ứng dụng với quyền quản trị. false nếu người dùng từ chối UAC.</summary>
-    public static bool RestartElevated()
-    {
-        try
+    /// <summary>
+    /// Ứng dụng luôn chạy quyền quản trị (QĐ-005). Giao cho Explorer (đang chạy quyền người dùng) mở file/trang web,
+    /// để trình duyệt và ứng dụng khác không chạy kèm quyền quản trị.
+    /// </summary>
+    private static void ViaExplorer(string target) =>
+        Process.Start(new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"))
         {
-            Process.Start(new ProcessStartInfo(Environment.ProcessPath!)
-            {
-                UseShellExecute = true,
-                Verb = "runas",
-                Arguments = "--after-elevate",
-            })?.Dispose();
-            return true;
-        }
-        catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
-        {
-            return false;
-        }
-    }
+            UseShellExecute = false,
+            ArgumentList = { target },
+        })?.Dispose();
 
     /// <summary>Khởi động lại máy. Chỉ gọi sau khi người dùng bấm "Khởi động lại ngay".</summary>
     public static void RestartComputer() =>

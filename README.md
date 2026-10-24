@@ -40,7 +40,7 @@ Kết quả: `artifacts\publish\win-x64\LamMotCham.exe` (self-contained, khoản
 ## Lần chạy đầu
 
 - EXE chưa ký số nên SmartScreen sẽ cảnh báo: chọn **More info → Run anyway**. Chỉ dùng trên máy thử nghiệm cho đến khi có bản ký số.
-- Ứng dụng mở ở quyền người dùng. Các tác vụ cần quản trị (cài cho toàn máy, đồng bộ giờ, đổi tên máy, dọn Temp Windows) sẽ nhắc bấm **Nâng quyền…** ở thanh trên.
+- Ứng dụng **luôn chạy quyền quản trị** ([QĐ-005](docs/decisions/QD-005-Luon-Chay-Quyen-Quan-Tri.md)): mở EXE thì Windows hỏi UAC một lần, chọn Yes là xong, không hỏi lại trong lúc chạy.
 - Cần WinGet (App Installer) cho trang Cài phần mềm. Nếu thiếu, ứng dụng hiển thị nút mở Microsoft Store.
 
 ## Cấu trúc

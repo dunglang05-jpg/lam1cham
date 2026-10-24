@@ -454,7 +454,7 @@ public sealed class MachineViewModel : ObservableObject
         Status.Add(new InfoRow("Windows", $"{s.Str("osCaption")?.Replace("Microsoft ", "", StringComparison.Ordinal)} {s.Str("osDisplayVersion")} · {RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant()}"));
         Status.Add(new InfoRow("Pin", InventoryChecks.Battery(s).Detail ?? "Không đọc được"));
         Status.Add(new InfoRow("WinGet", _winGetVersion is null ? "Không khả dụng" : _winGetVersion + " · sẵn sàng"));
-        Status.Add(new InfoRow("Quyền", _main.S.IsElevated ? "Quản trị viên" : "Người dùng (cần nâng quyền khi cài)"));
+        Status.Add(new InfoRow("Quyền", _main.S.IsElevated ? "Quản trị viên" : "Người dùng — mở lại phần mềm và chọn Yes khi Windows hỏi quyền"));
         Status.Add(new InfoRow("Mạng", NetworkInterface.GetIsNetworkAvailable() ? "Đã kết nối" : "Không có kết nối"));
         Specs.Clear();
         foreach (var row in Status.Where(r => r.Label is not "Máy" and not "Quyền"))
