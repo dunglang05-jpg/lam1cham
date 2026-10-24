@@ -2,7 +2,7 @@
 
 **Một chạm, sẵn sàng sử dụng.** Ứng dụng Windows portable (một file EXE, không cần cài) giúp kỹ thuật viên thiết lập và kiểm tra laptop mới trước khi bàn giao.
 
-Bản hiện tại: **0.14.0 — thử nghiệm nội bộ.** Chưa ký số, chưa có Pro. Đăng nhập dùng tài khoản của Web Admin (dunglam.top).
+Bản hiện tại: **1.0.0** ([QĐ-004](docs/decisions/QD-004-Phat-Hanh-1.0.0.md)). Chưa ký số, chưa có Pro. Tải EXE ở mục [Releases](../../releases) hoặc https://dunglam.top/download. Đăng nhập dùng tài khoản của Web Admin (dunglam.top).
 
 Ứng dụng chia thành các **mô-đun** có phiên bản riêng (trang "Mô-đun & Cập nhật" trong app). Quy tắc thêm tính năng và tăng phiên bản: [QĐ-002](docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md). Thay đổi theo từng bản: [CHANGELOG.md](CHANGELOG.md).
 
@@ -24,6 +24,8 @@ Dữ liệu ứng dụng: `%LOCALAPPDATA%\LamMotCham\` (Logs, Reports, Rollback)
 ## Lấy file EXE
 
 **Cách 1 — GitHub Actions (khuyến nghị).** Mỗi lần push lên `main`, workflow `ci` chạy trên `windows-latest`, build + test rồi đính kèm artifact `LamMotCham-win-x64` (gồm `LamMotCham.exe` và `.sha256`).
+
+**Phát hành.** Gắn tag `vX.Y.Z` lên commit đã qua CI trên `main` (phiên bản trong `Directory.Build.props` phải trùng tag): workflow `ci` build lại từ tag rồi tạo GitHub Release kèm `LamMotCham.exe`, `.sha256` và ghi chú từ `docs/release/X.Y.Z.md`.
 
 **Khóa máy chủ đăng nhập.** EXE cần khóa truy cập `api.php` (giá trị `API_KEY` trong `config.php` trên hosting). Khóa không nằm trong mã nguồn: đặt secret **`LMC_API_KEY`** ở *Settings › Secrets and variables › Actions* của repo để bản build từ GitHub Actions có khóa. Thiếu khóa thì vẫn build được nhưng màn hình đăng nhập báo "chưa được cấu hình máy chủ đăng nhập".
 
