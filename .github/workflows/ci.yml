@@ -9,6 +9,11 @@ on:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      phat_hanh:
+        description: 'Phát hành: nhập phiên bản (vd. 1.0.0) để tạo tag vX.Y.Z và GitHub Release từ commit trên main. Để trống: chỉ build.'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -71,10 +76,18 @@ jobs:
 
       # Chỉ khi phát hành: phiên bản trong Directory.Build.props phải trùng tag, có ghi chú phát hành và có khóa máy chủ.
       - name: Kiểm tra trước khi phát hành
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.phat_hanh != '')
         shell: pwsh
+        env:
+          PHAT_HANH: ${{ inputs.phat_hanh }}
         run: |
-          $tag = '${{ github.ref_name }}'.Substring(1)
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            if ('${{ github.ref }}' -ne 'refs/heads/main') { Write-Output "::error title=Phát hành::Chỉ phát hành từ nhánh main."; exit 1 }
+            $tag = $env:PHAT_HANH.Trim().TrimStart('v')
+          } else {
+            $tag = '${{ github.ref_name }}'.Substring(1)
+          }
+          if ($tag -notmatch '^\d+\.\d+\.\d+$') { Write-Output "::error title=Phát hành::Phiên bản '$tag' không đúng dạng X.Y.Z."; exit 1 }
           $props = [xml](Get-Content Directory.Build.props -Raw)
           $ver = @($props.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ })[0]
           if ($ver -ne $tag) { Write-Output "::error title=Phát hành::Tag v$tag khác Version $ver trong Directory.Build.props."; exit 1 }
@@ -164,7 +177,7 @@ jobs:
   release:
     name: Tạo GitHub Release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.phat_hanh != '' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -183,10 +196,13 @@ jobs:
         working-directory: dist
         run: tr -d '\r' < LamMotCham.exe.sha256 | sha256sum -c -
 
+      # Tag có sẵn (push tag) thì dùng tag đó; chạy tay từ main thì tạo tag vX.Y.Z trỏ đúng commit vừa build.
       - name: Tạo release
         env:
           GH_TOKEN: ${{ github.token }}
+          PHAT_HANH: ${{ inputs.phat_hanh }}
         run: |
-          v="${GITHUB_REF_NAME#v}"
-          gh release create "$GITHUB_REF_NAME" dist/LamMotCham.exe dist/LamMotCham.exe.sha256 \
-            --title "Làm 1 Chạm $v" --notes-file "docs/release/$v.md" --verify-tag -R "$GITHUB_REPOSITORY"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then v="${PHAT_HANH#v}"; v="${v// /}"; else v="${GITHUB_REF_NAME#v}"; fi
+          if gh release view "v$v" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "::error title=Phát hành::Đã có release v$v."; exit 1; fi
+          gh release create "v$v" dist/LamMotCham.exe dist/LamMotCham.exe.sha256 --target "$GITHUB_SHA" \
+            --title "Làm 1 Chạm $v" --notes-file "docs/release/$v.md" -R "$GITHUB_REPOSITORY"
