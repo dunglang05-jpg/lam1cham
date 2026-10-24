@@ -213,9 +213,6 @@
                         <Border Style="{StaticResource TagGreen}" Margin="12,0,0,0" Padding="10,6" Visibility="{Binding IsElevated, Converter={StaticResource Vis}}">
                             <TextBlock Text="● Quyền quản trị" Style="{StaticResource TagGreenText}" />
                         </Border>
-                        <Button Style="{StaticResource SecondaryButton}" MinHeight="36" FontSize="12" Padding="12,0" Margin="12,0,0,0" Content="Nâng quyền quản trị…"
-                                Command="{Binding ElevateCommand}" ToolTip="Mở lại ứng dụng với quyền quản trị (Windows sẽ hỏi UAC)"
-                                Visibility="{Binding IsElevated, Converter={StaticResource Vis}, ConverterParameter=invert}" />
                     </StackPanel>
                 </DockPanel>
             </Border>

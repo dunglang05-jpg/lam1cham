@@ -50,7 +50,7 @@ public static class DiskSplitProbeReader
         {
             var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
             return (null, error is { Length: > 0 } && error.Contains("Access", StringComparison.OrdinalIgnoreCase)
-                ? "Cần quyền quản trị để đọc phân vùng. Bấm “Nâng quyền quản trị…”."
+                ? "Cần quyền quản trị để đọc phân vùng. Mở lại phần mềm và chọn Yes khi Windows hỏi quyền."
                 : "Không đọc được phân vùng: " + error);
         }
 

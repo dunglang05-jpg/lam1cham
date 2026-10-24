@@ -2,6 +2,16 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.0.1 — 24/10/2026
+
+**Khung ứng dụng (`shell`) 0.11.0** — luôn chạy quyền quản trị ([QĐ-005](docs/decisions/QD-005-Luon-Chay-Quyen-Quan-Tri.md))
+- EXE yêu cầu quyền quản trị khi mở (`requireAdministrator`): Windows hỏi UAC một lần, không còn nút “Nâng quyền quản trị…” và không phải mở lại phần mềm giữa chừng.
+- Báo cáo, thư mục, trang web và Cài đặt Windows được mở qua Explorer (quyền người dùng), không để trình duyệt chạy kèm quyền quản trị.
+- Các thông báo “bấm Nâng quyền” đổi thành hướng dẫn mở lại phần mềm và chọn Yes khi Windows hỏi quyền.
+
+**Tài khoản & Đăng nhập (`account`) 0.1.1**
+- Màn hình đăng nhập: bảng bên trái thay ba dòng thông tin tài khoản bằng phần giới thiệu ngắn về phần mềm và hình minh họa laptop đang chạy mã thiết lập (vẽ vector, con trỏ nhấp nháy), trên nền vũ trụ: sao, sao nhấp nháy, tinh vân, sao băng và hành tinh trôi nhẹ (chỉ hoạt ảnh độ mờ/vị trí, không làm nặng máy). Biểu mẫu đăng nhập/đăng ký không đổi.
+
 ## 1.0.0 — 24/10/2026
 
 Bản chính thức đầu tiên, gồm toàn bộ tính năng và sửa lỗi đến 0.14.0. Không đổi mã chức năng so với 0.14.0; phiên bản các mô-đun giữ nguyên.

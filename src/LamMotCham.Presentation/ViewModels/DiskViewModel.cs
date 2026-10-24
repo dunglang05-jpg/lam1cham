@@ -266,7 +266,7 @@ public sealed class DiskViewModel : ObservableObject
         ClearPlan();
         if (!_main.IsElevated)
         {
-            PlanMessage = "Cần quyền quản trị để đọc và chia phân vùng. Bấm “Nâng quyền quản trị…” ở thanh trên.";
+            PlanMessage = "Cần quyền quản trị để đọc và chia phân vùng. Mở lại phần mềm và chọn Yes khi Windows hỏi quyền.";
             return;
         }
 
@@ -408,7 +408,7 @@ public sealed class DiskViewModel : ObservableObject
                 protection switch { 1 => "BitLocker bật", 0 => "Không mã hóa", _ => "Chưa rõ mã hóa" }));
         }
 
-        Account.Add(new InfoRow("Quyền của phiên này", _main.IsElevated ? "Quản trị viên" : "Người dùng (chưa nâng quyền)"));
+        Account.Add(new InfoRow("Quyền của phiên này", _main.IsElevated ? "Quản trị viên" : "Người dùng (không có quyền quản trị)"));
         Account.Add(new InfoRow("Tài khoản cục bộ đang bật", s.Num("localUsersEnabled")?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Chưa đọc"));
         OnPropertyChanged(nameof(HasDrives));
     }

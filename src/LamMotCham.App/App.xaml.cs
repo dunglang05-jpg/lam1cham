@@ -31,7 +31,7 @@ public partial class App : Application, IUiPlatform
         _singleInstance = new Mutex(true, @"Local\LamMotCham.SingleInstance", out var created);
         if (!created)
         {
-            var waitForPrevious = e.Args.Contains("--after-elevate") || e.Args.Contains(SignOutArgument);
+            var waitForPrevious = e.Args.Contains(SignOutArgument);
             bool acquired;
             try
             {

@@ -298,7 +298,7 @@ public sealed class OverviewViewModel : ObservableObject
                     ? $"{changes} thay đổi, gồm tắt BitLocker. Thiết lập lưu giá trị cũ để hoàn tác (trừ dọn file và BitLocker)."
                     : $"{changes} thay đổi, đều lưu giá trị cũ để hoàn tác (trừ dọn file)."),
                 new DialogFact("Kiểm tra", $"{checks} mục chỉ đọc."),
-                new DialogFact("Quyền", _main.IsElevated ? "Đang chạy quyền quản trị." : "Đang chạy quyền người dùng; Windows có thể hỏi UAC cho từng gói."),
+                new DialogFact("Quyền", _main.IsElevated ? "Đang chạy quyền quản trị." : "Không có quyền quản trị; một số tác vụ sẽ không chạy được."),
                 new DialogFact("Khởi động lại", "Ứng dụng không tự khởi động lại. Nếu cần, hàng đợi dừng và hỏi bạn."),
             ],
             Warning = warnings.Count == 0 ? null : string.Join(" ", warnings),

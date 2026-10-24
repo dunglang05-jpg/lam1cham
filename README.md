@@ -2,7 +2,7 @@
 
 **Một chạm, sẵn sàng sử dụng.** Ứng dụng Windows portable (một file EXE, không cần cài) giúp kỹ thuật viên thiết lập và kiểm tra laptop mới trước khi bàn giao.
 
-Bản hiện tại: **1.0.0** ([QĐ-004](docs/decisions/QD-004-Phat-Hanh-1.0.0.md)). Chưa ký số, chưa có Pro. Tải EXE ở mục [Releases](../../releases) hoặc https://dunglam.top/download. Đăng nhập dùng tài khoản của Web Admin (dunglam.top).
+Bản hiện tại: **1.0.1** ([QĐ-004](docs/decisions/QD-004-Phat-Hanh-1.0.0.md)). Chưa ký số, chưa có Pro. Tải EXE ở mục [Releases](../../releases) hoặc https://dunglam.top/download. Đăng nhập dùng tài khoản của Web Admin (dunglam.top).
 
 Ứng dụng chia thành các **mô-đun** có phiên bản riêng (trang "Mô-đun & Cập nhật" trong app). Quy tắc thêm tính năng và tăng phiên bản: [QĐ-002](docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md). Thay đổi theo từng bản: [CHANGELOG.md](CHANGELOG.md).
 
@@ -40,7 +40,7 @@ Kết quả: `artifacts\publish\win-x64\LamMotCham.exe` (self-contained, khoản
 ## Lần chạy đầu
 
 - EXE chưa ký số nên SmartScreen sẽ cảnh báo: chọn **More info → Run anyway**. Chỉ dùng trên máy thử nghiệm cho đến khi có bản ký số.
-- Ứng dụng mở ở quyền người dùng. Các tác vụ cần quản trị (cài cho toàn máy, đồng bộ giờ, đổi tên máy, dọn Temp Windows) sẽ nhắc bấm **Nâng quyền…** ở thanh trên.
+- Ứng dụng **luôn chạy quyền quản trị** ([QĐ-005](docs/decisions/QD-005-Luon-Chay-Quyen-Quan-Tri.md)): mở EXE thì Windows hỏi UAC một lần, chọn Yes là xong, không hỏi lại trong lúc chạy.
 - Cần WinGet (App Installer) cho trang Cài phần mềm. Nếu thiếu, ứng dụng hiển thị nút mở Microsoft Store.
 
 ## Cấu trúc

@@ -1,5 +1,7 @@
 # ADR-002 — Mô hình nâng quyền
 
+> **Cập nhật 24/10/2026:** từ bản 1.0.1, PO quyết định ứng dụng luôn chạy quyền quản trị (`requireAdministrator`) — xem [QĐ-005](../decisions/QD-005-Luon-Chay-Quyen-Quan-Tri.md). Mô hình helper dưới đây vẫn là hướng đích lâu dài.
+
 - Trạng thái: **Đề xuất — chờ Tech Lead và Security duyệt (Q-05)**
 - Ngày: 18/10/2026
 - Liên quan: tài liệu 02 (Ranh giới tin cậy), 05 (Bảo mật desktop)

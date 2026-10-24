@@ -4,8 +4,8 @@
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-        <!-- Chạy với quyền người dùng; chỉ nâng quyền khi người dùng bấm "Nâng quyền…" (ADR-002). -->
-        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+        <!-- QĐ-005: luôn chạy quyền quản trị. Windows hỏi UAC một lần khi mở EXE; không có nút nâng quyền trong ứng dụng. -->
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
       </requestedPrivileges>
     </security>
   </trustInfo>

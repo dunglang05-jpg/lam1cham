@@ -127,7 +127,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 CurrentPage = page;
             }
         });
-        ElevateCommand = new RelayCommand(Elevate, () => !S.IsElevated && !IsRunning);
         OpenLogsCommand = new RelayCommand(OpenLogs);
         OpenReportsCommand = new RelayCommand(() => ShellActions.OpenFolder(WindowsEnvironment.ReportsDirectory));
         HelpCommand = new RelayCommand(() => ShowDialog(new ListDialogViewModel(this, "Trợ giúp", "info",
@@ -260,8 +259,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string DoneHeadline => _doneProblems == 0 ? "Đã hoàn tất!" : "Đã xong — có mục cần xem";
 
     public RelayCommand NavigateCommand { get; }
-
-    public RelayCommand ElevateCommand { get; }
 
     public RelayCommand OpenLogsCommand { get; }
 
@@ -687,19 +684,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         Handover.Refresh();
         return path;
-    }
-
-    public void Elevate()
-    {
-        if (!ShellActions.RestartElevated())
-        {
-            ShowDialog(new ErrorDialogViewModel(this, "Chưa nâng quyền", "Windows chưa cấp quyền quản trị (UAC bị từ chối).",
-                "Ứng dụng tiếp tục chạy với quyền người dùng; một số tác vụ có thể hỏi quyền riêng hoặc bị bỏ qua.",
-                "Bấm “Nâng quyền…” lại và chọn Yes trên hộp thoại của Windows.", null, "attention"));
-            return;
-        }
-
-        _ui.Shutdown();
     }
 
     private void AskCancel()
