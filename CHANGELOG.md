@@ -2,6 +2,37 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.14.0 — 24/10/2026
+
+Sửa lỗi theo báo cáo rà soát mã nguồn trước v1 (BC-002), PO đã duyệt danh sách. PO giữ "Tắt BitLocker" được chọn sẵn trong Thiết lập đầy đủ.
+
+**Lõi điều phối (`engine`) 0.4.0**
+- Task tự hủy vì lý do riêng (timeout nội bộ, thư viện mạng) không còn làm văng cả lượt chạy: task đó thành *Cần chú ý*, các task sau vẫn chạy (P1-5).
+- Hàng đợi tự từ chối task cần xác nhận riêng (`RequiresConfirmation`) nếu lượt chạy không đi qua hộp xác nhận — lớp chặn thứ hai, không chỉ dựa vào giao diện (P3-2).
+- Báo cáo: hai lượt trong cùng một giây không còn ghi đè nhau (P3-3).
+
+**Khung ứng dụng (`shell`) 0.10.0**
+- Đóng cửa sổ khi đang chạy: hỏi lại; đồng ý thì dừng sau bước hiện tại, ghi báo cáo rồi mới đóng — không bỏ dở cài phần mềm/chia ổ mà không có báo cáo (P1-1).
+- Lượt chạy dừng vì lỗi bất ngờ: các tác vụ chưa xong được đánh dấu *Cần chú ý*, vẫn ghi báo cáo và hiện hộp lỗi; không còn dòng treo ở "Đang chạy" (P1-5).
+
+**Tổng quan (`overview`) 0.7.2**
+- Hộp xác nhận gói nhanh liệt kê các mục người dùng chọn thêm ngoài gói; mục không hoàn tác được (vd. Thùng rác) có cảnh báo đỏ và bắt buộc tick đồng ý (P1-2).
+
+**Phần mềm thiết yếu (`software`) 0.4.0**
+- Gói hỗ trợ cài cho toàn máy được cài với `--scope machine` (QĐ-001 Q-04); gói không có bộ cài toàn máy thì cài theo phạm vi mặc định (P1-4).
+- Đối chiếu nhà phát hành trên nguồn WinGet với danh mục trước khi cài; không khớp thì không cài (chống package ID giả, tài liệu 05) (P2-3).
+- Gói cài theo người dùng bị bỏ qua (kèm lý do) khi phần mềm đang chạy bằng tài khoản khác với tài khoản đăng nhập máy (P1-3).
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.7.1**
+- Thiết lập theo người dùng (HKCU) bị bỏ qua kèm lý do khi phần mềm được nâng quyền bằng tài khoản quản trị khác — trước đây ghi nhầm tài khoản quản trị mà vẫn báo thành công (P1-3).
+- Hoàn tác: đọc lại để xác minh trước khi báo "đã khôi phục"; khôi phục thất bại thì giữ giá trị cũ đã lưu để thử lại (múi giờ, nguồn điện, registry); hoàn tác khóa hàng đợi và một mục lỗi không làm dừng các mục khác; file lưu hỏng được báo rõ (P2-1).
+
+**Dọn dẹp & Hiệu năng (`cleanup`) 0.4.1** — làm trống Thùng rác khai báo mức R3 (không hoàn tác được, bắt buộc xác nhận riêng) (P2-2).
+
+**Kiểm tra & Bàn giao (`handover`) 0.5.1** — Wi-Fi chỉ *Thành công* khi đã kết nối; chưa kết nối hoặc Bluetooth thì *Cần kiểm tra tay* (tài liệu 03) (P2-4).
+
+**Ổ đĩa & Tài khoản (`disk`) 0.6.2** — nhãn ổ mới và tên máy không nhận ký tự xuống dòng ở cuối (P3-1).
+
 ## 0.13.0 — 24/10/2026
 
 **Tài khoản & Đăng nhập (`account`) 0.1.0** — mô-đun mới

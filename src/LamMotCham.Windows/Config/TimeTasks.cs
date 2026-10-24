@@ -60,8 +60,15 @@ public sealed class TimeZoneTask(RollbackStore store) : ITaskModule, IDescribesC
         }
 
         var result = await ProcessRunner.RunAsync(WindowsEnvironment.SystemTool("tzutil.exe"), ["/s", old], cancellationToken).ConfigureAwait(false);
+        TimeZoneInfo.ClearCachedData();
+        if (result.ExitCode != 0 || !string.Equals(TimeZoneInfo.Local.Id, old, StringComparison.Ordinal))
+        {
+            // Giữ múi giờ cũ đã lưu để có thể hoàn tác lại.
+            return VerifyResult.Failed($"Không khôi phục được múi giờ cũ ({old}); hiện tại vẫn là {TimeZoneInfo.Local.Id}.");
+        }
+
         store.Clear(Descriptor.Id);
-        return result.ExitCode == 0 ? VerifyResult.Passed($"Đã khôi phục {old}.") : VerifyResult.Failed("Không khôi phục được múi giờ cũ.");
+        return VerifyResult.Passed($"Đã khôi phục {old} và đọc lại khớp.");
     }
 
     public Task<string> DescribeCurrentStateAsync(CancellationToken cancellationToken)

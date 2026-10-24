@@ -1,5 +1,7 @@
 using LamMotCham.Core.Logging;
+using LamMotCham.Core.Processes;
 using LamMotCham.Core.Tasks;
+using LamMotCham.Windows.Infrastructure;
 
 namespace LamMotCham.Windows.Software;
 
@@ -55,17 +57,39 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             return PreconditionResult.NotSupported($"WinGet v{version} quá cũ (cần từ v{MinimumWinGet}). Cập nhật App Installer từ Microsoft Store.");
         }
 
+        // Gói cài theo người dùng mà ứng dụng chạy bằng tài khoản khác thì sẽ cài nhầm vào tài khoản đó.
+        if (!Package.MachineWide && UserContext.DifferentUserReason is { } otherUser)
+        {
+            return PreconditionResult.NotMet(otherUser);
+        }
+
         var presence = await _client.GetPresenceAsync(Package.WinGetId, cancellationToken).ConfigureAwait(false);
-        return presence.Presence == InstallPresence.Installed
-            ? PreconditionResult.AlreadyInDesiredState("Đã cài sẵn.")
-            : PreconditionResult.Met();
+        if (presence.Presence == InstallPresence.Installed)
+        {
+            return PreconditionResult.AlreadyInDesiredState("Đã cài sẵn.");
+        }
+
+        var publisherProblem = await _client.CheckPublisherAsync(Package, cancellationToken).ConfigureAwait(false);
+        return publisherProblem is null ? PreconditionResult.Met() : PreconditionResult.NotMet(publisherProblem);
     }
 
     public async Task<ExecuteResult> ExecuteAsync(TaskContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        context.Log.Info($"winget install --id {Package.WinGetId} --exact --source winget --silent", Descriptor.Id);
-        var result = await _client.InstallAsync(Package.WinGetId, cancellationToken).ConfigureAwait(false);
+        var result = await InstallAsync(context, Package.MachineWide, cancellationToken).ConfigureAwait(false);
+
+        // QĐ-001 Q-04: toàn máy khi gói hỗ trợ, ngược lại để WinGet cài theo phạm vi mặc định của gói.
+        if (Package.MachineWide && result.ExitCode == WinGetClient.NoApplicableInstaller)
+        {
+            if (UserContext.DifferentUserReason is { } otherUser)
+            {
+                return ExecuteResult.Failed("Gói không hỗ trợ cài cho toàn máy. " + otherUser, errorCode: result.ExitCodeHex);
+            }
+
+            context.Log.Warning("Gói không hỗ trợ cài cho toàn máy; cài theo phạm vi mặc định của gói.", Descriptor.Id);
+            result = await InstallAsync(context, machineScope: false, cancellationToken).ConfigureAwait(false);
+        }
+
         if (result.ExitCode == 0)
         {
             return ExecuteResult.Completed("WinGet báo cài xong (mã thoát 0).");
@@ -81,6 +105,12 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
         return info.CountsAsInstalled
             ? ExecuteResult.Completed($"{info.Message} (mã {result.ExitCodeHex})")
             : ExecuteResult.Failed(info.Message, info.IsTransient, result.ExitCodeHex);
+    }
+
+    private Task<ProcessResult> InstallAsync(TaskContext context, bool machineScope, CancellationToken cancellationToken)
+    {
+        context.Log.Info($"winget install --id {Package.WinGetId} --exact --source winget --silent" + (machineScope ? " --scope machine" : ""), Descriptor.Id);
+        return _client.InstallAsync(Package.WinGetId, machineScope, cancellationToken);
     }
 
     public async Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken)

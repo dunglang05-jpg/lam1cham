@@ -246,7 +246,7 @@ public sealed class SoftwareViewModel : ObservableObject
             }
 
             OnPropertyChanged(nameof(QueueEmpty));
-            await _main.RunAsync(picked, "Cài phần mềm");
+            await _main.RunAsync(picked, "Cài phần mềm", confirmed: true);
         })
         {
             Items = [.. picked.Select((r, i) => new DialogItem($"{i + 1}. {r.Name}", null, null, null, ((WinGetInstallTask)r.Entry.Module).Package.WinGetId))],

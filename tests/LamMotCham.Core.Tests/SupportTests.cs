@@ -209,6 +209,21 @@ public sealed class ReportWriterTests : IDisposable
         Assert.Contains("PC-01", json);
     }
 
+    [Fact]
+    public void Two_reports_in_the_same_second_do_not_overwrite_each_other()
+    {
+        // BC-002 P3-3: tên file theo giây từng làm lượt sau ghi đè báo cáo lượt trước.
+        var now = new DateTimeOffset(2026, 10, 24, 8, 0, 0, TimeSpan.Zero);
+        var report = new RunReport { StartedAt = now, FinishedAt = now, Tasks = [] };
+
+        var first = ReportWriter.Write(_dir, report, [], "1.0.0", TimeZoneInfo.Utc);
+        var second = ReportWriter.Write(_dir, report, [], "1.0.0", TimeZoneInfo.Utc);
+
+        Assert.NotEqual(first.HtmlPath, second.HtmlPath);
+        Assert.NotEqual(first.JsonPath, second.JsonPath);
+        Assert.True(File.Exists(first.HtmlPath) && File.Exists(second.HtmlPath));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_dir))

@@ -39,14 +39,36 @@ public sealed class RollbackStore
         }
     }
 
+    /// <summary>Có bản lưu giá trị cũ cho task này hay không (không đọc nội dung).</summary>
+    public bool Exists(string taskId)
+    {
+        lock (_gate)
+        {
+            return File.Exists(PathFor(taskId));
+        }
+    }
+
+    /// <summary>Đọc giá trị cũ đã lưu; null nếu chưa lưu.</summary>
+    /// <exception cref="InvalidDataException">File lưu bị hỏng.</exception>
     public IReadOnlyDictionary<string, string?>? Load(string taskId)
     {
         lock (_gate)
         {
             var path = PathFor(taskId);
-            return File.Exists(path)
-                ? JsonSerializer.Deserialize<Dictionary<string, string?>>(File.ReadAllText(path))
-                : null;
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<Dictionary<string, string?>>(File.ReadAllText(path))
+                    ?? throw new InvalidDataException("File lưu giá trị cũ rỗng.");
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException("File lưu giá trị cũ bị hỏng, không hoàn tác được: " + Path.GetFileName(path), ex);
+            }
         }
     }
 

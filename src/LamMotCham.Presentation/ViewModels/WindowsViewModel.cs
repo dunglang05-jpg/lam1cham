@@ -154,7 +154,7 @@ public sealed class WindowsViewModel : ObservableObject
         var admin = rows.Count(r => r.NeedsAdmin);
         var bitLocker = HasBitLockerOff(rows);
         _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận thay đổi Windows", "gear", "Áp dụng",
-            async () => await _main.RunAsync(rows, "Tối ưu Windows"), "Hủy")
+            async () => await _main.RunAsync(rows, "Tối ưu Windows", confirmed: true), "Hủy")
         {
             Items = [.. rows.Select(r => new DialogItem(r.Name, r.Details.Count > 0 ? r.Details[0].Value : null, r.ImpactKey))],
             Facts =
@@ -176,7 +176,7 @@ public sealed class WindowsViewModel : ObservableObject
 
     private void AskUndo()
     {
-        var undoable = _rows.Where(r => r.IsSelectable && _main.S.Rollback.Load(r.Id) is not null).ToList();
+        var undoable = _rows.Where(r => r.IsSelectable && _main.S.Rollback.Exists(r.Id)).ToList();
         if (undoable.Count == 0)
         {
             _main.ShowDialog(new ListDialogViewModel(_main, "Hoàn tác thay đổi trước", "refresh", [],
@@ -191,18 +191,28 @@ public sealed class WindowsViewModel : ObservableObject
         });
     }
 
-    private async Task UndoAsync(IReadOnlyList<TaskRowViewModel> rows)
+    /// <summary>Hoàn tác tuần tự, khóa hàng đợi trong lúc làm; lỗi của một mục không làm dừng các mục khác.</summary>
+    private Task UndoAsync(IReadOnlyList<TaskRowViewModel> rows) => _main.RunExclusiveAsync(async () =>
     {
         var results = new List<DialogItem>();
         foreach (var row in rows)
         {
             var context = new TaskContext(_main.S.Log, 1);
-            var result = await Task.Run(() => row.Entry.Module.RollbackAsync(context, CancellationToken.None));
-            _main.S.Log.Info($"Hoàn tác {row.Name}: {result.Outcome} {result.Detail}", row.Id);
+            VerifyResult result;
+            try
+            {
+                result = await Task.Run(() => row.Entry.Module.RollbackAsync(context, CancellationToken.None));
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                result = VerifyResult.Inconclusive($"Lỗi khi hoàn tác: {ex.Message}");
+            }
+
+            _main.S.Log.Log(result.Outcome == VerifyOutcome.Passed ? LogLevel.Info : LogLevel.Warning, $"Hoàn tác {row.Name}: {result.Outcome} {result.Detail}", row.Id);
             results.Add(new DialogItem(row.Name, result.Detail, result.Outcome == VerifyOutcome.Passed ? "success" : "attention"));
         }
 
         await _main.Machine.RefreshCurrentStatesAsync();
         _main.ShowDialog(new ListDialogViewModel(_main, "Kết quả hoàn tác", "refresh", results));
-    }
+    });
 }

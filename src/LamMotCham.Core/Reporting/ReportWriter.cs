@@ -39,7 +39,7 @@ public static class ReportWriter
         Directory.CreateDirectory(directory);
         var tz = displayTimeZone ?? TimeZoneInfo.Local;
         var stamp = TimeZoneInfo.ConvertTime(report.StartedAt, tz).ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-        var baseName = $"BaoCao-{stamp}";
+        var baseName = UniqueBaseName(directory, $"BaoCao-{stamp}");
 
         var machine = machineInfo.Select(kv => new KeyValuePair<string, string>(kv.Key, Redactor.Redact(kv.Value))).ToList();
 
@@ -74,6 +74,18 @@ public static class ReportWriter
         File.WriteAllText(htmlPath, BuildHtml(report, machine, appVersion, tz), new UTF8Encoding(false));
 
         return new ReportFiles(jsonPath, htmlPath);
+    }
+
+    /// <summary>Hai báo cáo trong cùng một giây không ghi đè nhau: thêm hậu tố -2, -3...</summary>
+    private static string UniqueBaseName(string directory, string baseName)
+    {
+        var name = baseName;
+        for (var i = 2; File.Exists(Path.Combine(directory, name + ".json")) || File.Exists(Path.Combine(directory, name + ".html")); i++)
+        {
+            name = string.Create(CultureInfo.InvariantCulture, $"{baseName}-{i}");
+        }
+
+        return name;
     }
 
     public static string StateDisplayName(TaskState state) => state switch

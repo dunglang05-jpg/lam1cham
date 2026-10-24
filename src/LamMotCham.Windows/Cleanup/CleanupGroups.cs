@@ -238,17 +238,25 @@ public sealed class CleanupTask(CleanupGroup group) : ITaskModule
 
     public CleanupGroup Group { get; } = group;
 
+    /// <summary>
+    /// Nhóm an toàn (file tạm, bộ nhớ đệm do Windows/ứng dụng tự tạo lại) giữ mức R1. Nhóm không an toàn (Thùng rác:
+    /// file của người dùng, xóa vĩnh viễn) là R3: bắt buộc xác nhận riêng, không cưỡng chế dừng giữa chừng.
+    /// </summary>
     public TaskDescriptor Descriptor { get; } = new()
     {
         Id = "clean." + group.Key,
         DisplayName = "Dọn " + group.Name.ToLowerInvariant(),
-        Version = 1,
-        Risk = RiskLevel.Reversible,
+        Version = 2,
+        Risk = group.IsSafe ? RiskLevel.Reversible : RiskLevel.Destructive,
+        RequiresConfirmation = !group.IsSafe,
+        AllowForcedStop = group.IsSafe,
         Privilege = group.NeedsAdmin ? PrivilegeLevel.Administrator : PrivilegeLevel.User,
         Kind = TaskKind.Configuration,
         Timeout = TimeSpan.FromMinutes(10),
         Rollback = RollbackSupport.NotPossible,
-        RollbackNote = "File đã xóa không khôi phục được. Chỉ xóa trong phạm vi đã hiển thị khi xem trước.",
+        RollbackNote = group.IsSafe
+            ? "File tạm đã xóa không khôi phục được; Windows và ứng dụng tự tạo lại khi cần. Chỉ xóa trong phạm vi đã hiển thị khi xem trước."
+            : "File trong Thùng rác bị xóa vĩnh viễn, không khôi phục được.",
     };
 
     public Task<PreconditionResult> CheckPreconditionsAsync(TaskContext context, CancellationToken cancellationToken)

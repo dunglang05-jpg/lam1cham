@@ -401,4 +401,37 @@ public sealed class OrchestratorTests
         Assert.DoesNotContain("Hunter2", report.Of("a").Reason);
         Assert.DoesNotContain(log.Snapshot(), e => e.Message.Contains("Hunter2", StringComparison.Ordinal));
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Task_own_cancellation_does_not_abort_the_run(bool allowForcedStop)
+    {
+        // BC-002 P1-5: lỗi hủy nội bộ của task (timeout riêng, thư viện mạng) từng văng khỏi RunAsync làm dừng cả lượt.
+        var a = new FakeTask("a") { Execute = (_, _) => throw new TaskCanceledException("timeout nội bộ") };
+        a.Descriptor = a.Descriptor with { AllowForcedStop = allowForcedStop };
+        var b = new FakeTask("b");
+
+        var report = await Factory.Orchestrator(out _).RunAsync([a, b]);
+
+        Assert.Equal(TaskState.NeedsAttention, report.Of("a").State);
+        Assert.Contains("dừng bất thường", report.Of("a").Reason, StringComparison.Ordinal);
+        Assert.Equal(TaskState.Success, report.Of("b").State);
+        Assert.Equal(RunHaltReason.None, report.HaltReason);
+    }
+
+    [Fact]
+    public async Task Task_requiring_confirmation_is_refused_unless_confirmed()
+    {
+        // BC-002 P3-2: hàng đợi tự chặn task cần xác nhận riêng, không chỉ dựa vào giao diện.
+        var risky = new FakeTask("risky");
+        risky.Descriptor = risky.Descriptor with { RequiresConfirmation = true };
+
+        var ex = await Assert.ThrowsAsync<QueueValidationException>(() => Factory.Orchestrator(out _).RunAsync([risky]));
+        Assert.Contains(ex.Errors, e => e.Contains("risky", StringComparison.Ordinal));
+        Assert.Equal(0, risky.ExecuteCalls);
+
+        var report = await Factory.Orchestrator(out _).RunAsync([risky], confirmedByUser: true);
+        Assert.Equal(TaskState.Success, report.Of("risky").State);
+    }
 }

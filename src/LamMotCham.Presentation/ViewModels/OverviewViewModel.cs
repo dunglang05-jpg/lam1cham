@@ -252,10 +252,45 @@ public sealed class OverviewViewModel : ObservableObject
         var checks = rows.Count(r => r.IsReadOnly);
         var bitLocker = WindowsViewModel.HasBitLockerOff(rows);
         const string wingetTerms = "Đồng ý để Làm 1 Chạm chấp nhận điều khoản của nguồn WinGet và của từng gói thay cho người dùng máy này.";
-        _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận trước khi chạy", "shield", "Bắt đầu chạy",
-            async () => await _main.RunAsync(rows, _pack.Label))
+
+        // Mục người dùng tự chọn thêm ở các trang khác (không thuộc gói) phải hiện rõ trong hộp xác nhận,
+        // nhất là thao tác không hoàn tác được như làm trống Thùng rác.
+        var extras = ExtrasOutsidePack(rows, _pack.Pack);
+        var irreversibleExtras = extras.Where(IsIrreversibleChange).ToList();
+        var warnings = new List<string>();
+        if (irreversibleExtras.Count > 0)
         {
-            Lead = $"{rows.Count} tác vụ sẽ chạy tuần tự. Mỗi tác vụ được xác minh lại trước khi báo thành công.",
+            warnings.Add("Có mục chọn thêm ngoài gói không hoàn tác được: " + string.Join(", ", irreversibleExtras.Select(r => r.Name)) +
+                         ". Bỏ chọn ở trang tương ứng nếu không muốn chạy.");
+        }
+
+        if (bitLocker)
+        {
+            warnings.Add(WindowsViewModel.BitLockerWarning);
+        }
+
+        var agreements = new List<string>();
+        if (irreversibleExtras.Count > 0)
+        {
+            agreements.Add("Tôi đã xem các mục chọn thêm ngoài gói và đồng ý chạy cả thao tác không hoàn tác được.");
+        }
+
+        if (bitLocker)
+        {
+            agreements.Add(WindowsViewModel.BitLockerAgreement);
+        }
+
+        if (installs > 0)
+        {
+            agreements.Add(wingetTerms);
+        }
+
+        _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận trước khi chạy", "shield", "Bắt đầu chạy",
+            async () => await _main.RunAsync(rows, _pack.Label, confirmed: true))
+        {
+            Lead = $"{rows.Count} tác vụ sẽ chạy tuần tự. Mỗi tác vụ được xác minh lại trước khi báo thành công." +
+                   (extras.Count > 0 ? $" Gồm {extras.Count} mục chọn thêm ngoài gói “{_pack.Label}”:" : ""),
+            Items = [.. extras.Select(r => new DialogItem(r.Name, IsIrreversibleChange(r) ? "Chọn thêm ngoài gói — không hoàn tác được" : "Chọn thêm ngoài gói", IsIrreversibleChange(r) ? "review" : r.ImpactKey))],
             Facts =
             [
                 new DialogFact("Phần mềm", installs == 0 ? "Không cài phần mềm." : $"{installs} gói qua WinGet, cài im lặng; gói đã có sẽ được bỏ qua."),
@@ -266,17 +301,21 @@ public sealed class OverviewViewModel : ObservableObject
                 new DialogFact("Quyền", _main.IsElevated ? "Đang chạy quyền quản trị." : "Đang chạy quyền người dùng; Windows có thể hỏi UAC cho từng gói."),
                 new DialogFact("Khởi động lại", "Ứng dụng không tự khởi động lại. Nếu cần, hàng đợi dừng và hỏi bạn."),
             ],
-            Warning = bitLocker ? WindowsViewModel.BitLockerWarning : null,
-            WarningIsDanger = bitLocker,
-            RequireAgreement = installs > 0 || bitLocker,
-            AgreementText = (installs > 0, bitLocker) switch
-            {
-                (true, true) => WindowsViewModel.BitLockerAgreement + " " + wingetTerms,
-                (false, true) => WindowsViewModel.BitLockerAgreement,
-                _ => wingetTerms,
-            },
+            Warning = warnings.Count == 0 ? null : string.Join(" ", warnings),
+            WarningIsDanger = warnings.Count > 0,
+            RequireAgreement = agreements.Count > 0,
+            AgreementText = agreements.Count == 0 ? null : string.Join(" ", agreements),
         });
     }
+
+    /// <summary>Các mục đang chọn nhưng không thuộc gói (người dùng tự chọn thêm ở trang khác).</summary>
+    internal static List<TaskRowViewModel> ExtrasOutsidePack(IEnumerable<TaskRowViewModel> selected, TaskPack pack) =>
+        [.. selected.Where(r => !r.Entry.IsInPack(pack))];
+
+    /// <summary>Thay đổi máy mà không hoàn tác được (xóa file, Thùng rác...).</summary>
+    internal static bool IsIrreversibleChange(TaskRowViewModel row) =>
+        !row.IsReadOnly && (row.Entry.Module.Descriptor.Rollback == RollbackSupport.NotPossible ||
+                            row.Entry.Module.Descriptor.Risk == RiskLevel.Destructive);
 
     private void RefreshSteps()
     {

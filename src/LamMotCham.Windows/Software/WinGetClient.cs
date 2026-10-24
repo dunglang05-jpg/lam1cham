@@ -22,6 +22,9 @@ public sealed class WinGetClient
 {
     public const int NoApplicationsFound = unchecked((int)0x8A150014);
 
+    /// <summary>Gói không có bộ cài phù hợp (thường vì không hỗ trợ phạm vi đã yêu cầu).</summary>
+    public const int NoApplicableInstaller = unchecked((int)0x8A150010);
+
     private static readonly Dictionary<uint, WinGetCodeInfo> Codes = new()
     {
         [0x8A150008] = new("Không tải được bộ cài.", true, false, false),
@@ -40,6 +43,7 @@ public sealed class WinGetClient
         [0x8A150108] = new("Trình cài đặt báo lỗi; cần liên hệ nhà phát hành.", false, false, false),
         [0x8A150112] = new("Tham số cài đặt không hợp lệ.", false, false, false),
         [0x8A150014] = new("Không tìm thấy gói trong nguồn WinGet.", false, false, false),
+        [0x8A150010] = new("Gói không có bộ cài phù hợp với máy hoặc phạm vi cài này.", false, false, false),
         [0x8A150061] = new("Gói đã được cài sẵn.", false, true, false),
         [0x8A15010D] = new("Đã có một phiên bản khác của ứng dụng.", false, true, false),
         [0x8A15010E] = new("Đã có phiên bản mới hơn trên máy.", false, true, false),
@@ -127,18 +131,84 @@ public sealed class WinGetClient
         return new PresenceResult(InstallPresence.Unknown, $"winget list trả về {result.ExitCodeHex}");
     }
 
-    public Task<ProcessResult> InstallAsync(string packageId, CancellationToken cancellationToken)
+    /// <param name="packageId">Package ID trong danh mục.</param>
+    /// <param name="machineScope">true: cài cho toàn máy (<c>--scope machine</c>, QĐ-001 Q-04); false: để WinGet chọn phạm vi mặc định.</param>
+    /// <param name="cancellationToken">Ngừng chờ (không dừng trình cài đặt).</param>
+    public Task<ProcessResult> InstallAsync(string packageId, bool machineScope, CancellationToken cancellationToken)
     {
         var exe = RequireExe();
         EnsureSafe(packageId);
-        return ProcessRunner.RunAsync(
+        return ProcessRunner.RunAsync(exe, InstallArguments(packageId, machineScope), cancellationToken, killOnCancel: false);
+    }
+
+    /// <summary>Tham số cài đặt; tách riêng để kiểm tra được.</summary>
+    internal static IReadOnlyList<string> InstallArguments(string packageId, bool machineScope)
+    {
+        List<string> args =
+        [
+            "install", "--id", packageId, "--exact", "--source", "winget", "--silent",
+            "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity",
+        ];
+        if (machineScope)
+        {
+            args.AddRange(["--scope", "machine"]);
+        }
+
+        return args;
+    }
+
+    /// <summary>
+    /// Đối chiếu nhà phát hành của gói trên nguồn WinGet với danh mục (chống package ID bị đổi chủ hoặc gõ nhầm).
+    /// Trả về null nếu khớp, ngược lại là lý do không cài.
+    /// </summary>
+    public async Task<string?> CheckPublisherAsync(SoftwarePackage package, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(package);
+        var exe = RequireExe();
+        EnsureSafe(package.WinGetId);
+        var result = await ProcessRunner.RunAsync(
             exe,
-            [
-                "install", "--id", packageId, "--exact", "--source", "winget", "--silent",
-                "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity",
-            ],
+            ["show", "--id", package.WinGetId, "--exact", "--source", "winget", "--accept-source-agreements", "--disable-interactivity"],
             cancellationToken,
-            killOnCancel: false);
+            32_000).ConfigureAwait(false);
+
+        if (result.ExitCode != 0)
+        {
+            return $"Không đọc được thông tin gói trên nguồn WinGet ({result.ExitCodeHex}: {Describe(result.ExitCode).Message}). Chưa cài.";
+        }
+
+        return PublisherMatches(result.StandardOutput, package.ExpectedPublisher)
+            ? null
+            : $"Nhà phát hành của {package.WinGetId} trên nguồn WinGet không khớp danh mục (cần: {package.ExpectedPublisher}). Không cài để tránh gói giả mạo.";
+    }
+
+    /// <summary>
+    /// Có dòng "nhãn: giá trị" nào mà giá trị bắt đầu bằng tên nhà phát hành trong danh mục không.
+    /// Không dựa vào chữ "Publisher" vì nhãn của WinGet đổi theo ngôn ngữ Windows.
+    /// </summary>
+    internal static bool PublisherMatches(string showOutput, string expectedPublisher)
+    {
+        if (string.IsNullOrWhiteSpace(showOutput) || string.IsNullOrWhiteSpace(expectedPublisher))
+        {
+            return false;
+        }
+
+        foreach (var line in showOutput.Split('\n'))
+        {
+            var colon = line.IndexOf(':', StringComparison.Ordinal);
+            if (colon <= 0 || colon > 40)
+            {
+                continue;
+            }
+
+            var value = line[(colon + 1)..].Trim();
+            if (value.StartsWith(expectedPublisher.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public Task<ProcessResult> UninstallAsync(string packageId, CancellationToken cancellationToken)
