@@ -2,6 +2,21 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 0.13.0 — 24/10/2026
+
+**Tài khoản & Đăng nhập (`account`) 0.1.0** — mô-đun mới
+- Màn hình đăng nhập trước khi vào ứng dụng, dùng chung tài khoản với Web Admin (`api.php` trên dunglam.top, giao thức sẵn có: `login`, `register`).
+- Đăng ký tài khoản mới ngay trong phần mềm; tài khoản ở trạng thái chờ cho đến khi quản trị viên duyệt. Kiểm tra họ tên, tên đăng nhập, mật khẩu trên máy theo đúng quy tắc của máy chủ.
+- Thông báo rõ từng trường hợp: sai mật khẩu (còn bao nhiêu lần thử), tài khoản chờ duyệt, bị khóa, mất mạng, máy chủ lỗi, bản build chưa có khóa máy chủ.
+- **Phiên chỉ nằm trong bộ nhớ của lần chạy này**: không lưu xuống đĩa, thoát phần mềm là tự đăng xuất, lần mở sau phải đăng nhập lại (kể cả khi phần mềm tự mở lại để nâng quyền).
+- Mật khẩu không qua binding, không ghi log, xóa khỏi ô nhập sau khi gửi; log chỉ ghi tên đăng nhập và kết quả. Mã phiên không bao giờ in ra log.
+- Gửi kèm mã máy (`lmc-` + băm SHA-256 của MachineGuid) để quản trị viên biết tài khoản dùng trên máy nào; không gửi mã gốc.
+- Khóa truy cập máy chủ nạp lúc build từ secret `LMC_API_KEY` (không nằm trong mã nguồn); địa chỉ máy chủ mặc định `https://dunglam.top/api.php`.
+
+**Khung ứng dụng (`shell`) 0.9.0**
+- Khởi động: mở cửa sổ đăng nhập trước, đăng nhập xong mới mở cửa sổ chính.
+- Thanh bên: hiện người đang đăng nhập (họ tên, vai trò) và nút **Đăng xuất** (mở lại phần mềm ở màn hình đăng nhập).
+
 ## 0.12.1 — 19/10/2026
 
 **Tổng quan (`overview`) 0.7.1**

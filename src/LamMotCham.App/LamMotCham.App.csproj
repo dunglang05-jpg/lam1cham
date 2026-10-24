@@ -13,6 +13,20 @@
     <Description>Thiết lập laptop mới — một chạm, sẵn sàng sử dụng.</Description>
   </PropertyGroup>
 
+  <!--
+    Mô-đun "account": địa chỉ và khóa truy cập máy chủ đăng nhập (api.php) nạp lúc build, không nằm trong mã nguồn.
+    CI lấy khóa từ secret LMC_API_KEY (biến môi trường cùng tên); build cục bộ: đặt biến LMC_API_KEY hoặc -p:LmcApiKey=...
+    Không có khóa thì ứng dụng vẫn build được nhưng màn hình đăng nhập báo chưa cấu hình máy chủ.
+  -->
+  <PropertyGroup>
+    <LmcApiKey Condition="'$(LmcApiKey)' == ''">$(LMC_API_KEY)</LmcApiKey>
+    <LmcAccountEndpoint Condition="'$(LmcAccountEndpoint)' == ''">https://dunglam.top/api.php</LmcAccountEndpoint>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="LmcApiKey" Value="$(LmcApiKey)" />
+    <AssemblyMetadata Include="LmcAccountEndpoint" Value="$(LmcAccountEndpoint)" />
+  </ItemGroup>
+
   <ItemGroup>
     <Resource Include="Assets\Icons\png\*.png" />
     <Resource Include="Assets\Logos\*.png" />

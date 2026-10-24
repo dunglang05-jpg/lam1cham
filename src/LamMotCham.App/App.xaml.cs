@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Threading;
+using LamMotCham.App.Views;
 using LamMotCham.Core.Logging;
 using LamMotCham.Presentation.Services;
 using LamMotCham.Presentation.ViewModels;
@@ -12,6 +14,8 @@ namespace LamMotCham.App;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Application không dùng IDisposable; mutex và MainViewModel được giải phóng trong OnExit.")]
 public partial class App : Application, IUiPlatform
 {
+    private const string SignOutArgument = "--after-signout";
+
     private Mutex? _singleInstance;
     private AppServices? _services;
     private MainViewModel? _main;
@@ -27,7 +31,7 @@ public partial class App : Application, IUiPlatform
         _singleInstance = new Mutex(true, @"Local\LamMotCham.SingleInstance", out var created);
         if (!created)
         {
-            var waitForPrevious = e.Args.Contains("--after-elevate");
+            var waitForPrevious = e.Args.Contains("--after-elevate") || e.Args.Contains(SignOutArgument);
             bool acquired;
             try
             {
@@ -56,9 +60,40 @@ public partial class App : Application, IUiPlatform
         };
 
         _services = AppServices.Create();
-        _main = new MainViewModel(_services, this);
+
+        // Mô-đun "account": đăng nhập trước khi vào ứng dụng. Phiên chỉ nằm trong bộ nhớ của lần chạy này.
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        ShowSignIn();
+    }
+
+    private void ShowSignIn()
+    {
+        var vm = new LoginViewModel(_services!.Account, _services.Version);
+        var window = new LoginWindow { DataContext = vm };
+        var signedIn = false;
+        vm.SignedIn += (_, _) =>
+        {
+            signedIn = true;
+            ShowMain();
+            window.Close();
+        };
+        window.Closed += (_, _) =>
+        {
+            if (!signedIn)
+            {
+                Shutdown();
+            }
+        };
+        MainWindow = window;
+        window.Show();
+    }
+
+    private void ShowMain()
+    {
+        _main = new MainViewModel(_services!, this);
         var window = new MainWindow { DataContext = _main };
         MainWindow = window;
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
         window.Show();
         _main.StartTicker();
         window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, async () => await _main.Machine.StartupAsync());
@@ -66,7 +101,15 @@ public partial class App : Application, IUiPlatform
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _main?.Dispose();
+        // Thoát phần mềm là xóa phiên đăng nhập (AccountService.Dispose); không có gì lưu lại trên đĩa.
+        if (_main is not null)
+        {
+            _main.Dispose();
+        }
+        else
+        {
+            _services?.Dispose();
+        }
         if (_singleInstance is not null)
         {
             try
@@ -85,6 +128,26 @@ public partial class App : Application, IUiPlatform
     }
 
     void IUiPlatform.Shutdown() => Shutdown();
+
+    /// <summary>Đăng xuất: mở lại phần mềm ở màn hình đăng nhập (trạng thái sạch, giữ nguyên quyền quản trị nếu đang có).</summary>
+    void IUiPlatform.RestartForSignIn()
+    {
+        _services?.Account.SignOut();
+        try
+        {
+            Process.Start(new ProcessStartInfo(Environment.ProcessPath!)
+            {
+                UseShellExecute = false,
+                ArgumentList = { SignOutArgument },
+            })?.Dispose();
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            _services?.Log.Error("Không mở lại được phần mềm sau khi đăng xuất: " + ex.Message);
+        }
+
+        Shutdown();
+    }
 
     void IUiPlatform.SetClipboard(string text)
     {
