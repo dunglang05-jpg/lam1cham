@@ -2,6 +2,13 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.0.0 — 24/10/2026
+
+Bản chính thức đầu tiên, gồm toàn bộ tính năng và sửa lỗi đến 0.14.0. Không đổi mã chức năng so với 0.14.0; phiên bản các mô-đun giữ nguyên.
+
+- Quyết định phát hành và rủi ro đã biết PO chấp nhận: [QĐ-004](docs/decisions/QD-004-Phat-Hanh-1.0.0.md) — chưa ký số, chưa đổi khóa API, chia ổ/tắt BitLocker chưa thử trên nhiều máy thật.
+- CI: gắn tag `vX.Y.Z` thì build lại từ tag và tạo GitHub Release kèm EXE, SHA-256 và ghi chú `docs/release/X.Y.Z.md`.
+
 ## 0.14.0 — 24/10/2026
 
 Sửa lỗi theo báo cáo rà soát mã nguồn trước v1 (BC-002), PO đã duyệt danh sách. PO giữ "Tắt BitLocker" được chọn sẵn trong Thiết lập đầy đủ.
