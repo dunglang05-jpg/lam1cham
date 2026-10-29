@@ -2,6 +2,29 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.0 — 30/10/2026
+
+Đồng bộ danh sách ứng dụng với Web Admin ([QĐ-006](docs/decisions/QD-006-Dong-Bo-Ung-Dung-Admin.md)).
+
+**Phần mềm thiết yếu (`software`) 0.5.0**
+- Danh sách ứng dụng lấy từ Admin › Ứng dụng mỗi lần đăng nhập: đúng thứ tự, nhóm, mô tả, ứng dụng “tick sẵn”. Bật/tắt trên Admin thì laptop nhận ở lần đăng nhập sau. Không lấy được danh sách thì dùng danh sách có sẵn và báo rõ trên trang.
+- Cài bằng WinGet khi ứng dụng có mã WinGet và nhà phát hành (vẫn đối chiếu nhà phát hành); ưu tiên bản tiếng Việt (`--locale vi-VN`), không có thì cài bản mặc định.
+- Cài bằng link tải của Admin (Exe, Msi, Zip; link trực tiếp hoặc dò link mới nhất): chỉ https, giới hạn dung lượng, lưu trong thư mục tạm chỉ quản trị viên ghi được, giữ khóa file đến khi cài xong; **bắt buộc chữ ký số hợp lệ của hãng trong danh sách tin cậy đóng sẵn** — tùy chọn “cho cài file không có chữ ký số” trên Admin không có tác dụng.
+- Ứng dụng có nhiều phiên bản (Office, Kaspersky, ESET): chọn phiên bản ngay trên dòng ứng dụng; phiên bản “Mở link” mở trang tải trên trình duyệt để cài tay.
+- Ứng dụng loại “Trang web”: tạo lối tắt trên màn hình nền chung.
+- Ứng dụng chưa cài tự động được hiện mờ kèm lý do (ví dụ WhatsApp chỉ có trên Microsoft Store). Thiếu WinGet vẫn cài được ứng dụng có link.
+- Xác minh sau cài bằng WinGet hoặc tên/đường dẫn nhận biết trên Admin; không có cách xác minh thì báo *Cần chú ý*, không báo thành công.
+
+**Tài khoản & Đăng nhập (`account`) 0.2.0**
+- Đăng nhập xong thì tải danh sách ứng dụng (`listApps`) bằng phiên của lần chạy (chỉ trong bộ nhớ).
+- Sau mỗi lượt cài, gửi kết quả lên Admin › Lịch sử cài (`installReport`): tên máy, Windows, từng ứng dụng, nguồn, thời gian, kết quả; lý do lỗi đã ẩn dữ liệu nhạy cảm. Gửi lỗi chỉ ghi log.
+
+**Danh mục (`catalog`) 2026.10.30**
+- Danh mục dự phòng đối chiếu lại với kho WinGet; thêm danh sách hãng tin cậy cho cài bằng link.
+
+**Khung ứng dụng (`shell`) 0.11.1** — dùng chung
+- Màu chữ đại diện của ứng dụng lấy từ Admin.
+
 ## 1.0.1 — 24/10/2026
 
 **Khung ứng dụng (`shell`) 0.11.0** — luôn chạy quyền quản trị ([QĐ-005](docs/decisions/QD-005-Luon-Chay-Quyen-Quan-Tri.md))

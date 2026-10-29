@@ -7,7 +7,7 @@ using LamMotCham.Windows.Account;
 namespace LamMotCham.Presentation.Services;
 
 /// <summary>
-/// Mô-đun "account": đăng nhập, đăng ký với máy chủ Web Admin (api.php).
+/// Mô-đun "account": đăng nhập, đăng ký với máy chủ Web Admin (api.php), lấy danh sách ứng dụng và gửi báo cáo cài (QĐ-006).
 /// Phiên chỉ nằm trong bộ nhớ của lần chạy này: không lưu xuống đĩa, thoát phần mềm là mất, lần sau phải đăng nhập lại.
 /// Log chỉ ghi tên đăng nhập và kết quả; không ghi mật khẩu hay mã phiên.
 /// </summary>
@@ -97,6 +97,49 @@ public sealed class AccountService : IDisposable
         _log.Info(result.IsSuccess
             ? $"Đăng ký tài khoản {user}: thành công, chờ quản trị viên duyệt."
             : $"Đăng ký tài khoản {user}: không thành công ({result.Kind}).");
+        return result;
+    }
+
+    /// <summary>Lấy danh sách ứng dụng trên Web Admin bằng phiên hiện tại (QĐ-006). Không ghi mã phiên vào log.</summary>
+    public async Task<AppListResult> LoadAppsAsync(CancellationToken cancellationToken = default)
+    {
+        if (Current is not { } session)
+        {
+            return new AppListResult(new AccountResult(AccountResultKind.SessionExpired, "Chưa đăng nhập."), null);
+        }
+
+        var result = await _client.ListAppsAsync(session.Token, MachineId, cancellationToken).ConfigureAwait(false);
+        if (result.IsSuccess)
+        {
+            _log.Info("Đã lấy danh sách ứng dụng từ Web Admin.");
+        }
+        else
+        {
+            _log.Warning($"Không lấy được danh sách ứng dụng ({result.Status.Kind}): {result.Status.Message}");
+        }
+
+        return result;
+    }
+
+    /// <summary>Gửi kết quả lượt cài lên mục "Lịch sử cài" (QĐ-006). Lỗi gửi chỉ ghi log.</summary>
+    public async Task<AccountResult> SendInstallReportAsync(InstallReportPayload report, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        if (Current is not { } session)
+        {
+            return new AccountResult(AccountResultKind.SessionExpired, "Chưa đăng nhập.");
+        }
+
+        var result = await _client.SendInstallReportAsync(session.Token, MachineId, report, cancellationToken).ConfigureAwait(false);
+        if (result.Kind == AccountResultKind.Success)
+        {
+            _log.Info($"Đã gửi báo cáo cài ({report.Items.Count} ứng dụng) lên Lịch sử cài.");
+        }
+        else
+        {
+            _log.Warning($"Không gửi được báo cáo cài ({result.Kind}): {result.Message}");
+        }
+
         return result;
     }
 

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using LamMotCham.Presentation.Mvvm;
 using LamMotCham.Presentation.Services;
+using LamMotCham.Core.Account;
 using LamMotCham.Core.Logging;
 using LamMotCham.Core.Orchestration;
 using LamMotCham.Core.Reporting;
@@ -515,6 +516,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
             LastRunReportPath = WriteReport(report, "lượt chạy");
             AddRecent(report);
+            SendInstallReport(rows, report);
             DockSummary = Summarize(report);
             RunPercent = 100;
             DoneSuccess = report.Count(TaskState.Success);
@@ -697,6 +699,61 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }, "Tiếp tục chạy")
         {
             Lead = "Tác vụ đang chạy sẽ được hoàn tất trước. Trình cài đặt bên ngoài không bị cưỡng chế dừng; các tác vụ còn lại sẽ ở trạng thái Đã hủy.",
+        });
+    }
+
+    /// <summary>
+    /// Gửi kết quả cài phần mềm lên mục "Lịch sử cài" của Web Admin (QĐ-006). Chạy nền; lỗi chỉ ghi log,
+    /// không ảnh hưởng kết quả hay báo cáo cục bộ.
+    /// </summary>
+    private void SendInstallReport(IReadOnlyList<TaskRowViewModel> rows, RunReport report)
+    {
+        var items = new List<InstallReportItem>();
+        foreach (var outcome in report.Tasks)
+        {
+            var row = rows.FirstOrDefault(r => r.Id == outcome.TaskId);
+            if (row?.App is not { } app || outcome.State == TaskState.Pending)
+            {
+                continue;
+            }
+
+            var m = app.LastMetrics;
+            items.Add(new InstallReportItem
+            {
+                Name = row.HasVariants && row.SelectedVariantLabel is { } v ? $"{row.Name} ({v})" : row.Name,
+                Source = m?.Source is { Length: > 0 } s ? s : app.SourceText,
+                Bytes = m?.Bytes ?? 0,
+                DownloadSeconds = m?.Download.TotalSeconds ?? 0,
+                InstallSeconds = m?.Install.TotalSeconds ?? outcome.Duration?.TotalSeconds ?? 0,
+                Result = InstallReportPayload.ResultFor(outcome.State, app.WasAlreadyInstalled),
+                Code = m?.ExitCode ?? 0,
+                Reason = Redactor.Redact(outcome.Reason),
+                Attempt = Math.Max(1, outcome.Attempts),
+            });
+        }
+
+        if (items.Count == 0 || S.Account.Current is null)
+        {
+            return;
+        }
+
+        var payload = new InstallReportPayload(
+            Environment.MachineName,
+            System.Runtime.InteropServices.RuntimeInformation.OSDescription,
+            (report.FinishedAt - report.StartedAt).TotalSeconds,
+            items);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await S.Account.SendInstallReportAsync(payload);
+            }
+#pragma warning disable CA1031 // Gửi báo cáo là việc phụ: lỗi bất kỳ chỉ ghi log.
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+#pragma warning restore CA1031
+            {
+                S.Log.Warning("Không gửi được báo cáo cài: " + ex.Message);
+            }
         });
     }
 

@@ -15,6 +15,8 @@ namespace LamMotCham.Presentation.Services;
 /// <summary>Các dịch vụ dùng chung trong toàn ứng dụng.</summary>
 public sealed class AppServices : IDisposable
 {
+    private readonly CatalogServices _catalogServices;
+
     private AppServices(
         InMemoryRunLogger memory,
         IRunLogger log,
@@ -27,6 +29,7 @@ public sealed class AppServices : IDisposable
         string version,
         AccountService account)
     {
+        _catalogServices = new CatalogServices(inventory, winGet, rollback);
         Memory = memory;
         Log = log;
         Inventory = inventory;
@@ -54,7 +57,14 @@ public sealed class AppServices : IDisposable
 
     public TaskOrchestrator Orchestrator { get; }
 
-    public IReadOnlyList<TaskCatalogEntry> Catalog { get; }
+    /// <summary>Danh mục task. Phần phần mềm được dựng lại sau khi đăng nhập theo danh sách của Web Admin (QĐ-006).</summary>
+    public IReadOnlyList<TaskCatalogEntry> Catalog { get; private set; }
+
+    /// <summary>Thông báo khi không dùng được danh sách của Web Admin; rỗng khi đang dùng danh sách của Web Admin.</summary>
+    public string CatalogNotice { get; private set; } = "";
+
+    /// <summary>Mô tả nguồn danh sách phần mềm đang dùng.</summary>
+    public string CatalogSource { get; private set; } = "Danh sách có sẵn trong phần mềm";
 
     public bool IsElevated { get; }
 
@@ -87,6 +97,59 @@ public sealed class AppServices : IDisposable
         var account = AccountService.CreateDefault(log, version);
         log.Info("Khởi động Làm 1 Chạm.");
         return new AppServices(memory, log, inventory, winGet, rollback, monitor, orchestrator, catalog, version, account);
+    }
+
+    /// <summary>
+    /// Lấy danh sách ứng dụng từ Web Admin rồi dựng lại danh mục. Lỗi mạng hoặc dữ liệu sai thì dùng danh mục có sẵn
+    /// và ghi thông báo; không bao giờ ném lỗi ra màn hình đăng nhập.
+    /// </summary>
+    public async Task LoadSoftwareCatalogAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await Account.LoadAppsAsync(cancellationToken).ConfigureAwait(false);
+            if (!result.IsSuccess)
+            {
+                UseBuiltIn($"Chưa lấy được danh sách ứng dụng từ Web Admin: {result.Status.Message}");
+                return;
+            }
+
+            var parsed = RemoteCatalog.Parse(result.AppsJson);
+            foreach (var warning in parsed.Warnings)
+            {
+                Log.Warning("Danh sách ứng dụng: " + warning);
+            }
+
+            if (parsed.Packages.Count == 0)
+            {
+                UseBuiltIn("Danh sách ứng dụng trên Web Admin đang trống hoặc không đọc được.");
+                return;
+            }
+
+            SoftwareCatalog.Use(parsed.Packages);
+            var greyed = parsed.Packages.Count(p => !p.IsAvailable);
+            CatalogNotice = "";
+            CatalogSource = $"Danh sách từ Web Admin: {parsed.Packages.Count} ứng dụng" + (greyed > 0 ? $", {greyed} chưa cài tự động được" : "");
+            Log.Info(CatalogSource + ".");
+        }
+#pragma warning disable CA1031 // Lấy danh sách lỗi bất kỳ: vẫn mở được phần mềm với danh mục có sẵn.
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+#pragma warning restore CA1031
+        {
+            UseBuiltIn("Lỗi khi đọc danh sách ứng dụng từ Web Admin: " + ex.Message);
+        }
+        finally
+        {
+            Catalog = WindowsCatalog.Build(_catalogServices);
+        }
+    }
+
+    private void UseBuiltIn(string reason)
+    {
+        SoftwareCatalog.Use(null);
+        CatalogSource = "Danh sách có sẵn trong phần mềm";
+        CatalogNotice = reason + " Đang dùng danh sách có sẵn trong phần mềm.";
+        Log.Warning(CatalogNotice);
     }
 
     public void Dispose()

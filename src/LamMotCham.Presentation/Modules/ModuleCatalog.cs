@@ -24,13 +24,13 @@ public sealed record AppModule(string Id, string Name, string ShortName, string 
 /// </summary>
 public static class ModuleCatalog
 {
-    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.11.0", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
+    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.11.1", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
-    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.1.1", "user", "Đăng nhập, đăng ký với máy chủ; phiên chỉ trong lần chạy");
+    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.2.0", "user", "Đăng nhập, lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
 
     public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.2", "home", "Thông tin máy, chọn gói thiết lập");
 
-    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.4.0", "download", "Cài qua WinGet, xác minh sau khi cài");
+    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.5.0", "download", "Danh sách từ Web Admin; cài qua WinGet hoặc link có chữ ký số, xác minh sau khi cài");
 
     public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.7.1", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
 
@@ -44,7 +44,7 @@ public static class ModuleCatalog
 
     public static AppModule Modules { get; } = new("modules", "Mô-đun & Cập nhật", "Cập nhật", "0.3.0", "refresh", "Phiên bản các mô-đun");
 
-    public static AppModule Catalog { get; } = new("catalog", "Danh mục phần mềm", "Danh mục", SoftwareCatalog.DataVersion, "list", "Gói WinGet đã duyệt và logo ứng dụng", IsData: true);
+    public static AppModule Catalog { get; } = new("catalog", "Danh mục phần mềm", "Danh mục", SoftwareCatalog.DataVersion, "list", "Danh mục dự phòng, logo ứng dụng, danh sách hãng tin cậy", IsData: true);
 
     public static IReadOnlyList<AppModule> All { get; } = [Shell, Account, Overview, Software, Windows, Disk, Cleanup, Handover, Engine, Modules, Catalog];
 

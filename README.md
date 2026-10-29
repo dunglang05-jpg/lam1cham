@@ -2,7 +2,7 @@
 
 **Một chạm, sẵn sàng sử dụng.** Ứng dụng Windows portable (một file EXE, không cần cài) giúp kỹ thuật viên thiết lập và kiểm tra laptop mới trước khi bàn giao.
 
-Bản hiện tại: **1.0.1** ([QĐ-004](docs/decisions/QD-004-Phat-Hanh-1.0.0.md)). Chưa ký số, chưa có Pro. Tải EXE ở mục [Releases](../../releases) hoặc https://dunglam.top/download. Đăng nhập dùng tài khoản của Web Admin (dunglam.top).
+Bản hiện tại: **1.1.0** ([QĐ-006](docs/decisions/QD-006-Dong-Bo-Ung-Dung-Admin.md)). Chưa ký số, chưa có Pro. Tải EXE ở mục [Releases](../../releases) hoặc https://dunglam.top/tai-xuong. Đăng nhập dùng tài khoản của Web Admin (dunglam.top).
 
 Ứng dụng chia thành các **mô-đun** có phiên bản riêng (trang "Mô-đun & Cập nhật" trong app). Quy tắc thêm tính năng và tăng phiên bản: [QĐ-002](docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md). Thay đổi theo từng bản: [CHANGELOG.md](CHANGELOG.md).
 

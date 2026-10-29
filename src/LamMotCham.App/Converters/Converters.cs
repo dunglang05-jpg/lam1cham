@@ -169,3 +169,29 @@ public sealed class BoolToTextConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Màu dạng "#RRGGBB" (từ Web Admin) → Brush; sai định dạng thì dùng màu xanh mặc định.</summary>
+public sealed class HexToBrushConverter : IValueConverter
+{
+    private static readonly SolidColorBrush Fallback = Freeze(new SolidColorBrush(Color.FromRgb(0x3B, 0x5B, 0xDB)));
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is string hex && hex.Length == 7 && hex[0] == '#' &&
+            uint.TryParse(hex.AsSpan(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var rgb))
+        {
+            return Freeze(new SolidColorBrush(Color.FromRgb((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb)));
+        }
+
+        return Fallback;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+
+    private static SolidColorBrush Freeze(SolidColorBrush brush)
+    {
+        brush.Freeze();
+        return brush;
+    }
+}

@@ -18,7 +18,7 @@ public sealed record WinGetCodeInfo(string Message, bool IsTransient, bool Count
 /// <summary>
 /// Gọi WinGet bằng danh sách tham số tách rời (không qua shell) và chỉ với package ID trong danh mục.
 /// </summary>
-public sealed class WinGetClient
+public sealed partial class WinGetClient
 {
     public const int NoApplicationsFound = unchecked((int)0x8A150014);
 
@@ -134,21 +134,35 @@ public sealed class WinGetClient
     /// <param name="packageId">Package ID trong danh mục.</param>
     /// <param name="machineScope">true: cài cho toàn máy (<c>--scope machine</c>, QĐ-001 Q-04); false: để WinGet chọn phạm vi mặc định.</param>
     /// <param name="cancellationToken">Ngừng chờ (không dừng trình cài đặt).</param>
-    public Task<ProcessResult> InstallAsync(string packageId, bool machineScope, CancellationToken cancellationToken)
+    public Task<ProcessResult> InstallAsync(string packageId, bool machineScope, CancellationToken cancellationToken) =>
+        InstallAsync(packageId, machineScope, locale: null, cancellationToken);
+
+    /// <param name="packageId">Package ID trong danh mục đang dùng.</param>
+    /// <param name="machineScope">true: cài cho toàn máy.</param>
+    /// <param name="locale">Ngôn ngữ bộ cài ưu tiên (ví dụ vi-VN); null: để WinGet chọn.</param>
+    /// <param name="cancellationToken">Ngừng chờ (không dừng trình cài đặt).</param>
+    public Task<ProcessResult> InstallAsync(string packageId, bool machineScope, string? locale, CancellationToken cancellationToken)
     {
         var exe = RequireExe();
         EnsureSafe(packageId);
-        return ProcessRunner.RunAsync(exe, InstallArguments(packageId, machineScope), cancellationToken, killOnCancel: false);
+        return ProcessRunner.RunAsync(exe, InstallArguments(packageId, machineScope, locale), cancellationToken, killOnCancel: false);
     }
 
     /// <summary>Tham số cài đặt; tách riêng để kiểm tra được.</summary>
-    internal static IReadOnlyList<string> InstallArguments(string packageId, bool machineScope)
+    internal static IReadOnlyList<string> InstallArguments(string packageId, bool machineScope) => InstallArguments(packageId, machineScope, null);
+
+    internal static IReadOnlyList<string> InstallArguments(string packageId, bool machineScope, string? locale)
     {
         List<string> args =
         [
             "install", "--id", packageId, "--exact", "--source", "winget", "--silent",
             "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity",
         ];
+        if (locale is not null && LocaleRegex().IsMatch(locale))
+        {
+            args.AddRange(["--locale", locale]);
+        }
+
         if (machineScope)
         {
             args.AddRange(["--scope", "machine"]);
@@ -165,10 +179,11 @@ public sealed class WinGetClient
     {
         ArgumentNullException.ThrowIfNull(package);
         var exe = RequireExe();
-        EnsureSafe(package.WinGetId);
+        var id = package.WinGetId ?? throw new ArgumentException("Gói không có mã WinGet.", nameof(package));
+        EnsureSafe(id);
         var result = await ProcessRunner.RunAsync(
             exe,
-            ["show", "--id", package.WinGetId, "--exact", "--source", "winget", "--accept-source-agreements", "--disable-interactivity"],
+            ["show", "--id", id, "--exact", "--source", "winget", "--accept-source-agreements", "--disable-interactivity"],
             cancellationToken,
             32_000).ConfigureAwait(false);
 
@@ -179,7 +194,7 @@ public sealed class WinGetClient
 
         return PublisherMatches(result.StandardOutput, package.ExpectedPublisher)
             ? null
-            : $"Nhà phát hành của {package.WinGetId} trên nguồn WinGet không khớp danh mục (cần: {package.ExpectedPublisher}). Không cài để tránh gói giả mạo.";
+            : $"Nhà phát hành của {id} trên nguồn WinGet không khớp danh mục (cần: {package.ExpectedPublisher}). Không cài để tránh gói giả mạo.";
     }
 
     /// <summary>
@@ -222,6 +237,9 @@ public sealed class WinGetClient
             killOnCancel: false);
     }
 
+    [System.Text.RegularExpressions.GeneratedRegex(@"^[a-z]{2,3}(-[A-Z]{2})?\z", System.Text.RegularExpressions.RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
+    private static partial System.Text.RegularExpressions.Regex LocaleRegex();
+
     private string RequireExe() =>
         _locator() ?? throw new InvalidOperationException("WinGet không khả dụng trên máy này.");
 
@@ -230,7 +248,7 @@ public sealed class WinGetClient
         if (!SoftwareCatalog.IsSafeId(packageId) || SoftwareCatalog.Find(packageId) is null)
         {
             throw new ArgumentException(
-                string.Create(CultureInfo.InvariantCulture, $"Package ID không nằm trong danh mục được duyệt: '{packageId}'."),
+                string.Create(CultureInfo.InvariantCulture, $"Package ID không nằm trong danh mục đang dùng: '{packageId}'."),
                 nameof(packageId));
         }
     }

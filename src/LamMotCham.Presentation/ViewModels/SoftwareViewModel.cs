@@ -137,6 +137,17 @@ public sealed class SoftwareViewModel : ObservableObject
 
     public bool WinGetMissing => _main.Machine.WinGetMissing;
 
+    /// <summary>Nguồn danh sách phần mềm (Web Admin hay danh sách có sẵn) — QĐ-006.</summary>
+    public string CatalogSource => _main.S.CatalogSource;
+
+    /// <summary>Lý do chưa dùng được danh sách của Web Admin; rỗng khi đang dùng danh sách của Web Admin.</summary>
+    public string CatalogNotice => _main.S.CatalogNotice;
+
+    public bool HasCatalogNotice => CatalogNotice.Length > 0;
+
+    /// <summary>Số ứng dụng hiện mờ (chưa cài tự động được).</summary>
+    public int UnavailableCount => _all.Count(r => !r.IsAvailable);
+
     public bool TechOpen
     {
         get => _techOpen;
@@ -187,11 +198,11 @@ public sealed class SoftwareViewModel : ObservableObject
         }
     }
 
-    public bool CanInstall => SelectedCount > 0 && !_main.IsRunning && !WinGetMissing;
+    /// <summary>Thiếu WinGet vẫn cài được ứng dụng có link tải; ứng dụng chỉ có WinGet sẽ báo "Không hỗ trợ" kèm lý do.</summary>
+    public bool CanInstall => SelectedCount > 0 && !_main.IsRunning;
 
-    public string InstallLabel => WinGetMissing
-        ? "Cần WinGet để cài"
-        : _main.IsRunning ? "Đang chạy…" : SelectedCount == 0 ? "Chọn ít nhất 1 ứng dụng" : $"Cài {SelectedCount} ứng dụng đã chọn";
+    public string InstallLabel =>
+        _main.IsRunning ? "Đang chạy…" : SelectedCount == 0 ? "Chọn ít nhất 1 ứng dụng" : $"Cài {SelectedCount} ứng dụng đã chọn";
 
     public bool QueueEmpty => Queue.Count == 0;
 
@@ -199,11 +210,6 @@ public sealed class SoftwareViewModel : ObservableObject
     {
         get
         {
-            if (WinGetMissing)
-            {
-                return "Hàng đợi: chưa thể chạy vì thiếu WinGet";
-            }
-
             if (Queue.Count == 0)
             {
                 return $"Hàng đợi: {SelectedCount} gói · đang chờ xác nhận";
@@ -237,6 +243,8 @@ public sealed class SoftwareViewModel : ObservableObject
 
         var admin = picked.Count(r => r.NeedsAdmin);
         var already = picked.Where(r => r.CurrentText == "Đã cài").Select(r => r.Name).ToList();
+        var viaLink = picked.Count(r => r.App is { } a && !a.Package.UsesWinGet && a.Package.Kind != InstallKind.Web);
+        var variants = picked.Where(r => r.HasVariants).Select(r => $"{r.Name}: {r.SelectedVariantLabel}").ToList();
         _main.ShowDialog(new ConfirmDialogViewModel(_main, "Xác nhận cài đặt", "download", "Xác nhận cài đặt", async () =>
         {
             Queue.Clear();
@@ -249,17 +257,21 @@ public sealed class SoftwareViewModel : ObservableObject
             await _main.RunAsync(picked, "Cài phần mềm", confirmed: true);
         })
         {
-            Items = [.. picked.Select((r, i) => new DialogItem($"{i + 1}. {r.Name}", null, null, null, ((WinGetInstallTask)r.Entry.Module).Package.WinGetId))],
+            Items = [.. picked.Select((r, i) => new DialogItem($"{i + 1}. {r.Name}", null, null, null, r.PackageId))],
             Facts =
             [
-                new DialogFact("Nguồn", "WinGet — kho cộng đồng “winget”; chỉ các package ID đã duyệt."),
-                new DialogFact("Chế độ", "Cài im lặng (silent), không mở cửa sổ trình cài đặt."),
+                new DialogFact("Danh sách", CatalogSource + "."),
+                new DialogFact("Nguồn", viaLink == 0
+                    ? "WinGet — kho “winget”, đối chiếu nhà phát hành; ưu tiên bản tiếng Việt."
+                    : $"WinGet (ưu tiên bản tiếng Việt) và {viaLink} ứng dụng tải bằng link chính thức — chỉ chạy file có chữ ký số của hãng tin cậy."),
+                new DialogFact("Phiên bản", variants.Count == 0 ? "Không có ứng dụng cần chọn phiên bản." : string.Join("; ", variants)),
+                new DialogFact("Chế độ", "Cài im lặng khi bộ cài hỗ trợ; một số bộ cài (ví dụ Office) vẫn hiện cửa sổ tiến độ."),
                 new DialogFact("Quyền", admin == 0 ? "Không cần quyền quản trị." : $"{admin} gói cài cho toàn máy. Windows có thể hỏi quyền quản trị (UAC)."),
                 new DialogFact("Khởi động lại", "Chưa gói nào báo cần. Nếu có, hàng đợi dừng lại và hỏi bạn."),
                 new DialogFact("Đã cài sẵn", already.Count == 0 ? "Gói đã có trên máy sẽ được bỏ qua." : string.Join(", ", already) + " sẽ được bỏ qua."),
             ],
             RequireAgreement = true,
-            AgreementText = "Đồng ý để Làm 1 Chạm chấp nhận điều khoản của nguồn WinGet và của từng gói thay cho người dùng máy này.",
+            AgreementText = "Đồng ý để Làm 1 Chạm chấp nhận điều khoản của nguồn WinGet và của từng ứng dụng thay cho người dùng máy này.",
         });
     }
 
@@ -268,7 +280,7 @@ public sealed class SoftwareViewModel : ObservableObject
         var picked = _all.Where(r => r.IsSelected).ToList();
         _main.ShowDialog(new ListDialogViewModel(_main, "Kế hoạch cài đặt", "list",
             [.. picked.Select((r, i) => new DialogItem($"{i + 1}. {r.Name}",
-                ((WinGetInstallTask)r.Entry.Module).Package.WinGetId + (r.NeedsAdmin ? " · cài cho toàn máy" : " · cài cho người dùng"),
+                (r.HasVariants ? r.SelectedVariantLabel : r.PackageId) + (r.NeedsAdmin ? " · cài cho toàn máy" : " · cài cho người dùng"),
                 r.StateKey))],
             picked.Count == 0 ? "Chưa chọn ứng dụng nào." : "Các gói chạy lần lượt theo thứ tự dưới đây, mỗi lần một trình cài đặt."));
     }
@@ -279,11 +291,10 @@ public sealed class SoftwareViewModel : ObservableObject
         Visible.Clear();
         foreach (var r in _all)
         {
-            var pkg = ((WinGetInstallTask)r.Entry.Module).Package;
-            var catOk = _category == AllCategories || pkg.Category == _category;
+            var catOk = _category == AllCategories || r.Group == _category;
             var textOk = q.Length == 0 ||
-                         pkg.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
-                         pkg.WinGetId.Contains(q, StringComparison.OrdinalIgnoreCase);
+                         r.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                         (r.PackageId?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false);
             if (catOk && textOk)
             {
                 Visible.Add(r);

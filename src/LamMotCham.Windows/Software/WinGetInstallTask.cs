@@ -20,7 +20,13 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
     {
         ArgumentNullException.ThrowIfNull(package);
         ArgumentNullException.ThrowIfNull(client);
+        if (!package.UsesWinGet)
+        {
+            throw new ArgumentException("Gói không có mã WinGet và nhà phát hành để cài bằng WinGet.", nameof(package));
+        }
+
         Package = package;
+        PackageId = package.WinGetId!;
         _client = client;
         Descriptor = new TaskDescriptor
         {
@@ -39,6 +45,12 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
     }
 
     public SoftwarePackage Package { get; }
+
+    /// <summary>Package ID WinGet (đã kiểm tra an toàn khi đọc danh mục).</summary>
+    public string PackageId { get; }
+
+    /// <summary>Ngôn ngữ ưu tiên khi cài (QĐ-006: dùng bản tiếng Việt nếu gói có).</summary>
+    public const string PreferredLocale = "vi-VN";
 
     public TaskDescriptor Descriptor { get; }
 
@@ -63,7 +75,7 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             return PreconditionResult.NotMet(otherUser);
         }
 
-        var presence = await _client.GetPresenceAsync(Package.WinGetId, cancellationToken).ConfigureAwait(false);
+        var presence = await _client.GetPresenceAsync(PackageId, cancellationToken).ConfigureAwait(false);
         if (presence.Presence == InstallPresence.Installed)
         {
             return PreconditionResult.AlreadyInDesiredState("Đã cài sẵn.");
@@ -76,18 +88,34 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
     public async Task<ExecuteResult> ExecuteAsync(TaskContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var result = await InstallAsync(context, Package.MachineWide, cancellationToken).ConfigureAwait(false);
 
         // QĐ-001 Q-04: toàn máy khi gói hỗ trợ, ngược lại để WinGet cài theo phạm vi mặc định của gói.
-        if (Package.MachineWide && result.ExitCode == WinGetClient.NoApplicableInstaller)
+        // QĐ-006: ưu tiên bản tiếng Việt; gói không có bản tiếng Việt thì cài bản mặc định.
+        ProcessResult? result = null;
+        foreach (var (machineScope, locale) in Attempts(Package.MachineWide))
         {
-            if (UserContext.DifferentUserReason is { } otherUser)
+            if (!machineScope && Package.MachineWide && result is not null && UserContext.DifferentUserReason is { } otherUser)
             {
                 return ExecuteResult.Failed("Gói không hỗ trợ cài cho toàn máy. " + otherUser, errorCode: result.ExitCodeHex);
             }
 
-            context.Log.Warning("Gói không hỗ trợ cài cho toàn máy; cài theo phạm vi mặc định của gói.", Descriptor.Id);
-            result = await InstallAsync(context, machineScope: false, cancellationToken).ConfigureAwait(false);
+            if (result is not null)
+            {
+                context.Log.Warning(
+                    $"Không có bộ cài phù hợp ({(locale is null ? "bỏ yêu cầu tiếng Việt" : "thử lại")}{(machineScope ? "" : ", cài theo phạm vi mặc định")}).",
+                    Descriptor.Id);
+            }
+
+            result = await InstallAsync(context, machineScope, locale, cancellationToken).ConfigureAwait(false);
+            if (result.ExitCode != WinGetClient.NoApplicableInstaller)
+            {
+                break;
+            }
+        }
+
+        if (result is null)
+        {
+            return ExecuteResult.Failed("Không chạy được WinGet.");
         }
 
         if (result.ExitCode == 0)
@@ -107,18 +135,26 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             : ExecuteResult.Failed(info.Message, info.IsTransient, result.ExitCodeHex);
     }
 
-    private Task<ProcessResult> InstallAsync(TaskContext context, bool machineScope, CancellationToken cancellationToken)
+    /// <summary>Thứ tự thử: (toàn máy, tiếng Việt) → (toàn máy) → (mặc định, tiếng Việt) → (mặc định).</summary>
+    internal static IReadOnlyList<(bool MachineScope, string? Locale)> Attempts(bool machineWide) =>
+        machineWide
+            ? [(true, PreferredLocale), (true, null), (false, PreferredLocale), (false, null)]
+            : [(false, PreferredLocale), (false, null)];
+
+    private Task<ProcessResult> InstallAsync(TaskContext context, bool machineScope, string? locale, CancellationToken cancellationToken)
     {
-        context.Log.Info($"winget install --id {Package.WinGetId} --exact --source winget --silent" + (machineScope ? " --scope machine" : ""), Descriptor.Id);
-        return _client.InstallAsync(Package.WinGetId, machineScope, cancellationToken);
+        context.Log.Info(
+            $"winget install --id {PackageId} --exact --source winget --silent" + (locale is null ? "" : " --locale " + locale) + (machineScope ? " --scope machine" : ""),
+            Descriptor.Id);
+        return _client.InstallAsync(PackageId, machineScope, locale, cancellationToken);
     }
 
     public async Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken)
     {
-        var presence = await _client.GetPresenceAsync(Package.WinGetId, cancellationToken).ConfigureAwait(false);
+        var presence = await _client.GetPresenceAsync(PackageId, cancellationToken).ConfigureAwait(false);
         return presence.Presence switch
         {
-            InstallPresence.Installed => VerifyResult.Passed($"WinGet xác nhận đã cài {Package.WinGetId}."),
+            InstallPresence.Installed => VerifyResult.Passed($"WinGet xác nhận đã cài {PackageId}."),
             InstallPresence.NotInstalled => VerifyResult.Attention("Cần chú ý — chưa xác minh ứng dụng sau cài: WinGet chưa thấy gói trên máy."),
             _ => VerifyResult.Inconclusive(presence.Detail ?? "Không đọc được danh sách ứng dụng."),
         };
@@ -126,7 +162,7 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
 
     public async Task<VerifyResult> RollbackAsync(TaskContext context, CancellationToken cancellationToken)
     {
-        var result = await _client.UninstallAsync(Package.WinGetId, cancellationToken).ConfigureAwait(false);
+        var result = await _client.UninstallAsync(PackageId, cancellationToken).ConfigureAwait(false);
         return result.ExitCode == 0
             ? VerifyResult.Passed("Đã gỡ.")
             : VerifyResult.Failed($"Gỡ không thành công ({result.ExitCodeHex}).");
@@ -139,7 +175,7 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             return "Chưa kiểm tra";
         }
 
-        var presence = await _client.GetPresenceAsync(Package.WinGetId, cancellationToken).ConfigureAwait(false);
+        var presence = await _client.GetPresenceAsync(PackageId, cancellationToken).ConfigureAwait(false);
         return presence.Presence switch
         {
             InstallPresence.Installed => "Đã cài",

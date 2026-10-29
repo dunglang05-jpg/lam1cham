@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using LamMotCham.Core.Account;
+using LamMotCham.Core.Tasks;
 using Xunit;
 
 namespace LamMotCham.Core.Tests;
@@ -223,6 +224,93 @@ public sealed class AccountClientTests
 
         Assert.DoesNotContain(Token, session.ToString(), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task List_apps_sends_token_and_returns_raw_apps_array()
+    {
+        var (client, handler) = Create("""{"ok":true,"code":"ok","message":"","apps":[{"Name":"Google Chrome","Kind":"Exe"}]}""");
+
+        var result = await client.ListAppsAsync(Token, "lmc-abc");
+
+        Assert.True(result.IsSuccess);
+        using var apps = JsonDocument.Parse(result.AppsJson!);
+        Assert.Equal("Google Chrome", apps.RootElement[0].GetProperty("Name").GetString());
+        using var body = JsonDocument.Parse(handler.LastBody!);
+        Assert.Equal("listApps", body.RootElement.GetProperty("action").GetString());
+        Assert.Equal(Token, body.RootElement.GetProperty("token").GetString());
+        Assert.Equal("lmc-abc", body.RootElement.GetProperty("machine").GetString());
+        Assert.Equal("khoa-thu", body.RootElement.GetProperty("key").GetString());
+    }
+
+    [Fact]
+    public async Task List_apps_maps_expired_session_and_missing_list()
+    {
+        var (expired, _) = Create("""{"ok":false,"code":"session","message":"Phiên đăng nhập đã hết hạn."}""");
+        var (empty, _) = Create("""{"ok":true,"code":"ok"}""");
+
+        var a = await expired.ListAppsAsync(Token, "lmc-abc");
+        var b = await empty.ListAppsAsync(Token, "lmc-abc");
+
+        Assert.Equal(AccountResultKind.SessionExpired, a.Status.Kind);
+        Assert.Null(a.AppsJson);
+        Assert.Equal(AccountResultKind.ServerError, b.Status.Kind);
+        Assert.False(b.IsSuccess);
+    }
+
+    [Fact]
+    public async Task List_apps_without_valid_token_never_contacts_server()
+    {
+        var (client, handler) = Create("{}");
+
+        var result = await client.ListAppsAsync("khong-hop-le", "lmc-abc");
+
+        Assert.Equal(AccountResultKind.SessionExpired, result.Status.Kind);
+        Assert.Equal(0, handler.Calls);
+    }
+
+    [Fact]
+    public async Task Install_report_uses_server_field_names_and_limits()
+    {
+        var (client, handler) = Create("""{"ok":true,"code":"ok"}""");
+        var items = Enumerable.Range(1, 70).Select(i => new InstallReportItem
+        {
+            Name = "Ứng dụng có tên rất dài vượt quá giới hạn bốn mươi ký tự " + i,
+            Source = "Google.Chrome",
+            Bytes = 1234,
+            DownloadSeconds = 1.26,
+            InstallSeconds = -5,
+            Result = InstallReportPayload.ResultFor(TaskState.Success, alreadyInstalled: false),
+            Reason = new string('x', 400),
+            Attempt = 0,
+        }).ToList();
+
+        var result = await client.SendInstallReportAsync(Token, "lmc-abc", new InstallReportPayload("LAPTOP-01", "Windows 11", 75.44, items));
+
+        Assert.Equal(AccountResultKind.Success, result.Kind);
+        using var body = JsonDocument.Parse(handler.LastBody!);
+        var root = body.RootElement;
+        Assert.Equal("installReport", root.GetProperty("action").GetString());
+        Assert.Equal("LAPTOP-01", root.GetProperty("pc").GetString());
+        Assert.Equal(75.4, root.GetProperty("total").GetDouble());
+        var list = root.GetProperty("items");
+        Assert.Equal(InstallReportPayload.MaxItems, list.GetArrayLength());
+        var first = list[0];
+        Assert.Equal(40, first.GetProperty("Name").GetString()!.Length);
+        Assert.Equal("Hoàn tất", first.GetProperty("Result").GetString());
+        Assert.Equal(1.3, first.GetProperty("DownloadSec").GetDouble());
+        Assert.Equal(0, first.GetProperty("InstallSec").GetDouble());
+        Assert.Equal(300, first.GetProperty("Reason").GetString()!.Length);
+        Assert.Equal(1, first.GetProperty("Attempt").GetInt32());
+    }
+
+    [Theory]
+    [InlineData(TaskState.Success, true, "Đã có sẵn")]
+    [InlineData(TaskState.Success, false, "Hoàn tất")]
+    [InlineData(TaskState.Failed, false, "Lỗi")]
+    [InlineData(TaskState.NeedsAttention, false, "Cần kiểm tra")]
+    [InlineData(TaskState.NotSupported, false, "Không hỗ trợ")]
+    public void Install_result_text_matches_history_page(TaskState state, bool already, string expected) =>
+        Assert.Equal(expected, InstallReportPayload.ResultFor(state, already));
 
     private static AccountClientOptions Options() => new(new Uri("https://example.test/api.php"), "khoa-thu");
 

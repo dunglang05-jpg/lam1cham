@@ -14,7 +14,8 @@ public sealed record CatalogServices(InventoryProvider Inventory, WinGetClient W
 
 /// <summary>
 /// Danh mục mọi task có trong bản này. Chỉ task có trong danh mục mới chạy được;
-/// máy chủ hay file cấu hình không thể thêm task mới (bộ quy tắc 02, ranh giới tin cậy).
+/// máy chủ hay file cấu hình không thể thêm loại task mới (bộ quy tắc 02, ranh giới tin cậy).
+/// Web Admin chỉ chọn ứng dụng nào được cài; cách cài và kiểm tra an toàn nằm trong phần mềm (QĐ-006).
 /// </summary>
 public static class WindowsCatalog
 {
@@ -82,15 +83,16 @@ public static class WindowsCatalog
         SelectedByDefault = false,
     };
 
+    /// <summary>Ứng dụng của danh mục đang dùng (Web Admin hoặc danh mục có sẵn — QĐ-006).</summary>
     private static IEnumerable<TaskCatalogEntry> Software(CatalogServices s) =>
-        SoftwareCatalog.All.Select(p => new TaskCatalogEntry
+        SoftwareCatalog.Current.Select(p => new TaskCatalogEntry
         {
-            Module = new WinGetInstallTask(p, s.WinGet),
+            Module = new AppInstallTask(p, s.WinGet),
             Category = TaskCategory.Software,
             Group = p.Category,
             Description = p.Description,
             Impact = TaskImpact.Medium,
-            SelectedByDefault = p.Recommended,
+            SelectedByDefault = p.Recommended && p.IsAvailable,
             IconKey = p.IconKey,
             LogoKey = SoftwareCatalog.LogoKeyFor(p.Key),
         });
