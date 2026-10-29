@@ -68,7 +68,8 @@ public partial class App : Application, IUiPlatform
 
     private void ShowSignIn()
     {
-        var vm = new LoginViewModel(_services!.Account, _services.Version);
+        var services = _services!;
+        var vm = new LoginViewModel(services.Account, services.Version, () => services.LoadSoftwareCatalogAsync());
         var window = new LoginWindow { DataContext = vm };
         var signedIn = false;
         vm.SignedIn += (_, _) =>

@@ -20,7 +20,7 @@ Nguồn sự thật về tên và phiên bản: `src/LamMotCham.Presentation/Mod
 | `handover` | Kiểm tra & Bàn giao | `App/Views/Pages/HandoverPage.xaml`, `Presentation/ViewModels/HandoverViewModel.cs`, `Windows/Checks/*`, `Core/Reporting/*` |
 | `engine` | Lõi điều phối tác vụ | `Core/Orchestration/*`, `Core/Tasks/*`, `Core/Logging/*`, `Core/Processes/*`, `Core/Resources/*` |
 | `modules` | Mô-đun & Cập nhật | `App/Views/Pages/ModulesPage.xaml`, `Presentation/ViewModels/ModulesViewModel.cs`, `Presentation/Modules/*` |
-| `catalog` *(dữ liệu)* | Danh mục phần mềm | `Windows/Software/SoftwareCatalog.cs`, `App/Assets/Logos/*` — phiên bản dạng ngày `yyyy.MM.dd` |
+| `catalog` *(dữ liệu)* | Danh mục phần mềm | `Windows/Software/SoftwareCatalog.cs`, `Windows/Software/TrustedPublishers.cs`, `App/Assets/Logos/*` — phiên bản dạng ngày `yyyy.MM.dd` |
 
 Thành phần dùng chung (không thuộc riêng mô-đun nào): `App/Converters/*`, `App/Controls/*`, `Presentation/Mvvm/*`, `Presentation/Services/*`, icon trong `App/Assets/Icons`. Sửa phần dùng chung thì ghi vào CHANGELOG mục **Dùng chung** và tăng bản vá của `shell`.
 

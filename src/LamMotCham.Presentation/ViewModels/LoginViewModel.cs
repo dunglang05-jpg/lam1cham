@@ -11,6 +11,7 @@ namespace LamMotCham.Presentation.ViewModels;
 public sealed class LoginViewModel : ObservableObject
 {
     private readonly AccountService _account;
+    private readonly Func<Task>? _afterSignIn;
     private bool _isRegisterMode;
     private string _username = "";
     private string _fullName = "";
@@ -21,10 +22,14 @@ public sealed class LoginViewModel : ObservableObject
     private string _notice = "";
     private string _success = "";
 
-    public LoginViewModel(AccountService account, string appVersion)
+    /// <param name="account">Dịch vụ tài khoản.</param>
+    /// <param name="appVersion">Phiên bản hiện trên màn hình.</param>
+    /// <param name="afterSignIn">Việc chạy ngay sau khi đăng nhập, trước khi vào ứng dụng (lấy danh sách phần mềm — QĐ-006).</param>
+    public LoginViewModel(AccountService account, string appVersion, Func<Task>? afterSignIn = null)
     {
         ArgumentNullException.ThrowIfNull(account);
         _account = account;
+        _afterSignIn = afterSignIn;
         AppVersion = "v" + appVersion;
         SubmitCommand = new AsyncCommand(SubmitAsync, () => !IsBusy && IsConfigured);
         if (!IsConfigured)
@@ -194,6 +199,13 @@ public sealed class LoginViewModel : ObservableObject
         if (result.Kind == AccountResultKind.Success && result.Session is not null)
         {
             ClearPasswords();
+            if (_afterSignIn is not null)
+            {
+                Notice = "Đang tải danh sách phần mềm…";
+                await _afterSignIn();
+                Notice = "";
+            }
+
             SignedIn?.Invoke(this, result.Session);
             return;
         }

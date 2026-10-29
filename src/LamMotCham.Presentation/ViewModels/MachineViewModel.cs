@@ -9,7 +9,6 @@ using LamMotCham.Windows.Checks;
 using LamMotCham.Windows.Cleanup;
 using LamMotCham.Windows.Probe;
 using LamMotCham.Windows.Resources;
-using LamMotCham.Windows.Software;
 
 namespace LamMotCham.Presentation.ViewModels;
 
@@ -363,12 +362,6 @@ public sealed class MachineViewModel : ObservableObject
 
             if (row.Entry.Module is not IDescribesCurrentState describer)
             {
-                continue;
-            }
-
-            if (row.Entry.Module is WinGetInstallTask && !WinGetAvailable)
-            {
-                row.CurrentText = "Chưa kiểm tra";
                 continue;
             }
 

@@ -15,7 +15,7 @@
 
     <StackPanel>
         <c:PageHeader Eyebrow="THƯ VIỆN ỨNG DỤNG" Heading="Phần mềm cần thiết" ModuleLabel="{Binding Module.Label}"
-                      Description="Chọn ứng dụng cần cài. Ứng dụng đã có trên máy được bỏ qua; mỗi gói chỉ báo thành công sau khi xác minh.">
+                      Description="Danh sách lấy từ Web Admin mỗi lần đăng nhập. Ứng dụng đã có trên máy được bỏ qua; mỗi ứng dụng chỉ báo thành công sau khi xác minh.">
             <Button Style="{StaticResource SecondaryButton}" Command="{Binding RefreshStatusCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{Binding Converter={StaticResource Icon}, ConverterParameter=refresh}" Width="16" Height="16" Style="{StaticResource IconImage}" Margin="0,0,7,0" />
@@ -24,7 +24,16 @@
             </Button>
         </c:PageHeader>
 
-        <!-- Thiếu WinGet: nêu rõ, cho cách khắc phục, không chạy được hàng đợi. -->
+        <!-- QĐ-006: không lấy được danh sách của Web Admin thì nói rõ và dùng danh sách có sẵn. -->
+        <Border Background="{StaticResource WarningTintBrush}" CornerRadius="12" Padding="16,12" Margin="0,0,0,15"
+                Visibility="{Binding HasCatalogNotice, Converter={StaticResource Vis}}">
+            <StackPanel>
+                <TextBlock Text="Đang dùng danh sách phần mềm có sẵn" FontWeight="Bold" FontSize="13" Foreground="{StaticResource WarningTextBrush}" />
+                <TextBlock Text="{Binding CatalogNotice}" Style="{StaticResource SecondaryDark}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <!-- Thiếu WinGet: nêu rõ, cho cách khắc phục; ứng dụng có link tải vẫn cài được. -->
         <Border Background="{StaticResource WarningTintBrush}" CornerRadius="12" Padding="16,12" Margin="0,0,0,15"
                 Visibility="{Binding WinGetMissing, Converter={StaticResource Vis}}">
             <DockPanel>
@@ -34,7 +43,7 @@
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="Chưa tìm thấy WinGet (App Installer)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource WarningTextBrush}" />
-                    <TextBlock Text="Không thể cài phần mềm khi thiếu WinGet. Cài hoặc cập nhật “App Installer” từ Microsoft Store, rồi kiểm tra lại." Style="{StaticResource SecondaryDark}" />
+                    <TextBlock Text="Ứng dụng chỉ cài được bằng WinGet sẽ chưa cài được; ứng dụng có link tải vẫn cài bình thường. Cài hoặc cập nhật “App Installer” từ Microsoft Store, rồi kiểm tra lại." Style="{StaticResource SecondaryDark}" TextWrapping="Wrap" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -103,6 +112,15 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
                                         <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="11,9">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                                                            <Setter Property="Opacity" Value="0.55" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="40" />
@@ -111,21 +129,30 @@
                                                     <ColumnDefinition Width="96" />
                                                     <ColumnDefinition Width="140" />
                                                 </Grid.ColumnDefinitions>
-                                                <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
+                                                <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsAvailable}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
                                                 <DockPanel Grid.Column="1" Margin="0,0,10,0">
-                                                    <Border DockPanel.Dock="Left" Width="29" Height="29" CornerRadius="9" Background="#F0F5FF" Margin="0,0,10,0" VerticalAlignment="Center">
-                                                        <Image Width="20" Height="20" Style="{StaticResource IconImage}">
-                                                            <Image.Source>
-                                                                <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                                    <Binding Path="LogoKey" />
-                                                                    <Binding Path="IconKey" />
-                                                                </MultiBinding>
-                                                            </Image.Source>
-                                                        </Image>
-                                                    </Border>
+                                                    <Grid DockPanel.Dock="Left" Width="29" Height="29" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                        <Border CornerRadius="9" Background="#F0F5FF" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                                                            <Image Width="20" Height="20" Style="{StaticResource IconImage}">
+                                                                <Image.Source>
+                                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                                        <Binding Path="LogoKey" />
+                                                                        <Binding Path="IconKey" />
+                                                                    </MultiBinding>
+                                                                </Image.Source>
+                                                            </Image>
+                                                        </Border>
+                                                        <Border CornerRadius="9" Background="{Binding ColorHex, Converter={StaticResource HexBrush}}" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}}">
+                                                            <TextBlock Text="{Binding Initial}" Foreground="White" FontSize="12" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                        </Border>
+                                                    </Grid>
                                                     <StackPanel VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                                         <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                                        <TextBlock Text="{Binding UnavailableReason}" FontSize="11" Foreground="{StaticResource Text2Brush}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                                   Visibility="{Binding UnavailableReason, Converter={StaticResource NotEmpty}}" />
+                                                        <ComboBox ItemsSource="{Binding VariantLabels}" SelectedItem="{Binding SelectedVariantLabel, Mode=TwoWay}" FontSize="12" Margin="0,5,0,0" MaxWidth="320" HorizontalAlignment="Left"
+                                                                  AutomationProperties.Name="Chọn phiên bản" Visibility="{Binding HasVariants, Converter={StaticResource Vis}}" />
                                                         <TextBlock Text="{Binding PackageId}" FontFamily="{StaticResource MonoFont}" FontSize="11" Foreground="{StaticResource Text2Brush}"
                                                                    Visibility="{Binding DataContext.TechOpen, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Vis}}" />
                                                         <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" Margin="0,2,0,0"
@@ -159,12 +186,13 @@
                     </Border>
 
                     <DockPanel Margin="16,10,16,0">
-                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Command="{Binding ToggleTechCommand}" Content="Hiện/ẩn package ID" />
+                        <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Command="{Binding ToggleTechCommand}" Content="Hiện/ẩn nguồn cài" />
                         <CheckBox IsChecked="{Binding RecommendedSelected}" Content="Chọn bộ khuyến nghị" FontSize="12" VerticalAlignment="Center" />
                     </DockPanel>
                     <Border Style="{StaticResource Note}" Margin="12">
-                        <TextBlock Style="{StaticResource NoteText}"
-                                   Text="ⓘ  Chỉ cài gói đã duyệt qua WinGet. Hủy giữa chừng sẽ dừng sau gói đang cài, không ép tắt trình cài đặt. Microsoft 365 cần bản quyền của khách." />
+                        <TextBlock Style="{StaticResource NoteText}">
+                            <Run Text="ⓘ  " /><Run Text="{Binding CatalogSource, Mode=OneWay}" /><Run Text=". Cài qua WinGet (ưu tiên bản tiếng Việt) hoặc link chính thức có chữ ký số của hãng tin cậy; ứng dụng mờ chưa cài tự động được. Hủy giữa chừng sẽ dừng sau ứng dụng đang cài, không ép tắt trình cài đặt." />
+                        </TextBlock>
                     </Border>
                 </StackPanel>
             </Border>
@@ -182,16 +210,21 @@
                             <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
                                 <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
                                     <DockPanel>
-                                        <Border DockPanel.Dock="Left" Width="29" Height="29" CornerRadius="9" Background="#F0F5FF" Margin="0,0,9,0">
-                                            <Image Width="20" Height="20" Style="{StaticResource IconImage}">
-                                                <Image.Source>
-                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                        <Binding Path="LogoKey" />
-                                                        <Binding Path="IconKey" />
-                                                    </MultiBinding>
-                                                </Image.Source>
-                                            </Image>
-                                        </Border>
+                                        <Grid DockPanel.Dock="Left" Width="29" Height="29" Margin="0,0,9,0">
+                                            <Border CornerRadius="9" Background="#F0F5FF" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                                                <Image Width="20" Height="20" Style="{StaticResource IconImage}">
+                                                    <Image.Source>
+                                                        <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                            <Binding Path="LogoKey" />
+                                                            <Binding Path="IconKey" />
+                                                        </MultiBinding>
+                                                    </Image.Source>
+                                                </Image>
+                                            </Border>
+                                            <Border CornerRadius="9" Background="{Binding ColorHex, Converter={StaticResource HexBrush}}" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}}">
+                                                <TextBlock Text="{Binding Initial}" Foreground="White" FontSize="12" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </Grid>
                                         <StackPanel VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Text="{Binding Group}" FontSize="11" Foreground="{StaticResource Text2Brush}" />

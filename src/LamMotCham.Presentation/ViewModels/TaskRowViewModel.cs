@@ -2,6 +2,7 @@ using System.Globalization;
 using LamMotCham.Presentation.Mvvm;
 using LamMotCham.Core.Orchestration;
 using LamMotCham.Core.Tasks;
+using LamMotCham.Windows.Software;
 
 namespace LamMotCham.Presentation.ViewModels;
 
@@ -24,7 +25,7 @@ public sealed class TaskRowViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(entry);
         Entry = entry;
-        _isSelected = entry.SelectedByDefault;
+        _isSelected = entry.SelectedByDefault && IsAvailable;
         Details = entry.Details is { } d
             ?
             [
@@ -50,15 +51,48 @@ public sealed class TaskRowViewModel : ObservableObject
 
     public string? Group => Entry.Group;
 
-    /// <summary>Package ID WinGet (chỉ có với task cài phần mềm).</summary>
-    public string? PackageId => (Entry.Module as LamMotCham.Windows.Software.WinGetInstallTask)?.Package.WinGetId;
+    /// <summary>Task cài ứng dụng (null với các task khác).</summary>
+    public AppInstallTask? App => Entry.Module as AppInstallTask;
+
+    /// <summary>Nguồn cài: mã WinGet, tên miền link tải hoặc trang web (chỉ có với task cài phần mềm).</summary>
+    public string? PackageId => App?.SourceText;
+
+    /// <summary>false: ứng dụng hiện mờ, không chọn được (QĐ-006).</summary>
+    public bool IsAvailable => App?.Package.IsAvailable ?? true;
+
+    public string? UnavailableReason => App?.Package.UnavailableReason;
+
+    /// <summary>Hiện chữ đại diện thay logo (ứng dụng từ Web Admin chưa có logo đóng gói sẵn).</summary>
+    public bool ShowInitial => App is not null && LogoKey is null && !string.IsNullOrEmpty(App.Package.Initial);
+
+    public string Initial => App?.Package.Initial ?? "";
+
+    public string ColorHex => App?.Package.Color ?? "#3B5BDB";
+
+    public bool HasVariants => App?.Direct is not null && App.Package.HasVariants;
+
+    public IReadOnlyList<string> VariantLabels => App?.Package.Variants.Select(v => v.Label).ToList() ?? [];
+
+    /// <summary>Phiên bản đang chọn cho ứng dụng có nhiều phiên bản.</summary>
+    public string? SelectedVariantLabel
+    {
+        get => App?.Direct?.SelectedVariant?.Label;
+        set
+        {
+            if (App?.Direct is { } direct && value is not null && direct.SelectedVariant?.Label != value)
+            {
+                direct.SelectedVariant = App.Package.Variants.FirstOrDefault(v => v.Label == value) ?? direct.SelectedVariant;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public bool IsReadOnly => Entry.IsReadOnly;
 
     /// <summary>Nằm trong bộ chọn sẵn (thiết kế: cột "Đề xuất" — Khuyến nghị / Tùy chọn).</summary>
     public bool IsRecommended => Entry.SelectedByDefault;
 
-    public bool IsSelectable => !Entry.IsReadOnly;
+    public bool IsSelectable => !Entry.IsReadOnly && IsAvailable;
 
     public bool NeedsAdmin => Entry.Module.Descriptor.Privilege == PrivilegeLevel.Administrator;
 
@@ -82,7 +116,7 @@ public sealed class TaskRowViewModel : ObservableObject
     public bool IsSelected
     {
         get => _isSelected;
-        set => Set(ref _isSelected, value);
+        set => Set(ref _isSelected, value && IsAvailable);
     }
 
     public TaskState? State

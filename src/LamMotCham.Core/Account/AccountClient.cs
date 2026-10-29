@@ -24,11 +24,24 @@ public interface IAccountClient
     Task<AccountResult> LoginAsync(string username, string password, string machineId, CancellationToken cancellationToken = default);
 
     Task<AccountResult> RegisterAsync(string fullName, string username, string password, string machineId, CancellationToken cancellationToken = default);
+
+    /// <summary>Danh sách ứng dụng đang bật trên Web Admin (action=listApps). Cần mã phiên của lần đăng nhập này.</summary>
+    Task<AppListResult> ListAppsAsync(string token, string machineId, CancellationToken cancellationToken = default);
+
+    /// <summary>Gửi kết quả một lượt cài lên mục "Lịch sử cài" của Web Admin (action=installReport).</summary>
+    Task<AccountResult> SendInstallReportAsync(string token, string machineId, InstallReportPayload report, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Kết quả lấy danh sách ứng dụng: trạng thái và mảng JSON "apps" nguyên gốc (chưa kiểm tra nội dung).</summary>
+public sealed record AppListResult(AccountResult Status, string? AppsJson)
+{
+    public bool IsSuccess => Status.Kind == AccountResultKind.Success && AppsJson is not null;
 }
 
 /// <summary>
 /// Gọi api.php theo giao thức sẵn có: POST JSON {action, key, ...}, máy chủ luôn trả JSON {ok, code, message, ...}.
 /// Đăng nhập: action=login → {role, name, token}. Đăng ký: action=register.
+/// Danh sách ứng dụng: action=listApps → {apps: [...]}. Báo cáo cài: action=installReport.
 /// </summary>
 public sealed class AccountClient : IAccountClient
 {
@@ -107,6 +120,63 @@ public sealed class AccountClient : IAccountClient
             : Fail(reply.Code, reply.Message);
     }
 
+    public async Task<AppListResult> ListAppsAsync(string token, string machineId, CancellationToken cancellationToken = default)
+    {
+        if (!AccountValidation.IsValidToken(token))
+        {
+            return new AppListResult(new AccountResult(AccountResultKind.SessionExpired, "Chưa có phiên đăng nhập hợp lệ."), null);
+        }
+
+        var reply = await SendAsync(
+            w =>
+            {
+                w.WriteString("action", "listApps");
+                w.WriteString("token", token);
+                w.WriteString("machine", machineId ?? "");
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        if (reply.Failure is not null)
+        {
+            return new AppListResult(reply.Failure, null);
+        }
+
+        if (!reply.Ok)
+        {
+            return new AppListResult(Fail(reply.Code, reply.Message), null);
+        }
+
+        return reply.AppsJson is null
+            ? new AppListResult(new AccountResult(AccountResultKind.ServerError, "Máy chủ không trả về danh sách ứng dụng."), null)
+            : new AppListResult(new AccountResult(AccountResultKind.Success, "Đã lấy danh sách ứng dụng."), reply.AppsJson);
+    }
+
+    public async Task<AccountResult> SendInstallReportAsync(string token, string machineId, InstallReportPayload report, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        if (!AccountValidation.IsValidToken(token))
+        {
+            return new AccountResult(AccountResultKind.SessionExpired, "Chưa có phiên đăng nhập hợp lệ.");
+        }
+
+        var reply = await SendAsync(
+            w =>
+            {
+                w.WriteString("action", "installReport");
+                w.WriteString("token", token);
+                w.WriteString("machine", machineId ?? "");
+                report.WriteTo(w);
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        if (reply.Failure is not null)
+        {
+            return reply.Failure;
+        }
+
+        return reply.Ok ? new AccountResult(AccountResultKind.Success, Or(reply.Message, "Đã gửi báo cáo cài.")) : Fail(reply.Code, reply.Message);
+    }
+
     /// <summary>Đổi mã lỗi của máy chủ sang loại kết quả; giữ nguyên thông báo tiếng Việt của máy chủ.</summary>
     internal static AccountResult Fail(string? code, string? message)
     {
@@ -144,7 +214,18 @@ public sealed class AccountClient : IAccountClient
 
     private static string Or(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 
-    private async Task<Reply> SendAsync(IReadOnlyList<(string Name, string Value)> fields, CancellationToken cancellationToken)
+    private Task<Reply> SendAsync(IReadOnlyList<(string Name, string Value)> fields, CancellationToken cancellationToken) =>
+        SendAsync(
+            w =>
+            {
+                foreach (var (name, value) in fields)
+                {
+                    w.WriteString(name, value);
+                }
+            },
+            cancellationToken);
+
+    private async Task<Reply> SendAsync(Action<Utf8JsonWriter> writeFields, CancellationToken cancellationToken)
     {
         if (!_options.IsConfigured)
         {
@@ -152,7 +233,7 @@ public sealed class AccountClient : IAccountClient
                 "Bản phần mềm này chưa được cấu hình máy chủ đăng nhập. Vui lòng tải bản chính thức hoặc liên hệ người phát hành.");
         }
 
-        using var content = new ByteArrayContent(BuildBody(_options.ApiKey, fields));
+        using var content = new ByteArrayContent(BuildBody(_options.ApiKey, writeFields));
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(_options.Timeout);
@@ -182,18 +263,23 @@ public sealed class AccountClient : IAccountClient
         return Parse(text);
     }
 
-    internal static byte[] BuildBody(string apiKey, IReadOnlyList<(string Name, string Value)> fields)
+    internal static byte[] BuildBody(string apiKey, IReadOnlyList<(string Name, string Value)> fields) =>
+        BuildBody(apiKey, w =>
+        {
+            foreach (var (name, value) in fields)
+            {
+                w.WriteString(name, value);
+            }
+        });
+
+    internal static byte[] BuildBody(string apiKey, Action<Utf8JsonWriter> writeFields)
     {
         using var buffer = new MemoryStream();
         using (var json = new Utf8JsonWriter(buffer))
         {
             json.WriteStartObject();
             json.WriteString("key", apiKey);
-            foreach (var (name, value) in fields)
-            {
-                json.WriteString(name, value);
-            }
-
+            writeFields(json);
             json.WriteEndObject();
         }
 
@@ -217,7 +303,8 @@ public sealed class AccountClient : IAccountClient
             }
 
             var ok = root.TryGetProperty("ok", out var okEl) && okEl.ValueKind == JsonValueKind.True;
-            return new Reply(ok, Str(root, "code"), Str(root, "message"), Str(root, "role"), Str(root, "name"), Str(root, "token"), null);
+            var apps = root.TryGetProperty("apps", out var appsEl) && appsEl.ValueKind == JsonValueKind.Array ? appsEl.GetRawText() : null;
+            return new Reply(ok, Str(root, "code"), Str(root, "message"), Str(root, "role"), Str(root, "name"), Str(root, "token"), null) { AppsJson = apps };
         }
         catch (JsonException)
         {
@@ -230,6 +317,9 @@ public sealed class AccountClient : IAccountClient
 
     internal sealed record Reply(bool Ok, string? Code, string? Message, string? Role, string? Name, string? Token, AccountResult? Failure)
     {
+        /// <summary>Mảng "apps" nguyên gốc khi gọi listApps.</summary>
+        public string? AppsJson { get; init; }
+
         public static Reply Failed(AccountResultKind kind, string message) =>
             new(false, null, null, null, null, null, new AccountResult(kind, message));
 
