@@ -248,7 +248,7 @@
     "DirectUrl": "https://www.rarlab.com/rar/winrar-x64-723vn.exe",
     "PageUrl": "https://www.rarlab.com/download.htm",
     "PageRegex": "/rar/winrar-x64-\\d+vn\\.exe",
-    "SilentArgs": "/S",
+    "SilentArgs": "-s1",
     "WingetId": "RARLab.WinRAR",
     "Website": "https://www.win-rar.com/download.html",
     "ZipFolder": "",

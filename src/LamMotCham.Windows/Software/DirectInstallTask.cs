@@ -133,24 +133,39 @@ public sealed class DirectInstallTask
         }
     }
 
-    public Task<VerifyResult> VerifyAsync(CancellationToken cancellationToken)
+    /// <summary>Thời gian chờ tối đa để ứng dụng xuất hiện sau khi trình cài thoát (một số bộ cài tiếp tục chạy nền).</summary>
+    public TimeSpan DetectWait { get; init; } = TimeSpan.FromSeconds(90);
+
+    public async Task<VerifyResult> VerifyAsync(CancellationToken cancellationToken)
     {
-        _ = cancellationToken;
         if (SelectedVariant is { Kind: InstallKind.Web } link)
         {
-            return Task.FromResult(InstallDetector.FindEvidence(Package) is { } found
+            return InstallDetector.FindEvidence(Package) is { } found
                 ? VerifyResult.Passed($"Đã thấy {found} trên máy.")
-                : VerifyResult.Attention($"Đã mở trang tải \"{link.Label}\". Tải và cài tay, rồi bấm \"Kiểm tra trạng thái cài\"."));
+                : VerifyResult.Attention($"Đã mở trang tải \"{link.Label}\". Tải và cài tay, rồi bấm \"Kiểm tra trạng thái cài\".");
         }
 
         if (!InstallDetector.CanDetect(Package))
         {
-            return Task.FromResult(VerifyResult.Attention("Cần chú ý — chưa xác minh ứng dụng sau cài: Admin chưa khai báo cách nhận biết (tên hoặc đường dẫn)."));
+            return VerifyResult.Attention("Cần chú ý — chưa xác minh ứng dụng sau cài: Admin chưa khai báo cách nhận biết (tên hoặc đường dẫn).");
         }
 
-        return Task.FromResult(InstallDetector.FindEvidence(Package) is { } evidence
-            ? VerifyResult.Passed($"Đã thấy {evidence} trên máy.")
-            : VerifyResult.Attention("Cần chú ý — chưa xác minh ứng dụng sau cài: chưa thấy ứng dụng trong danh sách đã cài. Trình cài có thể vẫn đang chạy nền."));
+        // Trình cài có thể thoát ngay rồi tiếp tục cài nền: chờ ứng dụng xuất hiện trong một khoảng ngắn.
+        var deadline = DateTimeOffset.UtcNow + DetectWait;
+        while (true)
+        {
+            if (InstallDetector.FindEvidence(Package) is { } evidence)
+            {
+                return VerifyResult.Passed($"Đã thấy {evidence} trên máy.");
+            }
+
+            if (DateTimeOffset.UtcNow >= deadline)
+            {
+                return VerifyResult.Attention("Cần chú ý — chưa xác minh ứng dụng sau cài: chưa thấy ứng dụng trong danh sách đã cài. Trình cài có thể vẫn đang chạy nền.");
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+        }
     }
 
     internal static ExecuteResult Classify(int exitCode) => exitCode switch

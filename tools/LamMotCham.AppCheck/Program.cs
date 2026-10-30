@@ -241,10 +241,15 @@ internal static class Program
     private static async Task<List<CheckRow>> InstallTestsAsync(IReadOnlyList<SoftwarePackage> packages, WinGetClient winGet, bool hasWinGet, CancellationToken ct)
     {
         var rows = new List<CheckRow>();
-        var sevenZip = packages.FirstOrDefault(p => p.WinGetId == "7zip.7zip");
-        if (sevenZip is not null && hasWinGet)
+        if (hasWinGet)
         {
-            rows.Add(await RunAsync("Cài thử qua WinGet", new AppInstallTask(sevenZip, winGet), ct));
+            // Ứng dụng nhỏ, máy CI thường chưa có sẵn.
+            var candidates = new[] { "SumatraPDF.SumatraPDF", "VideoLAN.VLC", "7zip.7zip" };
+            var viaWinGet = candidates.Select(id => packages.FirstOrDefault(p => p.WinGetId == id && p.UsesWinGet))
+                .FirstOrDefault(p => p is not null && InstallDetector.FindEvidence(p) is null);
+            rows.Add(viaWinGet is null
+                ? new CheckRow("WinGet", "Cài thử qua WinGet", Warn, "Máy CI đã có sẵn mọi ứng dụng dùng để thử.")
+                : await RunAsync("Cài thử qua WinGet", new AppInstallTask(viaWinGet, winGet), ct));
         }
 
         var winRar = packages.FirstOrDefault(p => p.WinGetId == "RARLab.WinRAR" && p.HasLink);
