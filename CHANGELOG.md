@@ -2,6 +2,22 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.1 — 30/10/2026
+
+Sửa lỗi sau kiểm tra tự động danh sách ứng dụng trên GitHub (workflow `kiem-tra-ung-dung`, QĐ-006).
+
+**Phần mềm thiết yếu (`software`) 0.5.1**
+- Cài bằng link: xác minh sau cài chờ tối đa 90 giây (kiểm tra lại mỗi 5 giây) vì nhiều bộ cài chạy tiếp ở nền sau khi tiến trình chính thoát.
+
+**Danh mục (`catalog`) 2026.10.30.2**
+- Thêm “PHAM KIM LONG” (tác giả UniKey, chứng chỉ cá nhân) vào danh sách hãng tin cậy — PO duyệt.
+
+**Khung ứng dụng (`shell`) 0.11.2** — dùng chung
+- Lượt chạy dừng bất thường vẫn gửi báo cáo lên Admin › Lịch sử cài; tác vụ chưa xong ghi *Cần kiểm tra*.
+
+**Công cụ**
+- `tools/LamMotCham.AppCheck` + workflow `kiem-tra-ung-dung`: mỗi thứ Hai tải từng link trên Admin, kiểm tra chữ ký số + hãng tin cậy, đối chiếu nhà phát hành WinGet, cài thử vài ứng dụng.
+
 ## 1.1.0 — 30/10/2026
 
 Đồng bộ danh sách ứng dụng với Web Admin ([QĐ-006](docs/decisions/QD-006-Dong-Bo-Ung-Dung-Admin.md)).

@@ -537,9 +537,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 r.Apply(new TaskStatusUpdate(r.Id, TaskState.NeedsAttention, "Lượt chạy dừng bất thường; tác vụ này chưa được xác minh.", 0));
             }
 
-            LastRunReportPath = WriteReport(
-                new RunReport { StartedAt = _runStarted, FinishedAt = DateTimeOffset.Now, Tasks = [.. rows.Select(r => r.ToOutcome())] },
-                "lượt chạy dừng bất thường");
+            var partial = new RunReport { StartedAt = _runStarted, FinishedAt = DateTimeOffset.Now, Tasks = [.. rows.Select(r => r.ToOutcome())] };
+            LastRunReportPath = WriteReport(partial, "lượt chạy dừng bất thường");
+
+            // Vẫn gửi Lịch sử cài để Admin thấy ứng dụng lỗi/dở dang của lượt này (PO duyệt 30/10/2026).
+            SendInstallReport(rows, partial);
             DockSummary = "Lượt chạy dừng bất thường — xem log.";
             ShowDialog(new ErrorDialogViewModel(this, "Lượt chạy dừng bất thường", ex.Message,
                 "Các tác vụ chưa chạy xong được đánh dấu Cần chú ý.", "Xem log, kiểm tra máy rồi chạy lại các mục còn lại.",

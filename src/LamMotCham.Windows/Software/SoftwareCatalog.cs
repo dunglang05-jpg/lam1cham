@@ -110,7 +110,7 @@ public sealed record SoftwarePackage
 public static partial class SoftwareCatalog
 {
     /// <summary>Phiên bản dữ liệu của danh mục (mô-đun dữ liệu "catalog", QĐ-002). Đổi khi thêm/bớt gói, logo hoặc hãng tin cậy.</summary>
-    public const string DataVersion = "2026.10.30";
+    public const string DataVersion = "2026.10.30.2";
 
     public const string OtherCategory = "Khác";
 
