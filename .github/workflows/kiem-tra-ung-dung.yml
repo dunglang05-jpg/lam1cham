@@ -1,0 +1,78 @@
+# Kiểm tra danh sách ứng dụng của Web Admin trên máy Windows sạch của GitHub (QĐ-006).
+# Tải từng link, kiểm tra chữ ký số + hãng tin cậy, đối chiếu nhà phát hành WinGet, cài thử vài ứng dụng.
+# Chạy mỗi sáng thứ Hai (08:00 giờ Việt Nam) và khi bấm "Run workflow". Có lỗi thì job đỏ để GitHub gửi email báo.
+name: kiem-tra-ung-dung
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'
+  # Sửa công cụ kiểm tra hoặc phần cài phần mềm thì chạy luôn trên PR.
+  pull_request:
+    paths:
+      - 'tools/LamMotCham.AppCheck/**'
+      - '.github/workflows/kiem-tra-ung-dung.yml'
+      - 'src/LamMotCham.Windows/Software/**'
+  workflow_dispatch:
+    inputs:
+      cai_thu:
+        description: 'Cài thử 7-Zip (WinGet), WinRAR (link tải) và lối tắt web trên máy CI'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kiem-tra-ung-dung
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  kiem-tra:
+    name: Kiểm tra link, chữ ký số và cài thử
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      # Có đủ 3 secret thì lấy danh sách trực tiếp từ Web Admin; thiếu thì dùng ảnh chụp danh sách trong repo.
+      LMC_API_KEY: ${{ secrets.LMC_API_KEY }}
+      LMC_CI_USER: ${{ secrets.LMC_CI_USER }}
+      LMC_CI_PASS: ${{ secrets.LMC_CI_PASS }}
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Cài .NET SDK theo global.json
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      # Máy CI có thể chưa có WinGet; thiếu thì cài từ PowerShell Gallery. Không được thì phần WinGet báo "Bỏ qua".
+      - name: Chuẩn bị WinGet
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Install-PackageProvider -Name NuGet -Force -Scope CurrentUser | Out-Null
+            Install-Module -Name Microsoft.WinGet.Client -Force -Scope CurrentUser -Repository PSGallery | Out-Null
+            Repair-WinGetPackageManager -AllUsers -Latest
+          }
+          winget --version
+
+      - name: Kiểm tra danh sách ứng dụng
+        shell: pwsh
+        run: |
+          $toolArgs = @('--snapshot', 'tools/LamMotCham.AppCheck/apps-admin.json', '--summary', $env:GITHUB_STEP_SUMMARY, '--json', 'kiem-tra-ung-dung.json')
+          if ('${{ github.event_name }}' -ne 'workflow_dispatch' -or '${{ inputs.cai_thu }}' -eq 'true') { $toolArgs += '--install' }
+          dotnet run --project tools/LamMotCham.AppCheck -c Release -- @toolArgs
+
+      - name: Tải lên kết quả
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kiem-tra-ung-dung
+          path: kiem-tra-ung-dung.json
+          if-no-files-found: ignore
+          retention-days: 30
