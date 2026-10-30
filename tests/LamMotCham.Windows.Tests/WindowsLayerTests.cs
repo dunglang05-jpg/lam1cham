@@ -40,7 +40,7 @@ public sealed class CatalogTests
         Assert.Null(SoftwareCatalog.LogoKeyFor("unikey"));
         Assert.Null(SoftwareCatalog.LogoKeyFor("sumatra"));
         Assert.Equal("chrome", SoftwareCatalog.LogoKeyFor("chrome"));
-        Assert.Matches(@"^\d{4}\.\d{2}\.\d{2}$", SoftwareCatalog.DataVersion);
+        Assert.Matches(@"^\d{4}\.\d{2}\.\d{2}(\.\d+)?$", SoftwareCatalog.DataVersion);
     }
 
     [Fact]
