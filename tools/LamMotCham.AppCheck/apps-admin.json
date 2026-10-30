@@ -479,15 +479,39 @@
     "ZipExe": "",
     "Variants": [
       {
+        "Label": "Kaspersky Standard",
+        "Kind": "Exe",
+        "DirectUrl": "https://kaspersky.nts.com.vn/download/kaspersky_standard.exe",
+        "SilentArgs": ""
+      },
+      {
         "Label": "Kaspersky Plus",
         "Kind": "Exe",
         "DirectUrl": "https://kaspersky.nts.com.vn/download/kaspersky_plus.exe",
         "SilentArgs": ""
       },
       {
+        "Label": "Kaspersky Premium",
+        "Kind": "Exe",
+        "DirectUrl": "https://kaspersky.nts.com.vn/download/kaspersky_premium.exe",
+        "SilentArgs": ""
+      },
+      {
+        "Label": "Anti-Virus 21.3 - Tiếng Việt",
+        "Kind": "Exe",
+        "DirectUrl": "https://kaspersky.nts.com.vn/download/kav21.3.10.391abvi_25991.exe",
+        "SilentArgs": ""
+      },
+      {
         "Label": "Internet Security - Multi-Devices (bản 21.3)",
         "Kind": "Exe",
         "DirectUrl": "https://kaspersky.nts.com.vn/download/kis21.3.10.391abvi_25995.exe",
+        "SilentArgs": ""
+      },
+      {
+        "Label": "Small Office Security 21.7 - Tiếng Việt",
+        "Kind": "Exe",
+        "DirectUrl": "https://products.s.kaspersky-labs.com/smallofficesecurity/ksos2021/21.7.7.393/vietnamese-0.136.0/3538363734317c44454c7c31/startup.exe",
         "SilentArgs": ""
       }
     ],
