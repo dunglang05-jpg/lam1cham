@@ -129,6 +129,7 @@ public sealed class SyncCatalogTests
         Assert.True(TrustedPublishers.IsTrusted("Microsoft Corporation"));
         Assert.True(TrustedPublishers.IsTrusted("  microsoft   CORPORATION. "));
         Assert.True(TrustedPublishers.IsTrusted("ESET, spol. s r.o."));
+        Assert.True(TrustedPublishers.IsTrusted("Pham Kim Long"));
         Assert.False(TrustedPublishers.IsTrusted("Microsoft Corporation Fake"));
         Assert.False(TrustedPublishers.IsTrusted("Evil Google LLC"));
         Assert.False(TrustedPublishers.IsTrusted(null));

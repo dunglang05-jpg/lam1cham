@@ -30,6 +30,9 @@ public static class TrustedPublishers
         "DUC FABULOUS CO.,LTD",
         "VNG Corporation",
         "Zhuhai Kingsoft Office Software Co., Ltd.",
+
+        // Tác giả UniKey (chứng chỉ cá nhân) — PO duyệt 30/10/2026 sau kiểm tra tự động trên CI.
+        "PHAM KIM LONG",
     ];
 
     private static readonly HashSet<string> Normalized = new(Names.Select(Normalize), StringComparer.Ordinal);
