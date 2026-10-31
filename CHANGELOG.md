@@ -2,6 +2,18 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.3 — 01/11/2026
+
+Tăng tốc cài phần mềm (PO duyệt 01/11/2026). Lịch sử cài trên Admin cho thấy cài qua WinGet chậm 2–3 lần so với link tải: Foxit 2,4 phút, K-Lite 83 giây (lượt 01/11, máy LAPTOP-PERIUM).
+
+**Phần mềm thiết yếu (`software`) 0.6.0**
+- Ứng dụng có link tải tự động trên Admin **và** có cách nhận biết (tên hoặc đường dẫn) thì cài bằng link trước; WinGet chỉ còn là dự phòng. Link vẫn bắt buộc chữ ký số hợp lệ của hãng tin cậy.
+- Link lỗi trước khi chạy trình cài (dò link, tải, chữ ký) thì chuyển ngay sang WinGet trong cùng lượt. Trình cài đã chạy mà báo lỗi thì không chạy thêm bộ cài khác.
+- Tải trước file cài của các app cài bằng link (tối đa 2 file cùng lúc) trong lúc app khác đang cài; tới lượt chỉ còn kiểm tra chữ ký và cài. Không tải trước khi ổ hệ thống còn dưới 10 GB; file chưa dùng bị xóa khi hết lượt.
+- Kiểm tra "đã cài sẵn" và nút "Kiểm tra trạng thái cài" dùng registry thay cho `winget list` với các app ưu tiên link (nhanh hơn nhiều).
+- Chỉ chạy `winget --version` một lần mỗi phiên.
+- Log ghi thời gian từng bước WinGet (kiểm tra trước khi cài, mỗi lần `winget install`); Lịch sử cài gửi thêm cột "Phải chờ tải".
+
 ## 1.1.2 — 31/10/2026
 
 Sửa lỗi phát hiện khi PO thử trên laptop thật (Dell, Windows 11).

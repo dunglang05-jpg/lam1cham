@@ -16,6 +16,9 @@ public sealed record InstallMetrics
 
     public TimeSpan Download { get; init; }
 
+    /// <summary>Thời gian thật sự phải chờ tải (file tải trước trong lúc cài app khác thì gần 0).</summary>
+    public TimeSpan Wait { get; init; }
+
     public TimeSpan Install { get; init; }
 
     public int ExitCode { get; init; }
@@ -52,12 +55,25 @@ public sealed class DirectInstallTask
     /// <summary>Có cách cài bằng link không (link trực tiếp, dò link hoặc phiên bản).</summary>
     public bool CanInstall => Package.HasVariants ? SelectedVariant is not null : Package.HasLink;
 
-    private InstallKind EffectiveKind => SelectedVariant?.Kind ?? Package.Kind;
+    /// <summary>Cài tự động được bằng link (không phải phiên bản "Mở link" để cài tay).</summary>
+    public bool IsAutomatic => CanInstall && EffectiveKind != InstallKind.Web;
+
+    /// <summary>Lần chạy gần nhất đã khởi chạy trình cài (sau bước tải và kiểm tra chữ ký).</summary>
+    public bool InstallerStarted { get; private set; }
+
+    internal InstallKind EffectiveKind => SelectedVariant?.Kind ?? Package.Kind;
+
+    /// <summary>Link tải cho lần cài này: link của phiên bản đã chọn, hoặc link trực tiếp/dò link mới nhất.</summary>
+    internal async Task<(Uri? Url, string Note)> ResolveAsync(CancellationToken cancellationToken) =>
+        SelectedVariant is { } variant
+            ? (variant.Url, $"Phiên bản \"{variant.Label}\".")
+            : await LinkDownloader.ResolveAsync(Package, cancellationToken).ConfigureAwait(false);
 
     public async Task<ExecuteResult> ExecuteAsync(TaskContext context, string taskId, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
         LastMetrics = null;
+        InstallerStarted = false;
 
         if (SelectedVariant is { Kind: InstallKind.Web } link)
         {
@@ -67,37 +83,42 @@ public sealed class DirectInstallTask
             return ExecuteResult.Completed($"Đã mở trang tải \"{link.Label}\" trên trình duyệt.");
         }
 
-        Uri? url;
-        string note;
-        if (SelectedVariant is { } variant)
+        DownloadedFile file;
+        TimeSpan waited;
+        var prefetched = LinkPrefetcher.Current is { } prefetcher
+            ? await prefetcher.TakeAsync(this, cancellationToken).ConfigureAwait(false)
+            : null;
+        if (prefetched is not null)
         {
-            (url, note) = (variant.Url, $"Phiên bản \"{variant.Label}\".");
+            file = prefetched.File;
+            waited = prefetched.Waited;
+            context.Log.Info($"{prefetched.Note} Dùng file đã tải trước từ {file.Source.Host} (phải chờ thêm {waited.TotalSeconds:0} giây).", taskId);
         }
         else
         {
-            (url, note) = await LinkDownloader.ResolveAsync(Package, cancellationToken).ConfigureAwait(false);
-        }
+            var (url, note) = await ResolveAsync(cancellationToken).ConfigureAwait(false);
+            if (url is null)
+            {
+                return ExecuteResult.Failed(note, isTransient: true);
+            }
 
-        if (url is null)
-        {
-            return ExecuteResult.Failed(note, isTransient: true);
-        }
+            context.Log.Info($"{note} Tải từ {url.Host}.", taskId);
+            try
+            {
+                file = await LinkDownloader.DownloadAsync(url, EffectiveKind, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
+            {
+                return ExecuteResult.Failed($"Không tải được file cài từ {url.Host}: {ex.Message}", isTransient: ex is HttpRequestException or TaskCanceledException);
+            }
 
-        context.Log.Info($"{note} Tải từ {url.Host}.", taskId);
-        DownloadedFile file;
-        try
-        {
-            file = await LinkDownloader.DownloadAsync(url, EffectiveKind, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
-        {
-            return ExecuteResult.Failed($"Không tải được file cài từ {url.Host}: {ex.Message}", isTransient: ex is HttpRequestException or TaskCanceledException);
+            waited = file.Elapsed;
         }
 
         using (file)
         {
             context.Log.Info($"Đã tải {file.Bytes / 1048576.0:0.0} MB trong {file.Elapsed.TotalSeconds:0} giây.", taskId);
-            var metrics = new InstallMetrics { Source = file.Source.Host, Bytes = file.Bytes, Download = file.Elapsed };
+            var metrics = new InstallMetrics { Source = file.Source.Host, Bytes = file.Bytes, Download = file.Elapsed, Wait = waited };
             LastMetrics = metrics;
 
             if (EffectiveKind == InstallKind.Zip)
@@ -116,6 +137,7 @@ public sealed class DirectInstallTask
 
             var args = SplitArgs(SelectedVariant?.SilentArgs ?? Package.SilentArgs);
             var watch = Stopwatch.StartNew();
+            InstallerStarted = true;
             ProcessResult result;
             if (EffectiveKind == InstallKind.Msi)
             {
@@ -191,6 +213,7 @@ public sealed class DirectInstallTask
         }
 
         var watch = Stopwatch.StartNew();
+        InstallerStarted = true;
         var staging = Path.Combine(file.Directory, "giai-nen");
         try
         {

@@ -10,6 +10,7 @@ using LamMotCham.Core.Reporting;
 using LamMotCham.Core.Tasks;
 using LamMotCham.Windows.Infrastructure;
 using LamMotCham.Windows.Probe;
+using LamMotCham.Windows.Software;
 
 namespace LamMotCham.Presentation.ViewModels;
 
@@ -496,6 +497,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         });
 
         RunReport? report = null;
+        // Tải trước file cài của các app cài bằng link trong lúc app khác đang cài (PO duyệt 01/11/2026).
+        var prefetch = LinkPrefetcher.Begin(rows.Select(r => r.App).OfType<AppInstallTask>(), m => S.Log.Info(m));
         try
         {
             var modules = rows.Select(r => r.Entry.Module).ToList();
@@ -549,6 +552,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         finally
         {
+            LinkPrefetcher.End(prefetch);
             IsRunning = false;
             DockTitle = report is null ? "Không chạy được" : "Đã xử lý xong";
             DockStep = $"{_runTotal}/{_runTotal} tác vụ · {(DateTimeOffset.Now - _runStarted).ToString(@"mm\:ss", CultureInfo.InvariantCulture)}";
@@ -726,6 +730,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 Source = m?.Source is { Length: > 0 } s ? s : app.SourceText,
                 Bytes = m?.Bytes ?? 0,
                 DownloadSeconds = m?.Download.TotalSeconds ?? 0,
+                WaitSeconds = m?.Wait.TotalSeconds ?? 0,
                 InstallSeconds = m?.Install.TotalSeconds ?? outcome.Duration?.TotalSeconds ?? 0,
                 Result = InstallReportPayload.ResultFor(outcome.State, app.WasAlreadyInstalled),
                 Code = m?.ExitCode ?? 0,
