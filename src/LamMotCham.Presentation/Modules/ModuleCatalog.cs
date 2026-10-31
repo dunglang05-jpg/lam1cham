@@ -24,7 +24,7 @@ public sealed record AppModule(string Id, string Name, string ShortName, string 
 /// </summary>
 public static class ModuleCatalog
 {
-    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.11.2", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
+    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.11.3", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
     public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.2.0", "user", "Đăng nhập, lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
 

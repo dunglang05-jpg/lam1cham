@@ -20,5 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\LamMotCham.Windows\LamMotCham.Windows.csproj" />
+    <ProjectReference Include="..\..\src\LamMotCham.Presentation\LamMotCham.Presentation.csproj" />
   </ItemGroup>
 </Project>

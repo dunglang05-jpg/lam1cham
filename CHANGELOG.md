@@ -2,6 +2,14 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.2 — 31/10/2026
+
+Sửa lỗi phát hiện khi PO thử trên laptop thật (Dell, Windows 11).
+
+**Khung ứng dụng (`shell`) 0.11.3** — dùng chung
+- Hộp xác nhận có ô đồng ý (Xác nhận cài đặt, Thiết lập đầy đủ/gói nhanh có tắt BitLocker, các thao tác cần đồng ý): tick ô đồng ý nhưng nút xác nhận vẫn mờ, không bấm được. Nay tick là nút sáng ngay, bỏ tick là nút mờ lại. Lỗi có từ 0.12.0.
+- Thêm kiểm thử tự động cho hộp xác nhận.
+
 ## 1.1.1 — 30/10/2026
 
 Sửa lỗi sau kiểm tra tự động danh sách ứng dụng trên GitHub (workflow `kiem-tra-ung-dung`, QĐ-006).

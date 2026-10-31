@@ -85,6 +85,9 @@ public sealed class AsyncCommand : ICommand
 
     public bool CanExecute(object? parameter) => !_running && (_canExecute?.Invoke() ?? true);
 
+    /// <summary>Báo nút bấm kiểm tra lại điều kiện (ví dụ sau khi tick ô đồng ý).</summary>
+    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+
     public async void Execute(object? parameter)
     {
         if (!CanExecute(parameter))
