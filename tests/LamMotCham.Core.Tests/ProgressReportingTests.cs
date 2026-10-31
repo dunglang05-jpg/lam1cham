@@ -54,7 +54,7 @@ public sealed class ProgressReportingTests
 
         await Factory.Orchestrator(out _).RunAsync([t], capture);
 
-        var pulses = capture.Updates.Where(u => u.Message?.StartsWith("Đang thực hiện · ", StringComparison.Ordinal) == true).ToList();
+        var pulses = capture.Updates.Where(u => u.Message == "Đang thực hiện").ToList();
         Assert.True(pulses.Count >= 2, $"Chỉ có {pulses.Count} lần báo.");
         Assert.True(pulses[^1].Fraction > pulses[0].Fraction);
         Assert.All(pulses, p => Assert.True(p.Fraction < 0.9));

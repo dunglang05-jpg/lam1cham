@@ -2,6 +2,17 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.6 — 01/11/2026
+
+Sửa lỗi gấp sau khi PO thử 1.1.5.
+
+**Phần mềm thiết yếu (`software`) 0.6.2**
+- **Sửa lỗi:** cài bằng link báo "Thất bại — Lỗi không mong đợi: OverflowException: TimeSpan overflowed…". Bộ báo % tải trừ `TimeSpan.MinValue` ở lần báo đầu tiên nên tràn số và hỏng cả lần cài (Foxit). Nay dùng mili giây kiểu số nguyên.
+- Báo tiến độ chỉ để hiển thị: lỗi bất kỳ khi báo tiến độ bị bỏ qua và ghi log, không bao giờ làm hỏng tác vụ.
+
+**Khung ứng dụng (`shell`) 0.12.1** — dùng chung
+- Bớt rối mắt (PO góp ý): tiêu đề chỉ ghi "Đang cài <tên app>"; dòng tác vụ ghi một bước + một đồng hồ, ví dụ "Đang tải 45% · 00:20", "Đang cài qua WinGet · 01:10", "Đang thực hiện · 00:05". Bỏ số MB và đồng hồ lặp lại.
+
 ## 1.1.5 — 01/11/2026
 
 Sửa theo phản hồi PO khi thử 1.1.4 (LAPTOP-PERIUM, lượt 01:27).

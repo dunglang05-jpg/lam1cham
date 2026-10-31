@@ -23,20 +23,23 @@ internal static class InstallProgress
     public static Action<long, long?> Download(TaskContext context, string? prefix = null)
     {
         var watch = Stopwatch.StartNew();
-        var last = TimeSpan.MinValue;
+
+        // Lỗi 1.1.5: khởi tạo bằng TimeSpan.MinValue làm phép trừ tràn số (OverflowException) và hỏng cả lần cài Foxit.
+        // Dùng mili giây kiểu long, giá trị đầu -1 nghĩa là chưa báo lần nào.
+        long lastMs = -1;
         var gate = new Lock();
         return (bytes, total) =>
         {
             lock (gate)
             {
-                var now = watch.Elapsed;
+                var nowMs = watch.ElapsedMilliseconds;
                 var done = total is { } t && bytes >= t;
-                if (!done && now - last < TimeSpan.FromMilliseconds(300))
+                if (!done && lastMs >= 0 && nowMs - lastMs < 300)
                 {
                     return;
                 }
 
-                last = now;
+                lastMs = nowMs;
             }
 
             context.Report(total is > 0 and var size ? DownloadShare * bytes / size : null, DownloadText(bytes, total, prefix));
@@ -47,7 +50,7 @@ internal static class InstallProgress
     {
         var mb = (bytes / 1048576.0).ToString("0.0", Vi);
         var text = total is > 0 and var size
-            ? $"Đang tải {bytes * 100 / size}% · {mb}/{(size / 1048576.0).ToString("0.0", Vi)} MB"
+            ? $"Đang tải {Math.Min(100, bytes * 100 / size)}%"
             : $"Đang tải {mb} MB";
         return prefix is null ? text : prefix + text;
     }
@@ -61,11 +64,8 @@ internal static class InstallProgress
     {
         ArgumentNullException.ThrowIfNull(context);
         var watch = Stopwatch.StartNew();
-        void Tick(object? _)
-        {
-            var elapsed = watch.Elapsed;
-            context.Report(Ease(from, to, elapsed, halfTime), $"{text} · {elapsed.ToString(@"mm\:ss", CultureInfo.InvariantCulture)}");
-        }
+        // Không ghép thời gian vào chữ: dòng tác vụ đã có đồng hồ riêng (PO: thanh tiến trình rối mắt).
+        void Tick(object? _) => context.Report(Ease(from, to, watch.Elapsed, halfTime), text);
 
         Tick(null);
         return new Timer(Tick, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));

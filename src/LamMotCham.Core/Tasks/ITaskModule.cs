@@ -9,8 +9,20 @@ public sealed record TaskProgress(double? Fraction, string? Text);
 public sealed record TaskContext(IRunLogger Log, int Attempt, IProgress<TaskProgress>? Progress = null)
 {
     /// <summary>Báo tiến độ bên trong task (ví dụ "Đang tải 45%") để thanh tiến trình chạy liên tục.</summary>
-    public void Report(double? fraction, string? text) =>
-        Progress?.Report(new TaskProgress(fraction is { } f ? Math.Clamp(f, 0, 1) : null, text));
+    /// <remarks>Báo tiến độ chỉ để hiển thị: lỗi bất kỳ ở đây bị bỏ qua, không bao giờ làm hỏng tác vụ.</remarks>
+    public void Report(double? fraction, string? text)
+    {
+        try
+        {
+            Progress?.Report(new TaskProgress(fraction is { } f && !double.IsNaN(f) ? Math.Clamp(f, 0, 1) : null, text));
+        }
+#pragma warning disable CA1031 // Hiển thị tiến độ là việc phụ.
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+#pragma warning restore CA1031
+        {
+            Log.Warning($"Không cập nhật được tiến độ: {ex.GetType().Name}: {ex.Message}");
+        }
+    }
 }
 
 /// <summary>
