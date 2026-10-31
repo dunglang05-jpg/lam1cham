@@ -134,7 +134,7 @@ internal static class E2EAll
 
     private static async Task<TaskReportSet> RunBatchAsync(
         string title,
-        IReadOnlyList<TaskCatalogEntry> entries,
+        List<TaskCatalogEntry> entries,
         StringBuilder md,
         List<string> problems,
         CancellationToken ct,

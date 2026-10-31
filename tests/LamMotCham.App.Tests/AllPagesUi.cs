@@ -78,7 +78,7 @@ internal static class AllPagesUi
                 [typeof(ModulesViewModel)] = () => new ModulesPage(),
             };
 
-            foreach (var page in Enum.GetValues<Page>())
+            foreach (var page in Enum.GetValues<LamMotCham.Presentation.ViewModels.Page>())
             {
                 stage("trang " + page);
                 vm.CurrentPage = page;
