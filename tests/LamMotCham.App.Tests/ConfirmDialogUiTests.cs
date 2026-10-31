@@ -21,6 +21,8 @@ public class ConfirmDialogUiTests
     [Fact]
     public void Tick_o_dong_y_thi_nut_xac_nhan_sang_tren_giao_dien_that() => RunSta(() =>
     {
+        // Ảnh/icon "pack://application:,,," phải lấy từ assembly của ứng dụng, không phải trình chạy test.
+        Application.ResourceAssembly = typeof(App).Assembly;
         var app = new App();
         app.InitializeComponent();
         try
