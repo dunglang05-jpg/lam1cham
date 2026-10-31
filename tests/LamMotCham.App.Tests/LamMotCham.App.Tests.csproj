@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>LamMotCham.App.Tests</RootNamespace>
+    <NoWarn>$(NoWarn);CA1707;CA2201;CA1861</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1031;xUnit2012;xUnit2013;xUnit2017</WarningsNotAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Kiểm thử giao diện WPF thật (XAML + binding) của ứng dụng, không cần đăng nhập. CI chạy trên Windows. -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LamMotCham.App\LamMotCham.App.csproj" />
+    <ProjectReference Include="..\..\src\LamMotCham.Presentation\LamMotCham.Presentation.csproj" />
+  </ItemGroup>
+</Project>
