@@ -53,7 +53,7 @@ internal static class InstallProgress
         var mb = (bytes / 1048576.0).ToString("0.0", Vi);
         var text = total is > 0 and var size
             ? $"Đang tải {Math.Min(100, bytes * 100 / size)}%"
-            : $"Đang tải {mb} MB";
+            : bytes > 0 ? $"Đang tải {mb} MB" : "Đang tải";
         return prefix is null ? text : prefix + text;
     }
 

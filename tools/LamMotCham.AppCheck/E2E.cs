@@ -95,6 +95,13 @@ internal static class E2E
                 Console.WriteLine($"[{task.Package.Name}] {outcome.State} · {task.Route} · {outcome.Duration?.TotalSeconds:0}s · {outcome.Reason}");
                 Console.WriteLine("   bước: " + steps);
                 Console.WriteLine($"::notice title=Lượt {round} · {task.Package.Name}::{outcome.State} qua {task.Route} trong {outcome.Duration?.TotalSeconds:0} giây. Bước: {steps}");
+                var warnings = log.Snapshot().Where(e => e.TaskId == task.Descriptor.Id && e.Level >= LogLevel.Warning).Select(e => e.Message).ToList();
+                if (warnings.Count > 0)
+                {
+                    // Ví dụ link lỗi rồi chuyển sang WinGet: vẫn cài được nhưng chậm hơn — báo để sửa link trên Admin.
+                    Console.WriteLine($"::warning title=Lượt {round} · {task.Package.Name}::{string.Join(" | ", warnings).Replace('\n', ' ')}");
+                }
+
 
                 problems.AddRange(CheckOutcome(round, task, outcome));
                 problems.AddRange(CheckProgress(round, task.Package.Name, mine));
