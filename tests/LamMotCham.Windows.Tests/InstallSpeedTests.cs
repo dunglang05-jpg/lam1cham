@@ -113,6 +113,39 @@ public sealed class InstallSpeedTests
     }
 
     [Fact]
+    public void Download_progress_does_not_overflow_and_reads_simply()
+    {
+        // Lỗi 1.1.5: lần báo đầu tiên trừ TimeSpan.MinValue → OverflowException, Foxit báo "Thất bại".
+        var reports = new List<TaskProgress>();
+        var context = new TaskContext(new InMemoryRunLogger(), 1, new ListProgress(reports));
+        var report = InstallProgress.Download(context);
+
+        report(0, 1000);
+        report(1000, 1000);
+
+        Assert.Equal("Đang tải 0%", reports[0].Text);
+        Assert.Equal("Đang tải 100%", reports[^1].Text);
+        Assert.Equal(InstallProgress.DownloadShare, reports[^1].Fraction);
+    }
+
+    [Fact]
+    public void Progress_errors_never_break_a_task()
+    {
+        var context = new TaskContext(new InMemoryRunLogger(), 1, new ThrowingProgress());
+        context.Report(0.5, "x");
+    }
+
+    private sealed class ListProgress(List<TaskProgress> list) : IProgress<TaskProgress>
+    {
+        public void Report(TaskProgress value) => list.Add(value);
+    }
+
+    private sealed class ThrowingProgress : IProgress<TaskProgress>
+    {
+        public void Report(TaskProgress value) => throw new OverflowException("thử");
+    }
+
+    [Fact]
     public async Task Prefetched_file_is_handed_over_once_then_task_downloads_itself()
     {
         var direct = new DirectInstallTask(Packages()["App Link"]);

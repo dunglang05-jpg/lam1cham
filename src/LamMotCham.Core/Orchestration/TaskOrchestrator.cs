@@ -463,7 +463,7 @@ public sealed class TaskOrchestrator
     }
 
     /// <summary>
-    /// Chạy Execute; nếu tác vụ không tự báo tiến độ thì mỗi giây báo "Đang thực hiện · mm:ss" và nhích thanh tiến trình
+    /// Chạy Execute; nếu tác vụ không tự báo tiến độ thì mỗi giây báo "Đang thực hiện" và nhích thanh tiến trình
     /// (không bao giờ tới mức xong — chỉ xác minh đạt mới là xong).
     /// </summary>
     private static async Task<ExecuteResult?> ExecuteWithPulseAsync(ITaskModule task, TaskContext context, CancellationToken token)
@@ -503,7 +503,7 @@ public sealed class TaskOrchestrator
                 {
                     var elapsed = watch.Elapsed;
                     var fraction = 0.15 + 0.7 * (1 - Math.Pow(0.5, elapsed.TotalSeconds / 20));
-                    context.Report(fraction, "Đang thực hiện · " + elapsed.ToString(@"mm\:ss", System.Globalization.CultureInfo.InvariantCulture));
+                    context.Report(fraction, "Đang thực hiện");
                 }
             }
         }, CancellationToken.None);

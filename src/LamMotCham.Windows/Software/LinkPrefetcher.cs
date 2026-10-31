@@ -105,7 +105,17 @@ public sealed class LinkPrefetcher : IDisposable
             var work = job.Work!;
             while (onBytes is not null && !work.IsCompleted)
             {
-                onBytes(job.Bytes, job.Total);
+                try
+                {
+                    onBytes(job.Bytes, job.Total);
+                }
+#pragma warning disable CA1031 // Hiển thị tiến độ là việc phụ: không được làm hỏng việc cài.
+                catch (Exception ex) when (ex is not OutOfMemoryException)
+#pragma warning restore CA1031
+                {
+                    onBytes = null;
+                }
+
                 await Task.WhenAny(work, Task.Delay(500, cancellationToken)).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
             }

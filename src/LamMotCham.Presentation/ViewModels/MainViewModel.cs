@@ -491,8 +491,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             row.Apply(u);
             if (u.State == TaskState.Running)
             {
-                var name = (row.Entry.Category == TaskCategory.Software ? "Đang cài " : "Đang chạy: ") + row.Name;
-                DockTitle = string.IsNullOrWhiteSpace(u.Message) ? name : $"{name} — {u.Message}";
+                // Tiêu đề chỉ ghi tác vụ đang chạy; bước chi tiết nằm trên dòng tác vụ (PO: rối mắt khi ghi cả hai nơi).
+                DockTitle = (row.Entry.Category == TaskCategory.Software ? "Đang cài " : "Đang chạy: ") + row.Name;
 
                 // Thanh tiến trình chạy theo tiến độ bên trong tác vụ (tải, cài, xác minh), không chỉ khi xong cả tác vụ.
                 var done = rows.Count(x => x.State is { } s && s.IsTerminal());
