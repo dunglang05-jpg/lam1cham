@@ -72,10 +72,7 @@ public sealed class ConfirmDialogViewModel : DialogViewModel
         set
         {
             // Tick/bỏ tick ô đồng ý phải bật/tắt ngay nút xác nhận (lỗi 1.1.1: nút mờ dù đã tick).
-            if (Set(ref _agreed, value))
-            {
-                ConfirmCommand.RaiseCanExecuteChanged();
-            }
+            Set(ref _agreed, value);
         }
     }
 }
