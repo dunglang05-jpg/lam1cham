@@ -294,7 +294,16 @@ public sealed class TaskOrchestrator
             // người dùng hủy thì chờ bước hiện tại xong; quá thời gian thì ngừng chờ nhưng không dừng tiến trình.
             var taskToken = d.AllowForcedStop ? attemptCts.Token : CancellationToken.None;
             var waitToken = d.AllowForcedStop ? attemptCts.Token : timeoutCts.Token;
-            var context = new TaskContext(_log, attempt);
+            var attemptNo = attempt;
+
+            // Tiến độ trong task chỉ được báo khi lần thử còn chạy: báo trễ (từ bộ đếm giờ) sau khi task xong
+            // sẽ bị bỏ, để dòng tác vụ không quay lại "Đang chạy".
+            using var gate = new ProgressGate();
+            var context = new TaskContext(
+                _log,
+                attempt,
+                progress is null ? null : new ActionProgress<TaskProgress>(p =>
+                    gate.Run(() => progress.Report(new TaskStatusUpdate(d.Id, TaskState.Running, p.Text, attemptNo, p.Fraction)))));
             var work = RunAttemptAsync(task, context, taskToken);
 
             AttemptResult result;
@@ -389,6 +398,9 @@ public sealed class TaskOrchestrator
 
     private static async Task<AttemptResult> RunAttemptAsync(ITaskModule task, TaskContext context, CancellationToken token)
     {
+        // Mọi tác vụ (cài phần mềm, tối ưu Windows, dọn dẹp…) đều báo đang ở bước nào, để người dùng biết máy vẫn đang làm
+        // (PO 01/11/2026). Tác vụ tự báo chi tiết hơn (ví dụ % tải) thì ghi đè các dòng chung này.
+        context.Report(0.02, "Đang kiểm tra trạng thái hiện tại");
         var pre = await task.CheckPreconditionsAsync(context, token).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Precondition trả về null.");
 
@@ -402,6 +414,7 @@ public sealed class TaskOrchestrator
 
             case PreconditionOutcome.AlreadyInDesiredState:
                 {
+                    context.Report(0.9, "Đã đúng sẵn, đang xác minh lại");
                     var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
                     return MapVerify(
                         verify,
@@ -416,7 +429,7 @@ public sealed class TaskOrchestrator
                 throw new InvalidOperationException($"Precondition không hợp lệ: {pre.Outcome}.");
         }
 
-        var exec = await task.ExecuteAsync(context, token).ConfigureAwait(false)
+        var exec = await ExecuteWithPulseAsync(task, context, token).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Execute trả về null.");
 
         switch (exec.Outcome)
@@ -434,6 +447,7 @@ public sealed class TaskOrchestrator
 
             case ExecuteOutcome.Completed:
                 {
+                    context.Report(0.9, "Đang xác minh kết quả");
                     var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
                     if (verify.Outcome == VerifyOutcome.Passed && verify.Detail is null)
                     {
@@ -445,6 +459,63 @@ public sealed class TaskOrchestrator
 
             default:
                 throw new InvalidOperationException($"Kết quả execute không hợp lệ: {exec.Outcome}.");
+        }
+    }
+
+    /// <summary>
+    /// Chạy Execute; nếu tác vụ không tự báo tiến độ thì mỗi giây báo "Đang thực hiện · mm:ss" và nhích thanh tiến trình
+    /// (không bao giờ tới mức xong — chỉ xác minh đạt mới là xong).
+    /// </summary>
+    private static async Task<ExecuteResult?> ExecuteWithPulseAsync(ITaskModule task, TaskContext context, CancellationToken token)
+    {
+        if (context.Progress is not { } outer)
+        {
+            return await task.ExecuteAsync(context, token).ConfigureAwait(false);
+        }
+
+        var selfReported = 0;
+        var relay = context with
+        {
+            Progress = new ActionProgress<TaskProgress>(p =>
+            {
+                Volatile.Write(ref selfReported, 1);
+                outer.Report(p);
+            }),
+        };
+
+        context.Report(0.15, "Đang thực hiện");
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        using var stop = new CancellationTokenSource();
+        var pulse = Task.Run(async () =>
+        {
+            while (true)
+            {
+                try
+                {
+                    await Task.Delay(1000, stop.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (Volatile.Read(ref selfReported) == 0)
+                {
+                    var elapsed = watch.Elapsed;
+                    var fraction = 0.15 + 0.7 * (1 - Math.Pow(0.5, elapsed.TotalSeconds / 20));
+                    context.Report(fraction, "Đang thực hiện · " + elapsed.ToString(@"mm\:ss", System.Globalization.CultureInfo.InvariantCulture));
+                }
+            }
+        }, CancellationToken.None);
+
+        try
+        {
+            return await task.ExecuteAsync(relay, token).ConfigureAwait(false);
+        }
+        finally
+        {
+            await stop.CancelAsync().ConfigureAwait(false);
+            await pulse.ConfigureAwait(false);
         }
     }
 
@@ -544,5 +615,37 @@ public sealed class TaskOrchestrator
         public static AttemptResult Final(TaskState state, string? reason) => new(state, reason, false);
 
         public static AttemptResult Retryable(string reason) => new(TaskState.Failed, reason, true);
+    }
+}
+
+/// <summary>Chuyển tiếp tiến độ ngay (không qua SynchronizationContext); lớp ngoài đã tự đưa về luồng giao diện.</summary>
+internal sealed class ActionProgress<T>(Action<T> report) : IProgress<T>
+{
+    public void Report(T value) => report(value);
+}
+
+/// <summary>Cho phép báo tiến độ đến khi Dispose; sau đó mọi lần báo bị bỏ qua.</summary>
+internal sealed class ProgressGate : IDisposable
+{
+    private readonly Lock _lock = new();
+    private bool _open = true;
+
+    public void Run(Action action)
+    {
+        lock (_lock)
+        {
+            if (_open)
+            {
+                action();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            _open = false;
+        }
     }
 }

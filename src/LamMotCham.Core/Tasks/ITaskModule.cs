@@ -3,7 +3,15 @@ using LamMotCham.Core.Logging;
 namespace LamMotCham.Core.Tasks;
 
 /// <summary>Ngữ cảnh truyền cho task trong một lần chạy.</summary>
-public sealed record TaskContext(IRunLogger Log, int Attempt);
+/// <summary>Tiến độ trong một task: phần đã xong (0..1, null nếu không biết) và việc đang làm.</summary>
+public sealed record TaskProgress(double? Fraction, string? Text);
+
+public sealed record TaskContext(IRunLogger Log, int Attempt, IProgress<TaskProgress>? Progress = null)
+{
+    /// <summary>Báo tiến độ bên trong task (ví dụ "Đang tải 45%") để thanh tiến trình chạy liên tục.</summary>
+    public void Report(double? fraction, string? text) =>
+        Progress?.Report(new TaskProgress(fraction is { } f ? Math.Clamp(f, 0, 1) : null, text));
+}
 
 /// <summary>
 /// Hợp đồng một task độc lập. Orchestrator gọi theo thứ tự:

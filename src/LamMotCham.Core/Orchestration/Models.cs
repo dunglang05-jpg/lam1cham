@@ -3,7 +3,8 @@ using LamMotCham.Core.Tasks;
 namespace LamMotCham.Core.Orchestration;
 
 /// <summary>Sự kiện thay đổi trạng thái gửi lên UI. UI chịu trách nhiệm gom cập nhật.</summary>
-public sealed record TaskStatusUpdate(string TaskId, TaskState State, string? Message, int Attempt);
+/// <param name="Fraction">Phần đã xong của task đang chạy (0..1), null nếu không biết.</param>
+public sealed record TaskStatusUpdate(string TaskId, TaskState State, string? Message, int Attempt, double? Fraction = null);
 
 public sealed record TaskOutcome
 {

@@ -120,7 +120,8 @@ public static class LinkDownloader
         return null;
     }
 
-    public static async Task<DownloadedFile> DownloadAsync(Uri url, InstallKind kind, CancellationToken cancellationToken)
+    /// <param name="onBytes">Báo số byte đã tải và tổng dung lượng (null nếu máy chủ không báo) để hiện tiến độ.</param>
+    public static async Task<DownloadedFile> DownloadAsync(Uri url, InstallKind kind, CancellationToken cancellationToken, Action<long, long?>? onBytes = null)
     {
         ArgumentNullException.ThrowIfNull(url);
         if (url.Scheme != Uri.UriSchemeHttps)
@@ -146,7 +147,9 @@ public static class LinkDownloader
             }
 
             var path = System.IO.Path.Combine(dir, FileNameFor(final, response.Content.Headers.ContentDisposition, kind));
+            long? length = response.Content.Headers.ContentLength is > 0 and var l ? l : null;
             long total = 0;
+            onBytes?.Invoke(0, length);
             await using (var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
             await using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true))
             {
@@ -161,6 +164,7 @@ public static class LinkDownloader
                     }
 
                     await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                    onBytes?.Invoke(total, length);
                 }
             }
 

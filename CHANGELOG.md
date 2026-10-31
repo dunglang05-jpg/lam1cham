@@ -2,6 +2,20 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.5 — 01/11/2026
+
+Sửa theo phản hồi PO khi thử 1.1.4 (LAPTOP-PERIUM, lượt 01:27).
+
+**Khung ứng dụng (`shell`) 0.12.0** — dùng chung
+- Thanh tiến trình chạy liên tục theo tiến độ bên trong từng tác vụ, không còn đứng ở 0% đến khi xong cả tác vụ.
+- Mọi tác vụ (cài phần mềm, tối ưu Windows, dọn dẹp…) đều báo đang ở bước nào: "Đang kiểm tra trạng thái hiện tại" → "Đang thực hiện · mm:ss" → "Đang xác minh kết quả". Hiện ở tiêu đề tiến độ và trên dòng tác vụ. Tác vụ không tự báo tiến độ thì thanh nhích dần theo thời gian, không bao giờ chạm mức xong trước khi xác minh.
+- Báo tiến độ đến trễ sau khi tác vụ đã xong bị bỏ qua, để dòng tác vụ không quay lại "Đang chạy".
+
+**Phần mềm thiết yếu (`software`) 0.6.1**
+- Cài bằng link: hiện "Đang tải 45% · 120,0/277,7 MB" theo số byte thật (kể cả khi đang chờ file tải trước), rồi "Đang kiểm tra chữ ký số", "Đang chạy trình cài · mm:ss", "Đang xác minh đã cài".
+- Cài qua WinGet: hiện "Đang tải và cài qua WinGet · mm:ss" (WinGet không báo % ra ngoài).
+- **Sửa lỗi:** ứng dụng đã cài sẵn (ví dụ K-Lite) bị báo "Cần kiểm tra — Không xác minh được. Chưa chạy." Nay xác minh lại đúng cách (registry hoặc WinGet) và báo "Đã có sẵn".
+
 ## 1.1.4 — 01/11/2026
 
 Sửa lỗi PO báo khi thử 1.1.3: bấm chạy xong cả hàng đợi đứng ở "Chờ đến lượt" rất lâu (máy còn RAM trống 1,0 GB).

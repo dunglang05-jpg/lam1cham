@@ -149,7 +149,11 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             $"winget install --id {PackageId} --exact --source winget --silent" + (locale is null ? "" : " --locale " + locale) + (machineScope ? " --scope machine" : ""),
             Descriptor.Id);
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        var result = await _client.InstallAsync(PackageId, machineScope, locale, cancellationToken).ConfigureAwait(false);
+        ProcessResult result;
+        using (InstallProgress.Pulse(context, 0.05, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(60), "Đang tải và cài qua WinGet"))
+        {
+            result = await _client.InstallAsync(PackageId, machineScope, locale, cancellationToken).ConfigureAwait(false);
+        }
         context.Log.Info($"winget install thoát với {result.ExitCodeHex} sau {watch.Elapsed.TotalSeconds:0} giây (gồm tải và cài).", Descriptor.Id);
         return result;
     }

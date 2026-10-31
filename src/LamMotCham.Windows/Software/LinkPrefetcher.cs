@@ -25,10 +25,10 @@ public sealed class LinkPrefetcher : IDisposable
     private readonly ConcurrentDictionary<DirectInstallTask, Job> _jobs = new(ReferenceEqualityComparer.Instance);
     private readonly SemaphoreSlim _slots = new(MaxParallel, MaxParallel);
     private readonly CancellationTokenSource _cts = new();
-    private readonly Func<DirectInstallTask, CancellationToken, Task<(DownloadedFile? File, string Note)>> _download;
+    private readonly Func<DirectInstallTask, Action<long, long?>, CancellationToken, Task<(DownloadedFile? File, string Note)>> _download;
     private int _disposed;
 
-    public LinkPrefetcher(Func<DirectInstallTask, CancellationToken, Task<(DownloadedFile? File, string Note)>>? download = null)
+    public LinkPrefetcher(Func<DirectInstallTask, Action<long, long?>, CancellationToken, Task<(DownloadedFile? File, string Note)>>? download = null)
     {
         _download = download ?? DownloadAsync;
     }
@@ -89,7 +89,8 @@ public sealed class LinkPrefetcher : IDisposable
     /// Lấy file đã tải trước cho task (chờ nếu đang tải). Null nếu không tải trước, tải lỗi,
     /// hoặc người dùng đã đổi phiên bản — khi đó task tự tải như bình thường.
     /// </summary>
-    public async Task<PrefetchedFile?> TakeAsync(DirectInstallTask task, CancellationToken cancellationToken)
+    /// <param name="onBytes">Trong lúc chờ file đang tải trước, báo số byte đã tải và tổng dung lượng (khoảng 0,5 giây một lần).</param>
+    public async Task<PrefetchedFile?> TakeAsync(DirectInstallTask task, CancellationToken cancellationToken, Action<long, long?>? onBytes = null)
     {
         ArgumentNullException.ThrowIfNull(task);
         if (!_jobs.TryRemove(task, out var job))
@@ -101,7 +102,15 @@ public sealed class LinkPrefetcher : IDisposable
         (DownloadedFile? File, string Note) result;
         try
         {
-            result = await job.Work!.WaitAsync(cancellationToken).ConfigureAwait(false);
+            var work = job.Work!;
+            while (onBytes is not null && !work.IsCompleted)
+            {
+                onBytes(job.Bytes, job.Total);
+                await Task.WhenAny(work, Task.Delay(500, cancellationToken)).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            result = await work.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -155,7 +164,7 @@ public sealed class LinkPrefetcher : IDisposable
 
         try
         {
-            return await _download(task, token).ConfigureAwait(false);
+            return await _download(task, job.OnBytes, token).ConfigureAwait(false);
         }
 #pragma warning disable CA1031 // Tải trước chỉ là tăng tốc: lỗi bất kỳ thì lúc cài tải lại như bình thường.
         catch (Exception ex) when (ex is not OutOfMemoryException)
@@ -169,7 +178,7 @@ public sealed class LinkPrefetcher : IDisposable
         }
     }
 
-    private static async Task<(DownloadedFile? File, string Note)> DownloadAsync(DirectInstallTask task, CancellationToken token)
+    private static async Task<(DownloadedFile? File, string Note)> DownloadAsync(DirectInstallTask task, Action<long, long?> onBytes, CancellationToken token)
     {
         // Đã có trên máy thì lúc tới lượt sẽ báo "Đã cài sẵn": không tải phí.
         if (InstallDetector.FindEvidence(task.Package) is not null)
@@ -180,7 +189,7 @@ public sealed class LinkPrefetcher : IDisposable
         var (url, note) = await task.ResolveAsync(token).ConfigureAwait(false);
         return url is null
             ? (null, note)
-            : (await LinkDownloader.DownloadAsync(url, task.EffectiveKind, token).ConfigureAwait(false), note);
+            : (await LinkDownloader.DownloadAsync(url, task.EffectiveKind, token, onBytes).ConfigureAwait(false), note);
     }
 
     private static void DisposeWhenDone(Job job) =>
@@ -211,7 +220,20 @@ public sealed class LinkPrefetcher : IDisposable
 
     private sealed class Job(PackageVariant? variant)
     {
+        private long _bytes;
+        private long _total = -1;
+
         public PackageVariant? Variant { get; } = variant;
+
+        public long Bytes => Interlocked.Read(ref _bytes);
+
+        public long? Total => Interlocked.Read(ref _total) is >= 0 and var t ? t : (long?)null;
+
+        public void OnBytes(long bytes, long? total)
+        {
+            Interlocked.Exchange(ref _bytes, bytes);
+            Interlocked.Exchange(ref _total, total ?? -1);
+        }
 
         public Task<(DownloadedFile? File, string Note)>? Work { get; set; }
     }

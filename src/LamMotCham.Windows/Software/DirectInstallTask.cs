@@ -86,7 +86,7 @@ public sealed class DirectInstallTask
         DownloadedFile file;
         TimeSpan waited;
         var prefetched = LinkPrefetcher.Current is { } prefetcher
-            ? await prefetcher.TakeAsync(this, cancellationToken).ConfigureAwait(false)
+            ? await prefetcher.TakeAsync(this, cancellationToken, InstallProgress.Download(context)).ConfigureAwait(false)
             : null;
         if (prefetched is not null)
         {
@@ -105,7 +105,8 @@ public sealed class DirectInstallTask
             context.Log.Info($"{note} Tải từ {url.Host}.", taskId);
             try
             {
-                file = await LinkDownloader.DownloadAsync(url, EffectiveKind, cancellationToken).ConfigureAwait(false);
+                context.Report(0, "Đang tải…");
+                file = await LinkDownloader.DownloadAsync(url, EffectiveKind, cancellationToken, InstallProgress.Download(context)).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
             {
@@ -126,6 +127,7 @@ public sealed class DirectInstallTask
                 return await InstallZipAsync(file, metrics, context, taskId).ConfigureAwait(false);
             }
 
+            context.Report(InstallProgress.DownloadShare, "Đang kiểm tra chữ ký số…");
             var signature = Authenticode.Check(file.Path);
             context.Log.Info($"Chữ ký số: {signature.Detail}", taskId);
             if (!signature.IsTrusted)
@@ -139,14 +141,17 @@ public sealed class DirectInstallTask
             var watch = Stopwatch.StartNew();
             InstallerStarted = true;
             ProcessResult result;
-            if (EffectiveKind == InstallKind.Msi)
+            using (InstallProgress.Pulse(context, InstallProgress.DownloadShare, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(30), "Đang chạy trình cài"))
             {
-                List<string> msiArgs = ["/i", file.Path, "/qn", "/norestart", .. args];
-                result = await ProcessRunner.RunAsync(WindowsEnvironment.SystemTool("msiexec.exe"), msiArgs, CancellationToken.None, killOnCancel: false).ConfigureAwait(false);
-            }
-            else
-            {
-                result = await ProcessRunner.RunAsync(file.Path, args, CancellationToken.None, killOnCancel: false).ConfigureAwait(false);
+                if (EffectiveKind == InstallKind.Msi)
+                {
+                    List<string> msiArgs = ["/i", file.Path, "/qn", "/norestart", .. args];
+                    result = await ProcessRunner.RunAsync(WindowsEnvironment.SystemTool("msiexec.exe"), msiArgs, CancellationToken.None, killOnCancel: false).ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await ProcessRunner.RunAsync(file.Path, args, CancellationToken.None, killOnCancel: false).ConfigureAwait(false);
+                }
             }
 
             LastMetrics = metrics with { Install = watch.Elapsed, ExitCode = result.ExitCode };
@@ -217,7 +222,10 @@ public sealed class DirectInstallTask
         var staging = Path.Combine(file.Directory, "giai-nen");
         try
         {
-            await Task.Run(() => ZipFile.ExtractToDirectory(file.Path, staging, overwriteFiles: false)).ConfigureAwait(false);
+            using (InstallProgress.Pulse(context, InstallProgress.DownloadShare, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(10), "Đang giải nén"))
+            {
+                await Task.Run(() => ZipFile.ExtractToDirectory(file.Path, staging, overwriteFiles: false)).ConfigureAwait(false);
+            }
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException)
         {
