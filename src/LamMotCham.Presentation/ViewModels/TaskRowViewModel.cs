@@ -229,7 +229,8 @@ public sealed class TaskRowViewModel : ObservableObject
 
             if (_state == TaskState.Pending)
             {
-                parts.Add("Chờ đến lượt");
+                // Đang chờ vì lý do cụ thể (ví dụ RAM trống thấp) thì hiện lý do thay cho "Chờ đến lượt".
+                parts.Add(string.IsNullOrWhiteSpace(Message) ? "Chờ đến lượt" : Message.Split(". ")[0]);
             }
 
             return string.Join(" · ", parts);

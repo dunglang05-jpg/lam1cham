@@ -487,6 +487,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             {
                 DockTitle = (row.Entry.Category == TaskCategory.Software ? "Đang cài " : "Đang chạy: ") + row.Name;
             }
+            else if (u.State == TaskState.Pending && !string.IsNullOrWhiteSpace(u.Message))
+            {
+                // Ví dụ: "Đang chờ RAM trống: còn 0,6 GB (7%)…" — để người dùng biết vì sao chưa chạy.
+                DockTitle = u.Message;
+            }
             else if (u.State.IsTerminal())
             {
                 _runDone = rows.Count(x => x.State is { } s && s.IsTerminal());

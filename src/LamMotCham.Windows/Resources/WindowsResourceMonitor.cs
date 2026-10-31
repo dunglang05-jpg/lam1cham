@@ -13,7 +13,11 @@ public sealed class WindowsResourceMonitor : IResourceMonitor
 
     public ResourceSnapshot Read()
     {
-        return new ResourceSnapshot(ReadAvailableMemoryPercent(), ReadCpuPercent());
+        var memory = ReadMemory();
+        return new ResourceSnapshot(
+            memory is { } m ? m.AvailableBytes * 100.0 / m.TotalBytes : null,
+            ReadCpuPercent(),
+            memory?.AvailableBytes);
     }
 
     public static (ulong TotalBytes, ulong AvailableBytes)? ReadMemory()
@@ -23,9 +27,6 @@ public sealed class WindowsResourceMonitor : IResourceMonitor
             ? (status.TotalPhys, status.AvailPhys)
             : null;
     }
-
-    private static double? ReadAvailableMemoryPercent() =>
-        ReadMemory() is { } m ? m.AvailableBytes * 100.0 / m.TotalBytes : null;
 
     /// <summary>CPU trung bình giữa hai lần đọc liên tiếp. Lần đọc đầu tiên trả về null.</summary>
     private double? ReadCpuPercent()

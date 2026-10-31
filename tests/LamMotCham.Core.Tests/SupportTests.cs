@@ -90,7 +90,10 @@ public sealed class ResourceGovernorTests
     {
         var time = new ManualTimeProvider(DateTimeOffset.Parse("2026-10-18T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture));
         var monitor = new QueueMonitor(50, 10, 18, 25, 25);
-        var governor = new ResourceGovernor(monitor, new ResourceGovernorOptions { Cooldown = TimeSpan.FromSeconds(10) }, time);
+        var governor = new ResourceGovernor(
+            monitor,
+            new ResourceGovernorOptions { PauseWhenLow = true, PauseBelowAvailableMemoryPercent = 15, ResumeAboveAvailableMemoryPercent = 20, Cooldown = TimeSpan.FromSeconds(10) },
+            time);
 
         Assert.True(governor.Evaluate().CanStartNewTask);   // 50%
         Assert.False(governor.Evaluate().CanStartNewTask);  // 10% → tạm dừng
@@ -98,6 +101,51 @@ public sealed class ResourceGovernorTests
         Assert.False(governor.Evaluate().CanStartNewTask);  // 25% nhưng chưa hết cooldown
         time.Advance(TimeSpan.FromSeconds(11));
         Assert.True(governor.Evaluate().CanStartNewTask);   // 25% và đã qua cooldown
+    }
+
+    [Fact]
+    public void Laptop_8gb_with_1gb_free_is_not_blocked()
+    {
+        // PO báo 01/11/2026: RAM trống 1,0 GB (~12%) làm cả hàng đợi đứng ở "Chờ đến lượt".
+        var governor = new ResourceGovernor(new BytesMonitor((12.5, 1UL << 30)));
+
+        Assert.True(governor.Evaluate().CanStartNewTask);
+    }
+
+    [Fact]
+    public void Low_percent_alone_does_not_block_a_machine_with_plenty_of_free_bytes()
+    {
+        // 32 GB còn 2 GB (6%): vẫn dư cho trình cài.
+        var governor = new ResourceGovernor(new BytesMonitor((6, 2UL << 30)));
+
+        Assert.True(governor.Evaluate().CanStartNewTask);
+    }
+
+    [Fact]
+    public void Really_low_memory_pauses_with_a_clear_reason_and_resumes_on_free_bytes()
+    {
+        var time = new ManualTimeProvider(DateTimeOffset.Parse("2026-11-01T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture));
+        var monitor = new BytesMonitor((7, 600UL << 20), (9, 1200UL << 20), (10, 1600UL << 20));
+        var governor = new ResourceGovernor(monitor, new ResourceGovernorOptions { PauseWhenLow = true, Cooldown = TimeSpan.FromSeconds(5) }, time);
+
+        var first = governor.Evaluate();
+        Assert.False(first.CanStartNewTask);
+        Assert.Contains("RAM trống", first.Reason, StringComparison.Ordinal);
+        Assert.Contains("GB", first.Reason, StringComparison.Ordinal);
+
+        time.Advance(TimeSpan.FromSeconds(6));
+        Assert.False(governor.Evaluate().CanStartNewTask);   // 1,2 GB, 9%: chưa đủ
+        Assert.True(governor.Evaluate().CanStartNewTask);    // 1,6 GB: đủ dù chỉ 10%
+    }
+
+    [Fact]
+    public void By_default_low_memory_only_warns_and_never_blocks()
+    {
+        // PO 01/11/2026: không đợi RAM trống, cài luôn.
+        var decision = new ResourceGovernor(new BytesMonitor((3, 200UL << 20))).Evaluate();
+
+        Assert.True(decision.CanStartNewTask);
+        Assert.Contains("RAM trống thấp", decision.Reason, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -230,5 +278,21 @@ public sealed class ReportWriterTests : IDisposable
         {
             Directory.Delete(_dir, recursive: true);
         }
+    }
+}
+
+internal sealed class BytesMonitor(params (double Percent, ulong Bytes)[] values) : IResourceMonitor
+{
+    private readonly Queue<(double, ulong)> _values = new(values);
+    private (double Percent, ulong Bytes) _last = values[^1];
+
+    public ResourceSnapshot Read()
+    {
+        if (_values.Count > 0)
+        {
+            _last = _values.Dequeue();
+        }
+
+        return new ResourceSnapshot(_last.Percent, null, _last.Bytes);
     }
 }
