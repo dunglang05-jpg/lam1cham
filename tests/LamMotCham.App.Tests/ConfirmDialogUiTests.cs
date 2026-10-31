@@ -21,10 +21,13 @@ public class ConfirmDialogUiTests
     [Fact]
     public void Tick_o_dong_y_thi_nut_xac_nhan_sang_tren_giao_dien_that() => RunSta(() =>
     {
-        // Ảnh/icon "pack://application:,,," phải lấy từ assembly của ứng dụng, không phải trình chạy test.
-        Application.ResourceAssembly = typeof(App).Assembly;
         var app = new App();
         app.InitializeComponent();
+
+        // Icon dạng "pack://application:,,," trỏ vào trình chạy test chứ không phải LamMotCham.exe, nên thay bộ nạp icon
+        // bằng bộ rỗng. Ô đồng ý, nút bấm, binding và giao diện hộp thoại giữ nguyên như ứng dụng.
+        app.Resources["Icon"] = new NoIcon();
+        app.Resources["LogoOrIcon"] = new NoIcon();
         try
         {
             // Hộp "Xác nhận cài đặt" (trang Phần mềm thiết yếu).
@@ -99,6 +102,13 @@ public class ConfirmDialogUiTests
         {
             window.Close();
         }
+    }
+
+    private sealed class NoIcon : System.Windows.Data.IValueConverter
+    {
+        public object? Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
+
+        public object? ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
     }
 
     private static void Pump()
