@@ -150,7 +150,7 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             Descriptor.Id);
         var watch = System.Diagnostics.Stopwatch.StartNew();
         ProcessResult result;
-        using (InstallProgress.Pulse(context, 0.05, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(60), "Đang cài qua WinGet"))
+        using (InstallProgress.Pulse(context, ProgressSteps.Execute, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(60), "Đang cài qua WinGet"))
         {
             result = await _client.InstallAsync(PackageId, machineScope, locale, cancellationToken).ConfigureAwait(false);
         }

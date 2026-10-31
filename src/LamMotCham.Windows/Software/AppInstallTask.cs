@@ -84,7 +84,6 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         Route = InstallRoute.None;
         WasAlreadyInstalled = false;
         LastMetrics = null;
-        context.Report(0, "Đang kiểm tra máy…");
 
         if (!Package.IsAvailable)
         {

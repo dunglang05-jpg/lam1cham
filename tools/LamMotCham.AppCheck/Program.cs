@@ -51,6 +51,11 @@ internal static class Program
             Console.WriteLine("Cảnh báo danh sách: " + w);
         }
 
+        if (args.Contains("--e2e", StringComparer.Ordinal))
+        {
+            return await E2E.RunAsync(parsed.Packages, summaryPath, ct);
+        }
+
         var winGet = new WinGetClient();
         var winGetVersion = WinGetClient.ParseVersion(await SafeAsync(() => winGet.GetVersionAsync(ct), null));
         Console.WriteLine("WinGet trên máy CI: " + (winGetVersion?.ToString() ?? "không có"));

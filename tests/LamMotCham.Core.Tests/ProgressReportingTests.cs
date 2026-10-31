@@ -47,7 +47,7 @@ public sealed class ProgressReportingTests
         {
             Execute = async (_, ct) =>
             {
-                await Task.Delay(2600, ct);
+                await Task.Delay(3600, ct);
                 return ExecuteResult.Completed();
             },
         };
@@ -58,6 +58,42 @@ public sealed class ProgressReportingTests
         Assert.True(pulses.Count >= 2, $"Chỉ có {pulses.Count} lần báo.");
         Assert.True(pulses[^1].Fraction > pulses[0].Fraction);
         Assert.All(pulses, p => Assert.True(p.Fraction < 0.9));
+    }
+
+    [Fact]
+    public async Task Progress_never_moves_backward_within_an_attempt()
+    {
+        var capture = new Capture();
+        var wrapper = new SelfReporting(new FakeTask("a"));
+
+        await Factory.Orchestrator(out _).RunAsync([wrapper], capture);
+
+        var fractions = capture.Updates.Where(u => u.State == TaskState.Running && u.Fraction is not null).Select(u => u.Fraction!.Value).ToList();
+        for (var i = 1; i < fractions.Count; i++)
+        {
+            Assert.True(fractions[i] >= fractions[i - 1], $"Lùi từ {fractions[i - 1]} xuống {fractions[i]}");
+        }
+
+        Assert.Contains(capture.Updates, u => u.Message == "Bước con" && u.Fraction >= 0.5);
+    }
+
+    private sealed class SelfReporting(ITaskModule inner) : ITaskModule
+    {
+        public TaskDescriptor Descriptor => inner.Descriptor;
+
+        public Task<PreconditionResult> CheckPreconditionsAsync(TaskContext context, CancellationToken cancellationToken) =>
+            inner.CheckPreconditionsAsync(context, cancellationToken);
+
+        public Task<ExecuteResult> ExecuteAsync(TaskContext context, CancellationToken cancellationToken)
+        {
+            context.Report(0.5, "Bước con");
+            context.Report(0.3, "Bước con");
+            return inner.ExecuteAsync(context, cancellationToken);
+        }
+
+        public Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken) => inner.VerifyAsync(context, cancellationToken);
+
+        public Task<VerifyResult> RollbackAsync(TaskContext context, CancellationToken cancellationToken) => inner.RollbackAsync(context, cancellationToken);
     }
 
     [Fact]

@@ -105,7 +105,7 @@ public sealed class DirectInstallTask
             context.Log.Info($"{note} Tải từ {url.Host}.", taskId);
             try
             {
-                context.Report(0, "Đang tải…");
+                context.Report(ProgressSteps.Execute, "Đang tải…");
                 file = await LinkDownloader.DownloadAsync(url, EffectiveKind, cancellationToken, InstallProgress.Download(context)).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException && !cancellationToken.IsCancellationRequested)

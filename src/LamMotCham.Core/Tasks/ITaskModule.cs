@@ -6,6 +6,19 @@ namespace LamMotCham.Core.Tasks;
 /// <summary>Tiến độ trong một task: phần đã xong (0..1, null nếu không biết) và việc đang làm.</summary>
 public sealed record TaskProgress(double? Fraction, string? Text);
 
+/// <summary>
+/// Mốc tiến độ chung để thanh không bao giờ lùi trong một lần chạy task:
+/// kiểm tra → thực hiện (task tự báo chi tiết trong khoảng [Execute, Verify)) → xác minh.
+/// </summary>
+public static class ProgressSteps
+{
+    public const double Check = 0.02;
+
+    public const double Execute = 0.15;
+
+    public const double Verify = 0.95;
+}
+
 public sealed record TaskContext(IRunLogger Log, int Attempt, IProgress<TaskProgress>? Progress = null)
 {
     /// <summary>Báo tiến độ bên trong task (ví dụ "Đang tải 45%") để thanh tiến trình chạy liên tục.</summary>
