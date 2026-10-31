@@ -2,6 +2,14 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.4 — 01/11/2026
+
+Sửa lỗi PO báo khi thử 1.1.3: bấm chạy xong cả hàng đợi đứng ở "Chờ đến lượt" rất lâu (máy còn RAM trống 1,0 GB).
+
+**Khung ứng dụng (`shell`) 0.11.4** — dùng chung
+- Ngưỡng bảo vệ RAM quá chặt: trước đây RAM trống dưới 15% là không cho bắt đầu tác vụ mới, chờ trên 20% mới chạy. Laptop 8 GB mở Chrome thường chỉ còn khoảng 12% nên bị chặn tới 10 phút cho mỗi tác vụ. Nay chỉ tạm dừng khi RAM trống dưới 8% **và** dưới 1 GB; chạy tiếp khi trên 12% hoặc trên 1,5 GB.
+- Khi đang chờ RAM, dòng tác vụ và tiêu đề tiến độ hiện rõ "Đang chờ RAM trống: còn … GB (…%), cần …" kèm gợi ý đóng bớt ứng dụng, cập nhật số liệu liên tục, thay cho dòng "Chờ đến lượt".
+
 ## 1.1.3 — 01/11/2026
 
 Tăng tốc cài phần mềm (PO duyệt 01/11/2026). Lịch sử cài trên Admin cho thấy cài qua WinGet chậm 2–3 lần so với link tải: Foxit 2,4 phút, K-Lite 83 giây (lượt 01/11, máy LAPTOP-PERIUM).

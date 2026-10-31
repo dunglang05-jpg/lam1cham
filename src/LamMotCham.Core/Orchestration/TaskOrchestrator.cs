@@ -221,6 +221,7 @@ public sealed class TaskOrchestrator
     {
         var waited = TimeSpan.Zero;
         var announced = false;
+        string? lastReason = null;
 
         while (true)
         {
@@ -238,8 +239,14 @@ public sealed class TaskOrchestrator
             if (!announced)
             {
                 _log.Warning(decision.Reason ?? "Đang chờ tài nguyên.", task.Descriptor.Id);
-                progress?.Report(new TaskStatusUpdate(task.Descriptor.Id, TaskState.Pending, decision.Reason, 0));
                 announced = true;
+            }
+
+            // Báo lại mỗi lần đọc để màn hình hiện số RAM trống mới nhất (không chỉ lần đầu).
+            if (decision.Reason != lastReason)
+            {
+                progress?.Report(new TaskStatusUpdate(task.Descriptor.Id, TaskState.Pending, decision.Reason, 0));
+                lastReason = decision.Reason;
             }
 
             if (waited >= _options.MaxResourceWait)

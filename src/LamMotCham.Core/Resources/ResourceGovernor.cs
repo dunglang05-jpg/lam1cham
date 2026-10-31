@@ -1,7 +1,7 @@
 namespace LamMotCham.Core.Resources;
 
 /// <summary>Ảnh chụp tài nguyên tại một thời điểm. Giá trị null nghĩa là không đọc được.</summary>
-public sealed record ResourceSnapshot(double? AvailableMemoryPercent, double? CpuPercent = null);
+public sealed record ResourceSnapshot(double? AvailableMemoryPercent, double? CpuPercent = null, ulong? AvailableMemoryBytes = null);
 
 public interface IResourceMonitor
 {
@@ -23,11 +23,20 @@ public interface IResourceGovernor
 
 public sealed record ResourceGovernorOptions
 {
-    /// <summary>Ngưỡng bắt đầu tạm dừng. 15% chỉ là giá trị khởi điểm để thử nghiệm (tài liệu 04).</summary>
-    public double PauseBelowAvailableMemoryPercent { get; init; } = 15;
+    /// <summary>
+    /// Ngưỡng % bắt đầu tạm dừng. 15% ban đầu (tài liệu 04) quá chặt: laptop 8 GB mở Chrome thường chỉ còn ~1 GB (12%)
+    /// và cả hàng đợi đứng chờ (PO báo 01/11/2026). Hạ còn 8% và chỉ dừng khi RAM trống cũng dưới <see cref="PauseBelowAvailableBytes"/>.
+    /// </summary>
+    public double PauseBelowAvailableMemoryPercent { get; init; } = 8;
 
-    /// <summary>Ngưỡng cho phép chạy tiếp; phải cao hơn ngưỡng tạm dừng (hysteresis).</summary>
-    public double ResumeAboveAvailableMemoryPercent { get; init; } = 20;
+    /// <summary>Ngưỡng % cho phép chạy tiếp; phải cao hơn ngưỡng tạm dừng (hysteresis).</summary>
+    public double ResumeAboveAvailableMemoryPercent { get; init; } = 12;
+
+    /// <summary>Chỉ tạm dừng khi RAM trống dưới mức này (máy nhiều RAM còn 8% vẫn dư sức cài). Không đọc được số byte thì chỉ xét %.</summary>
+    public ulong PauseBelowAvailableBytes { get; init; } = 1UL << 30;
+
+    /// <summary>RAM trống đạt mức này thì cho chạy tiếp dù % còn thấp.</summary>
+    public ulong ResumeAboveAvailableBytes { get; init; } = 3UL << 29;
 
     /// <summary>Thời gian tối thiểu giữ trạng thái tạm dừng trước khi được chạy tiếp.</summary>
     public TimeSpan Cooldown { get; init; } = TimeSpan.FromSeconds(10);
@@ -39,7 +48,7 @@ public sealed record ResourceGovernorOptions
             throw new ArgumentOutOfRangeException(nameof(PauseBelowAvailableMemoryPercent), "Ngưỡng phải trong khoảng 0..100.");
         }
 
-        if (ResumeAboveAvailableMemoryPercent <= PauseBelowAvailableMemoryPercent)
+        if (ResumeAboveAvailableMemoryPercent <= PauseBelowAvailableMemoryPercent || ResumeAboveAvailableBytes <= PauseBelowAvailableBytes)
         {
             throw new ArgumentException("Ngưỡng chạy tiếp phải cao hơn ngưỡng tạm dừng để tránh bật/tắt liên tục.");
         }
@@ -98,30 +107,43 @@ public sealed class ResourceGovernor : IResourceGovernor
                     : ResourceDecision.Allow("Không đọc được RAM khả dụng; tiếp tục nhưng không có bảo vệ tài nguyên.");
             }
 
+            var bytes = snapshot.AvailableMemoryBytes;
+            var current = Describe(available, bytes);
             if (!_paused)
             {
-                if (available < _options.PauseBelowAvailableMemoryPercent)
+                var low = available < _options.PauseBelowAvailableMemoryPercent
+                          && (bytes is null || bytes < _options.PauseBelowAvailableBytes);
+                if (low)
                 {
                     _paused = true;
                     _pausedAt = now;
-                    return ResourceDecision.Deny(
-                        $"RAM khả dụng {available:0.#}% dưới ngưỡng {_options.PauseBelowAvailableMemoryPercent:0.#}%. Tạm dừng khởi chạy task mới.");
+                    return ResourceDecision.Deny($"Đang chờ RAM trống: còn {current}, cần {ResumeText}. Đóng bớt ứng dụng (ví dụ Chrome) để chạy tiếp.");
                 }
 
                 return ResourceDecision.Allow();
             }
 
             var cooledDown = now - _pausedAt >= _options.Cooldown;
-            if (available > _options.ResumeAboveAvailableMemoryPercent && cooledDown)
+            var recovered = available > _options.ResumeAboveAvailableMemoryPercent
+                            || (bytes is { } b && b >= _options.ResumeAboveAvailableBytes);
+            if (recovered && cooledDown)
             {
                 _paused = false;
-                return ResourceDecision.Allow($"RAM khả dụng đã phục hồi ({available:0.#}%).");
+                return ResourceDecision.Allow($"RAM trống đã đủ ({current}).");
             }
 
-            return ResourceDecision.Deny(
-                $"Đang chờ RAM khả dụng vượt {_options.ResumeAboveAvailableMemoryPercent:0.#}% (hiện {available:0.#}%).");
+            return ResourceDecision.Deny($"Đang chờ RAM trống: còn {current}, cần {ResumeText}. Đóng bớt ứng dụng (ví dụ Chrome) để chạy tiếp.");
         }
     }
+
+    private string ResumeText =>
+        $"trên {Gb(_options.ResumeAboveAvailableBytes)} hoặc {_options.ResumeAboveAvailableMemoryPercent:0.#}%";
+
+    private static string Describe(double percent, ulong? bytes) =>
+        bytes is { } b ? $"{Gb(b)} ({percent:0.#}%)" : $"{percent:0.#}%";
+
+    private static string Gb(ulong bytes) =>
+        (bytes / (double)(1UL << 30)).ToString("0.0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " GB";
 }
 
 /// <summary>Governor luôn cho phép; chỉ dùng khi chưa có monitor cho nền tảng hiện tại.</summary>
