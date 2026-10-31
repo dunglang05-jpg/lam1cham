@@ -38,6 +38,12 @@ public sealed record ResourceGovernorOptions
     /// <summary>RAM trống đạt mức này thì cho chạy tiếp dù % còn thấp.</summary>
     public ulong ResumeAboveAvailableBytes { get; init; } = 3UL << 29;
 
+    /// <summary>
+    /// true: RAM thấp thì chờ trước khi khởi chạy task mới. Mặc định false theo yêu cầu PO (01/11/2026):
+    /// "không cần đợi RAM trống, cài luôn" — RAM thấp chỉ ghi cảnh báo vào log rồi chạy tiếp.
+    /// </summary>
+    public bool PauseWhenLow { get; init; }
+
     /// <summary>Thời gian tối thiểu giữ trạng thái tạm dừng trước khi được chạy tiếp.</summary>
     public TimeSpan Cooldown { get; init; } = TimeSpan.FromSeconds(10);
 
@@ -113,6 +119,11 @@ public sealed class ResourceGovernor : IResourceGovernor
             {
                 var low = available < _options.PauseBelowAvailableMemoryPercent
                           && (bytes is null || bytes < _options.PauseBelowAvailableBytes);
+                if (low && !_options.PauseWhenLow)
+                {
+                    return ResourceDecision.Allow($"RAM trống thấp ({current}): vẫn chạy theo cấu hình. Nếu cài lỗi, đóng bớt ứng dụng rồi chạy lại.");
+                }
+
                 if (low)
                 {
                     _paused = true;

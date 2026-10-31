@@ -92,7 +92,7 @@ public sealed class ResourceGovernorTests
         var monitor = new QueueMonitor(50, 10, 18, 25, 25);
         var governor = new ResourceGovernor(
             monitor,
-            new ResourceGovernorOptions { PauseBelowAvailableMemoryPercent = 15, ResumeAboveAvailableMemoryPercent = 20, Cooldown = TimeSpan.FromSeconds(10) },
+            new ResourceGovernorOptions { PauseWhenLow = true, PauseBelowAvailableMemoryPercent = 15, ResumeAboveAvailableMemoryPercent = 20, Cooldown = TimeSpan.FromSeconds(10) },
             time);
 
         Assert.True(governor.Evaluate().CanStartNewTask);   // 50%
@@ -126,7 +126,7 @@ public sealed class ResourceGovernorTests
     {
         var time = new ManualTimeProvider(DateTimeOffset.Parse("2026-11-01T00:00:00Z", System.Globalization.CultureInfo.InvariantCulture));
         var monitor = new BytesMonitor((7, 600UL << 20), (9, 1200UL << 20), (10, 1600UL << 20));
-        var governor = new ResourceGovernor(monitor, new ResourceGovernorOptions { Cooldown = TimeSpan.FromSeconds(5) }, time);
+        var governor = new ResourceGovernor(monitor, new ResourceGovernorOptions { PauseWhenLow = true, Cooldown = TimeSpan.FromSeconds(5) }, time);
 
         var first = governor.Evaluate();
         Assert.False(first.CanStartNewTask);
@@ -136,6 +136,16 @@ public sealed class ResourceGovernorTests
         time.Advance(TimeSpan.FromSeconds(6));
         Assert.False(governor.Evaluate().CanStartNewTask);   // 1,2 GB, 9%: chưa đủ
         Assert.True(governor.Evaluate().CanStartNewTask);    // 1,6 GB: đủ dù chỉ 10%
+    }
+
+    [Fact]
+    public void By_default_low_memory_only_warns_and_never_blocks()
+    {
+        // PO 01/11/2026: không đợi RAM trống, cài luôn.
+        var decision = new ResourceGovernor(new BytesMonitor((3, 200UL << 20))).Evaluate();
+
+        Assert.True(decision.CanStartNewTask);
+        Assert.Contains("RAM trống thấp", decision.Reason, StringComparison.Ordinal);
     }
 
     [Fact]

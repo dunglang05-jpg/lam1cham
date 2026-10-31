@@ -7,8 +7,8 @@ Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-
 Sửa lỗi PO báo khi thử 1.1.3: bấm chạy xong cả hàng đợi đứng ở "Chờ đến lượt" rất lâu (máy còn RAM trống 1,0 GB).
 
 **Khung ứng dụng (`shell`) 0.11.4** — dùng chung
-- Ngưỡng bảo vệ RAM quá chặt: trước đây RAM trống dưới 15% là không cho bắt đầu tác vụ mới, chờ trên 20% mới chạy. Laptop 8 GB mở Chrome thường chỉ còn khoảng 12% nên bị chặn tới 10 phút cho mỗi tác vụ. Nay chỉ tạm dừng khi RAM trống dưới 8% **và** dưới 1 GB; chạy tiếp khi trên 12% hoặc trên 1,5 GB.
-- Khi đang chờ RAM, dòng tác vụ và tiêu đề tiến độ hiện rõ "Đang chờ RAM trống: còn … GB (…%), cần …" kèm gợi ý đóng bớt ứng dụng, cập nhật số liệu liên tục, thay cho dòng "Chờ đến lượt".
+- **Không còn chờ RAM trống** (PO yêu cầu 01/11/2026): trước đây RAM trống dưới 15% là không cho bắt đầu tác vụ mới, chờ trên 20% mới chạy, tối đa 10 phút cho mỗi tác vụ. Laptop 8 GB mở Chrome thường chỉ còn khoảng 12% nên cả hàng đợi đứng chờ. Nay luôn chạy ngay; RAM thật sự thấp (dưới 8% và dưới 1 GB) chỉ ghi cảnh báo vào log.
+- Cơ chế chờ vẫn còn trong mã (tắt mặc định, ngưỡng mới 8% và 1 GB, chạy tiếp khi trên 12% hoặc 1,5 GB). Nếu bật lại, màn hình hiện rõ "Đang chờ RAM trống: còn … GB" thay cho "Chờ đến lượt".
 
 ## 1.1.3 — 01/11/2026
 
