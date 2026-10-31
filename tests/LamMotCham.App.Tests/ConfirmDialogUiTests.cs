@@ -18,13 +18,17 @@ namespace LamMotCham.App.Tests;
 /// </summary>
 public class ConfirmDialogUiTests
 {
+    private static volatile string _stage = "bắt đầu";
+
     [Fact]
     public void Tick_o_dong_y_thi_nut_xac_nhan_sang_tren_giao_dien_that() => RunSta(() =>
     {
+        _stage = "tạo App";
         var app = new App();
         app.InitializeComponent();
         // App.xaml dùng OnMainWindowClose: đóng cửa sổ thử đầu tiên sẽ tắt luôn dispatcher, hộp thứ hai treo. Test tự tắt.
         app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        _stage = "đã nạp giao diện ứng dụng";
 
         // Icon dạng "pack://application:,,," trỏ vào trình chạy test chứ không phải LamMotCham.exe, nên thay bộ nạp icon
         // bằng bộ rỗng. Ô đồng ý, nút bấm, binding và giao diện hộp thoại giữ nguyên như ứng dụng.
@@ -53,33 +57,30 @@ public class ConfirmDialogUiTests
         }
         finally
         {
+            _stage = "tắt App";
             app.Shutdown();
+            _stage = "đã tắt App";
         }
     });
 
     private static void CheckDialog(ConfirmDialogViewModel vm, string primaryText)
     {
+        _stage = "dựng hộp " + primaryText;
         var view = new ConfirmDialog { DataContext = vm };
-        var window = new Window
-        {
-            Content = view,
-            Width = 640,
-            Height = 760,
-            WindowStyle = WindowStyle.None,
-            ShowInTaskbar = false,
-            ShowActivated = false,
-            Left = -20000,
-            Top = -20000,
-        };
-        window.Show();
         try
         {
+            // Dựng và bố cục trong bộ nhớ (không mở cửa sổ): template, binding và lệnh hoạt động như trên màn hình.
+            view.Measure(new Size(640, 760));
+            view.Arrange(new Rect(0, 0, 640, 760));
+            view.UpdateLayout();
+            _stage = "bố cục xong " + primaryText;
             Pump();
+            _stage = "kiểm tra " + primaryText;
             var checkBox = Descendants<CheckBox>(view).Single();
             var confirm = Descendants<Button>(view).Single(b => Equals(b.Content, primaryText));
             var back = Descendants<Button>(view).Single(b => Equals(b.Content, "Quay lại"));
 
-            Assert.True(checkBox.IsVisible, "Ô đồng ý phải hiện.");
+            Assert.Equal(Visibility.Visible, checkBox.Visibility);
             Assert.True(back.IsEnabled, "Nút Quay lại luôn bấm được.");
             Assert.False(confirm.IsEnabled, "Chưa tick thì nút xác nhận phải mờ.");
 
@@ -102,7 +103,7 @@ public class ConfirmDialogUiTests
         }
         finally
         {
-            window.Close();
+            _stage = "xong " + primaryText;
         }
     }
 
@@ -115,6 +116,7 @@ public class ConfirmDialogUiTests
 
     private static void Pump()
     {
+        _stage += " · chờ dispatcher";
         var frame = new DispatcherFrame();
         Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => frame.Continue = false));
         Dispatcher.PushFrame(frame);
@@ -159,7 +161,7 @@ public class ConfirmDialogUiTests
         thread.Start();
         if (!thread.Join(TimeSpan.FromSeconds(60)))
         {
-            throw new Xunit.Sdk.XunitException("Kiểm thử giao diện không xong sau 60 giây (treo).");
+            throw new Xunit.Sdk.XunitException("Kiểm thử giao diện không xong sau 60 giây (treo) ở bước: " + _stage);
         }
         if (error is not null)
         {
