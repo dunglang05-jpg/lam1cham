@@ -23,6 +23,8 @@ public class ConfirmDialogUiTests
     {
         var app = new App();
         app.InitializeComponent();
+        // App.xaml dùng OnMainWindowClose: đóng cửa sổ thử đầu tiên sẽ tắt luôn dispatcher, hộp thứ hai treo. Test tự tắt.
+        app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         // Icon dạng "pack://application:,,," trỏ vào trình chạy test chứ không phải LamMotCham.exe, nên thay bộ nạp icon
         // bằng bộ rỗng. Ô đồng ý, nút bấm, binding và giao diện hộp thoại giữ nguyên như ứng dụng.
@@ -153,8 +155,12 @@ public class ConfirmDialogUiTests
             }
         });
         thread.SetApartmentState(ApartmentState.STA);
+        thread.IsBackground = true;
         thread.Start();
-        thread.Join();
+        if (!thread.Join(TimeSpan.FromSeconds(60)))
+        {
+            throw new Xunit.Sdk.XunitException("Kiểm thử giao diện không xong sau 60 giây (treo).");
+        }
         if (error is not null)
         {
             throw new Xunit.Sdk.XunitException("Kiểm thử giao diện thất bại: " + error);
