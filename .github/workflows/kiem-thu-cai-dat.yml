@@ -56,3 +56,46 @@ jobs:
         shell: pwsh
         run: |
           dotnet run --project tools/LamMotCham.AppCheck -c Release -- --e2e --snapshot tools/LamMotCham.AppCheck/apps-admin.json --summary $env:GITHUB_STEP_SUMMARY
+
+  tat-ca:
+    name: Tất cả tính năng (Thiết lập đầy đủ ×2, tùy chọn, hoàn tác, tài khoản, đổi tên máy)
+    runs-on: windows-latest
+    timeout-minutes: 110
+    env:
+      LMC_API_KEY: ${{ secrets.LMC_API_KEY }}
+      LMC_CI_USER: ${{ secrets.LMC_CI_USER }}
+      LMC_CI_PASS: ${{ secrets.LMC_CI_PASS }}
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Cài .NET SDK theo global.json
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Chuẩn bị WinGet
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+            Install-PackageProvider -Name NuGet -Force -Scope CurrentUser | Out-Null
+            Install-Module -Name Microsoft.WinGet.Client -Force -Scope CurrentUser -Repository PSGallery | Out-Null
+            Repair-WinGetPackageManager -AllUsers -Latest
+          }
+          winget --version
+
+      # Tài khoản thử cho các tác vụ Ổ đĩa & Tài khoản (đổi họ tên, mật khẩu, tên đăng nhập). Mật khẩu ngẫu nhiên, không in ra.
+      - name: Tạo tài khoản thử
+        shell: pwsh
+        run: |
+          $bytes = New-Object byte[] 18; [Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+          $pw = ConvertTo-SecureString ([Convert]::ToBase64String($bytes) + 'aA1!') -AsPlainText -Force
+          New-LocalUser -Name l1ctest -Password $pw -FullName 'Ban dau' | Out-Null
+          Get-LocalUser l1ctest | Format-List Name, FullName, Enabled
+
+      - name: Kiểm thử tất cả tính năng
+        shell: pwsh
+        run: |
+          dotnet run --project tools/LamMotCham.AppCheck -c Release -- --e2e-all --snapshot tools/LamMotCham.AppCheck/apps-admin.json --summary $env:GITHUB_STEP_SUMMARY
+

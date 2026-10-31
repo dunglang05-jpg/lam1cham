@@ -21,9 +21,9 @@ internal static class E2E
     /// <summary>Đúng bộ PO đã thử trên LAPTOP-PERIUM, thêm UniKey (ZIP) để phủ thêm kiểu cài.</summary>
     private static readonly string[] Apps = ["Foxit PDF Reader", "Adobe Acrobat Reader", "K-Lite Codec Pack", "UniKey"];
 
-    private sealed record Update(TimeSpan At, TaskStatusUpdate Data);
+    internal sealed record Update(TimeSpan At, TaskStatusUpdate Data);
 
-    private sealed class Capture(Stopwatch clock) : IProgress<TaskStatusUpdate>
+    internal sealed class Capture(Stopwatch clock) : IProgress<TaskStatusUpdate>
     {
         private readonly Lock _gate = new();
         private readonly List<Update> _items = [];
@@ -139,7 +139,7 @@ internal static class E2E
         return problems.Count == 0 ? 0 : 1;
     }
 
-    private static string Step(string message)
+    internal static string Step(string message)
     {
         // Gom "Đang tải 3%", "Đang tải 57%"… thành một bước khi in tóm tắt.
         return message.StartsWith("Đang tải ", StringComparison.Ordinal) && message.EndsWith('%') ? "Đang tải N%" : message;
@@ -164,7 +164,7 @@ internal static class E2E
         }
     }
 
-    private static IEnumerable<string> CheckProgress(int round, string name, List<Update> mine)
+    internal static IEnumerable<string> CheckProgress(int round, string name, List<Update> mine)
     {
         var where = $"Lượt {round} · {name}";
         var terminalAt = mine.FindIndex(u => u.Data.State.IsTerminal());

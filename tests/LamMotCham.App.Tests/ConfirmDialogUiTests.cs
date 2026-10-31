@@ -19,6 +19,10 @@ public class ConfirmDialogUiTests
 {
     private static volatile string _stage = "bắt đầu";
 
+    /// <remarks>
+    /// Một <see cref="Application"/> mỗi tiến trình nên mọi kiểm thử giao diện chạy trong cùng một phiên:
+    /// hộp xác nhận, rồi từng trang (PO 01/11/2026: "kiểm thử tất cả các tính năng") và hộp tiến độ khi đang chạy.
+    /// </remarks>
     [Fact]
     public void Tick_o_dong_y_thi_nut_xac_nhan_sang_tren_giao_dien_that() => RunSta(() =>
     {
@@ -53,6 +57,8 @@ public class ConfirmDialogUiTests
                 RequireAgreement = true,
                 AgreementText = "Khách hàng đã đồng ý tắt mã hóa ổ đĩa (BitLocker).",
             }, "Bắt đầu chạy");
+
+            AllPagesUi.Check(s => _stage = s);
         }
         finally
         {
@@ -102,14 +108,14 @@ public class ConfirmDialogUiTests
         }
     }
 
-    private sealed class NoIcon : System.Windows.Data.IValueConverter
+    internal sealed class NoIcon : System.Windows.Data.IValueConverter
     {
         public object? Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
 
         public object? ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
     }
 
-    private static IEnumerable<T> Descendants<T>(DependencyObject root)
+    internal static IEnumerable<T> Descendants<T>(DependencyObject root)
         where T : DependencyObject
     {
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
@@ -146,9 +152,9 @@ public class ConfirmDialogUiTests
         thread.SetApartmentState(ApartmentState.STA);
         thread.IsBackground = true;
         thread.Start();
-        if (!thread.Join(TimeSpan.FromSeconds(60)))
+        if (!thread.Join(TimeSpan.FromSeconds(180)))
         {
-            throw new Xunit.Sdk.XunitException("Kiểm thử giao diện không xong sau 60 giây (treo) ở bước: " + _stage);
+            throw new Xunit.Sdk.XunitException("Kiểm thử giao diện không xong sau 180 giây (treo) ở bước: " + _stage);
         }
         if (error is not null)
         {

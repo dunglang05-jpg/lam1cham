@@ -11,6 +11,8 @@ Kiểm thử đầu-cuối trước khi giao PO (PO yêu cầu: "kiểm thử ok
 - Mọi bước (kiểm tra, thực hiện, xác minh) đều được giữ "sống": tác vụ im lặng quá 1,5 giây thì mỗi giây cập nhật lại và nhích thanh dần. Trước đây bước kiểm tra trước khi cài qua WinGet và bước xác minh sau cài (tới 90 giây) không cập nhật gì.
 
 **Công cụ**
+- Workflow `kiem-thu-cai-dat`, job "Tất cả tính năng": chạy "Thiết lập đầy đủ" 2 lượt (phần mềm, tối ưu Windows, dọn dẹp, kiểm tra bàn giao), các mục tùy chọn của Cài đặt & Tối ưu và Dọn dẹp, hoàn tác thay đổi Windows, đổi họ tên/mật khẩu/tên đăng nhập của tài khoản thử, đổi tên máy. Chia ổ không chạy trên máy CI.
+- Kiểm thử giao diện: dựng thật từng trang và hộp tiến độ khi đang chạy, bắt mọi lỗi binding.
 - Workflow `kiem-thu-cai-dat`: trên máy Windows sạch của GitHub, cài Foxit (link), Adobe Acrobat Reader (WinGet), K-Lite (link), UniKey (ZIP) đúng như bấm chạy trong ứng dụng, 2 lượt. Lượt 1 phải cài xong và xác minh; lượt 2 phải báo "Đã có sẵn". Kiểm tra luôn dòng tiến độ: không lùi, không đứng quá 20 giây, không quay lại "Đang chạy" sau khi xong, chữ gọn, không lộ lỗi kỹ thuật, không để lại file tải tạm.
 
 ## 1.1.6 — 01/11/2026
