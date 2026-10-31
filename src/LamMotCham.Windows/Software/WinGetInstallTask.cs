@@ -75,6 +75,7 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             return PreconditionResult.NotMet(otherUser);
         }
 
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         var presence = await _client.GetPresenceAsync(PackageId, cancellationToken).ConfigureAwait(false);
         if (presence.Presence == InstallPresence.Installed)
         {
@@ -82,6 +83,7 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
         }
 
         var publisherProblem = await _client.CheckPublisherAsync(Package, cancellationToken).ConfigureAwait(false);
+        context.Log.Info($"Kiểm tra trước khi cài qua WinGet (winget list + show) mất {watch.Elapsed.TotalSeconds:0} giây.", Descriptor.Id);
         return publisherProblem is null ? PreconditionResult.Met() : PreconditionResult.NotMet(publisherProblem);
     }
 
@@ -141,12 +143,15 @@ public sealed class WinGetInstallTask : ITaskModule, IDescribesCurrentState
             ? [(true, PreferredLocale), (true, null), (false, PreferredLocale), (false, null)]
             : [(false, PreferredLocale), (false, null)];
 
-    private Task<ProcessResult> InstallAsync(TaskContext context, bool machineScope, string? locale, CancellationToken cancellationToken)
+    private async Task<ProcessResult> InstallAsync(TaskContext context, bool machineScope, string? locale, CancellationToken cancellationToken)
     {
         context.Log.Info(
             $"winget install --id {PackageId} --exact --source winget --silent" + (locale is null ? "" : " --locale " + locale) + (machineScope ? " --scope machine" : ""),
             Descriptor.Id);
-        return _client.InstallAsync(PackageId, machineScope, locale, cancellationToken);
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var result = await _client.InstallAsync(PackageId, machineScope, locale, cancellationToken).ConfigureAwait(false);
+        context.Log.Info($"winget install thoát với {result.ExitCodeHex} sau {watch.Elapsed.TotalSeconds:0} giây (gồm tải và cài).", Descriptor.Id);
+        return result;
     }
 
     public async Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken)

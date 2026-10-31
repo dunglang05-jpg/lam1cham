@@ -53,6 +53,7 @@ public sealed partial class WinGetClient
     };
 
     private readonly Func<string?> _locator;
+    private string? _version;
 
     public WinGetClient(Func<string?>? locator = null)
     {
@@ -92,8 +93,17 @@ public sealed partial class WinGetClient
 
     public bool IsAvailable => _locator() is not null;
 
+    /// <summary>
+    /// Phiên bản WinGet. Kết quả đọc được được giữ lại cho cả phiên (mỗi ứng dụng không phải chạy lại winget --version);
+    /// chưa đọc được thì lần sau đọc lại.
+    /// </summary>
     public async Task<string?> GetVersionAsync(CancellationToken cancellationToken)
     {
+        if (Volatile.Read(ref _version) is { } known)
+        {
+            return known;
+        }
+
         var exe = _locator();
         if (exe is null)
         {
@@ -102,7 +112,13 @@ public sealed partial class WinGetClient
 
         var result = await ProcessRunner.RunAsync(exe, ["--version"], cancellationToken, 4_000).ConfigureAwait(false);
         var text = result.StandardOutput.Trim();
-        return result.ExitCode == 0 && text.StartsWith('v') ? text : null;
+        var version = result.ExitCode == 0 && text.StartsWith('v') ? text : null;
+        if (version is not null)
+        {
+            Volatile.Write(ref _version, version);
+        }
+
+        return version;
     }
 
     public static Version? ParseVersion(string? text) =>

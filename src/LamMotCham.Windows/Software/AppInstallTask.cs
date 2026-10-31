@@ -15,7 +15,9 @@ public enum InstallRoute
 
 /// <summary>
 /// Task cài một ứng dụng trong danh mục đang dùng (QĐ-006). Chọn cách cài lúc kiểm tra điều kiện:
-/// WinGet nếu gói có mã + nhà phát hành và máy có WinGet; ngược lại dùng link tải (bắt buộc chữ ký số hãng tin cậy);
+/// ưu tiên link tải khi Admin có link và cách nhận biết (nhanh hơn WinGet 2–3 lần, tải trước được — PO duyệt 01/11/2026),
+/// lỗi trước khi chạy trình cài (tải, chữ ký) thì chuyển sang WinGet; không có link thì WinGet nếu gói có mã + nhà phát hành;
+/// link luôn bắt buộc chữ ký số hãng tin cậy;
 /// ứng dụng loại "Trang web" thì tạo lối tắt. Ứng dụng hiện mờ (thiếu cách cài) báo "Không hỗ trợ" kèm lý do.
 /// Chỉ báo thành công sau khi xác minh; không có cách xác minh thì báo cần chú ý.
 /// </summary>
@@ -61,6 +63,12 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
 
     public InstallRoute Route { get; private set; }
 
+    /// <summary>
+    /// Cài bằng link trước WinGet: có link cài tự động (không phải "Mở link") và Admin khai báo cách nhận biết,
+    /// để kiểm tra "đã cài sẵn" và xác minh sau cài bằng registry thay cho các lệnh winget chậm.
+    /// </summary>
+    public bool PrefersLink => Package.IsAvailable && Package.Kind != InstallKind.Web && Direct is { IsAutomatic: true } && InstallDetector.CanDetect(Package);
+
     /// <summary>Lần chạy gần nhất phát hiện ứng dụng đã có sẵn (không cài lại).</summary>
     public bool WasAlreadyInstalled { get; private set; }
 
@@ -86,6 +94,17 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         {
             Route = InstallRoute.WebShortcut;
             return WebShortcutTask.Exists(Package) ? Already("Đã có lối tắt trên màn hình nền.") : PreconditionResult.Met();
+        }
+
+        if (PrefersLink)
+        {
+            if (InstallDetector.FindEvidence(Package) is { } found)
+            {
+                return Already($"Đã cài sẵn ({found}).");
+            }
+
+            Route = InstallRoute.Link;
+            return PreconditionResult.Met();
         }
 
         if (_winGetTask is not null)
@@ -143,7 +162,13 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
             {
                 var result = await Direct!.ExecuteAsync(context, Descriptor.Id, cancellationToken).ConfigureAwait(false);
                 LastMetrics = Direct.LastMetrics;
-                return result;
+                if (result.Outcome != ExecuteOutcome.Failed || Direct.InstallerStarted || _winGetTask is null || !_winGet.IsAvailable)
+                {
+                    return result;
+                }
+
+                // Lỗi trước khi chạy trình cài (dò link, tải, chữ ký): chưa thay đổi gì trên máy nên chuyển sang WinGet.
+                return await FallBackToWinGetAsync(context, result, cancellationToken).ConfigureAwait(false);
             }
 
             case InstallRoute.WebShortcut:
@@ -154,6 +179,29 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
             default:
                 return ExecuteResult.Failed("Chưa chọn được cách cài.");
         }
+    }
+
+    private async Task<ExecuteResult> FallBackToWinGetAsync(TaskContext context, ExecuteResult linkFailure, CancellationToken cancellationToken)
+    {
+        context.Log.Warning($"Cài bằng link chưa được: {linkFailure.Reason} Chuyển sang WinGet.", Descriptor.Id);
+        var pre = await _winGetTask!.CheckPreconditionsAsync(context, cancellationToken).ConfigureAwait(false);
+        switch (pre.Outcome)
+        {
+            case PreconditionOutcome.Met:
+                break;
+            case PreconditionOutcome.AlreadyInDesiredState:
+                Route = InstallRoute.WinGet;
+                WasAlreadyInstalled = true;
+                return ExecuteResult.Completed("WinGet thấy ứng dụng đã có trên máy.");
+            default:
+                return ExecuteResult.Failed($"{linkFailure.Reason} WinGet cũng không dùng được: {pre.Reason}", linkFailure.IsTransient, linkFailure.ErrorCode);
+        }
+
+        Route = InstallRoute.WinGet;
+        _watch.Restart();
+        var result = await _winGetTask.ExecuteAsync(context, cancellationToken).ConfigureAwait(false);
+        LastMetrics = new InstallMetrics { Source = Package.WinGetId!, Install = _watch.Elapsed };
+        return result;
     }
 
     public Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken) => Route switch
@@ -191,6 +239,12 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         if (Package.Kind == InstallKind.Web)
         {
             return WebShortcutTask.Exists(Package) ? "Đã cài" : "Chưa phát hiện";
+        }
+
+        // Nhận biết bằng registry nhanh hơn nhiều so với một lệnh winget list cho mỗi ứng dụng.
+        if (PrefersLink)
+        {
+            return InstallDetector.FindEvidence(Package) is not null ? "Đã cài" : "Chưa phát hiện";
         }
 
         if (_winGetTask is not null && _winGet.IsAvailable)
