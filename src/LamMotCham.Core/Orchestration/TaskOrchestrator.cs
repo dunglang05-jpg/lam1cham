@@ -303,7 +303,12 @@ public sealed class TaskOrchestrator
                 _log,
                 attempt,
                 progress is null ? null : new ActionProgress<TaskProgress>(p =>
-                    gate.Run(() => progress.Report(new TaskStatusUpdate(d.Id, TaskState.Running, p.Text, attemptNo, p.Fraction)))));
+                    gate.Run(() =>
+                    {
+                        // Thanh không lùi trong một lần thử (ví dụ bước nhích theo thời gian chạy trước số byte tải thật).
+                        var fraction = p.Fraction is { } f ? gate.Advance(f) : (double?)null;
+                        progress.Report(new TaskStatusUpdate(d.Id, TaskState.Running, p.Text, attemptNo, fraction));
+                    })));
             var work = RunAttemptAsync(task, context, taskToken);
 
             AttemptResult result;
@@ -400,8 +405,13 @@ public sealed class TaskOrchestrator
     {
         // Mọi tác vụ (cài phần mềm, tối ưu Windows, dọn dẹp…) đều báo đang ở bước nào, để người dùng biết máy vẫn đang làm
         // (PO 01/11/2026). Tác vụ tự báo chi tiết hơn (ví dụ % tải) thì ghi đè các dòng chung này.
-        context.Report(0.02, "Đang kiểm tra trạng thái hiện tại");
-        var pre = await task.CheckPreconditionsAsync(context, token).ConfigureAwait(false)
+        var pre = await PhaseAsync(
+                context,
+                ProgressSteps.Check,
+                ProgressSteps.Execute,
+                8,
+                "Đang kiểm tra trạng thái hiện tại",
+                c => task.CheckPreconditionsAsync(c, token)).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Precondition trả về null.");
 
         switch (pre.Outcome)
@@ -414,8 +424,8 @@ public sealed class TaskOrchestrator
 
             case PreconditionOutcome.AlreadyInDesiredState:
                 {
-                    context.Report(0.9, "Đã đúng sẵn, đang xác minh lại");
-                    var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
+                    var verify = await PhaseAsync(context, ProgressSteps.Verify, 1, 15, "Đã đúng sẵn, đang xác minh lại", c => VerifySafelyAsync(task, c, token))
+                        .ConfigureAwait(false);
                     return MapVerify(
                         verify,
                         "Đã ở trạng thái mong muốn, không thay đổi.",
@@ -429,7 +439,8 @@ public sealed class TaskOrchestrator
                 throw new InvalidOperationException($"Precondition không hợp lệ: {pre.Outcome}.");
         }
 
-        var exec = await ExecuteWithPulseAsync(task, context, token).ConfigureAwait(false)
+        var exec = await PhaseAsync(context, ProgressSteps.Execute, ProgressSteps.Verify, 20, "Đang thực hiện", c => task.ExecuteAsync(c, token))
+            .ConfigureAwait(false)
             ?? throw new InvalidOperationException("Execute trả về null.");
 
         switch (exec.Outcome)
@@ -447,8 +458,8 @@ public sealed class TaskOrchestrator
 
             case ExecuteOutcome.Completed:
                 {
-                    context.Report(0.9, "Đang xác minh kết quả");
-                    var verify = await VerifySafelyAsync(task, context, token).ConfigureAwait(false);
+                    var verify = await PhaseAsync(context, ProgressSteps.Verify, 1, 15, "Đang xác minh kết quả", c => VerifySafelyAsync(task, c, token))
+                        .ConfigureAwait(false);
                     if (verify.Outcome == VerifyOutcome.Passed && verify.Detail is null)
                     {
                         verify = verify with { Detail = exec.Reason };
@@ -463,54 +474,80 @@ public sealed class TaskOrchestrator
     }
 
     /// <summary>
-    /// Chạy Execute; nếu tác vụ không tự báo tiến độ thì mỗi giây báo "Đang thực hiện" và nhích thanh tiến trình
-    /// (không bao giờ tới mức xong — chỉ xác minh đạt mới là xong).
+    /// Chạy một bước (kiểm tra, thực hiện, xác minh) và giữ cho dòng tiến độ luôn "sống": báo chữ của bước lúc bắt đầu;
+    /// nếu tác vụ im lặng quá 1,5 giây thì mỗi giây báo lại chữ gần nhất và nhích thanh dần từ <paramref name="from"/>
+    /// về phía <paramref name="to"/> (không bao giờ tới). Thanh không lùi vì lớp báo tiến độ của lần thử đã chặn lùi.
     /// </summary>
-    private static async Task<ExecuteResult?> ExecuteWithPulseAsync(ITaskModule task, TaskContext context, CancellationToken token)
+    private static async Task<T> PhaseAsync<T>(
+        TaskContext context,
+        double from,
+        double to,
+        double halfSeconds,
+        string text,
+        Func<TaskContext, Task<T>> body)
     {
         if (context.Progress is not { } outer)
         {
-            return await task.ExecuteAsync(context, token).ConfigureAwait(false);
+            return await body(context).ConfigureAwait(false);
         }
 
-        var selfReported = 0;
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var gate = new Lock();
+        var lastText = text;
+        var lastSelf = TimeSpan.Zero;
         var relay = context with
         {
             Progress = new ActionProgress<TaskProgress>(p =>
             {
-                Volatile.Write(ref selfReported, 1);
+                lock (gate)
+                {
+                    lastSelf = watch.Elapsed;
+                    if (!string.IsNullOrWhiteSpace(p.Text))
+                    {
+                        lastText = p.Text;
+                    }
+                }
+
                 outer.Report(p);
             }),
         };
 
-        context.Report(0.15, "Đang thực hiện");
-        var watch = System.Diagnostics.Stopwatch.StartNew();
+        context.Report(from, text);
         using var stop = new CancellationTokenSource();
-        var pulse = Task.Run(async () =>
-        {
-            while (true)
+        var pulse = Task.Run(
+            async () =>
             {
-                try
+                while (true)
                 {
-                    await Task.Delay(1000, stop.Token).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
+                    try
+                    {
+                        await Task.Delay(1000, stop.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return;
+                    }
 
-                if (Volatile.Read(ref selfReported) == 0)
-                {
-                    var elapsed = watch.Elapsed;
-                    var fraction = 0.15 + 0.7 * (1 - Math.Pow(0.5, elapsed.TotalSeconds / 20));
-                    context.Report(fraction, "Đang thực hiện");
+                    string current;
+                    lock (gate)
+                    {
+                        if (watch.Elapsed - lastSelf < TimeSpan.FromSeconds(1.5))
+                        {
+                            continue;
+                        }
+
+                        current = lastText;
+                    }
+
+                    var eased = from + (to - from) * (1 - Math.Pow(0.5, watch.Elapsed.TotalSeconds / halfSeconds));
+                    context.Report(Math.Min(eased, to - 0.001), current);
                 }
-            }
-        }, CancellationToken.None);
+            },
+            CancellationToken.None);
 
         try
         {
-            return await task.ExecuteAsync(relay, token).ConfigureAwait(false);
+            return await body(relay).ConfigureAwait(false);
         }
         finally
         {
@@ -629,6 +666,14 @@ internal sealed class ProgressGate : IDisposable
 {
     private readonly Lock _lock = new();
     private bool _open = true;
+    private double _highest;
+
+    /// <summary>Phần đã xong không nhỏ hơn lần báo trước (gọi trong <see cref="Run"/>).</summary>
+    public double Advance(double fraction)
+    {
+        _highest = Math.Max(_highest, fraction);
+        return _highest;
+    }
 
     public void Run(Action action)
     {

@@ -84,7 +84,6 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         Route = InstallRoute.None;
         WasAlreadyInstalled = false;
         LastMetrics = null;
-        context.Report(0, "Đang kiểm tra máy…");
 
         if (!Package.IsAvailable)
         {
@@ -208,7 +207,7 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
     public Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        context.Report(InstallProgress.BeforeVerify, "Đang xác minh đã cài…");
+        context.Report(InstallProgress.BeforeVerify, "Đang xác minh đã cài");
         return VerifyRouteAsync(context, cancellationToken);
     }
 

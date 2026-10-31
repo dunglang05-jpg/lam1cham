@@ -105,7 +105,7 @@ public sealed class DirectInstallTask
             context.Log.Info($"{note} Tải từ {url.Host}.", taskId);
             try
             {
-                context.Report(0, "Đang tải…");
+                context.Report(ProgressSteps.Execute, "Đang tải");
                 file = await LinkDownloader.DownloadAsync(url, EffectiveKind, cancellationToken, InstallProgress.Download(context)).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
@@ -127,7 +127,7 @@ public sealed class DirectInstallTask
                 return await InstallZipAsync(file, metrics, context, taskId).ConfigureAwait(false);
             }
 
-            context.Report(InstallProgress.DownloadShare, "Đang kiểm tra chữ ký số…");
+            context.Report(InstallProgress.DownloadShare, "Đang kiểm tra chữ ký số");
             var signature = Authenticode.Check(file.Path);
             context.Log.Info($"Chữ ký số: {signature.Detail}", taskId);
             if (!signature.IsTrusted)

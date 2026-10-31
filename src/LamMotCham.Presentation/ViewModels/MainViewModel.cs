@@ -494,9 +494,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 // Tiêu đề chỉ ghi tác vụ đang chạy; bước chi tiết nằm trên dòng tác vụ (PO: rối mắt khi ghi cả hai nơi).
                 DockTitle = (row.Entry.Category == TaskCategory.Software ? "Đang cài " : "Đang chạy: ") + row.Name;
 
-                // Thanh tiến trình chạy theo tiến độ bên trong tác vụ (tải, cài, xác minh), không chỉ khi xong cả tác vụ.
+                // Thanh tiến trình chạy theo tiến độ bên trong tác vụ (tải, cài, xác minh), không chỉ khi xong cả tác vụ,
+                // và không bao giờ lùi (ví dụ khi thử lại lần 2).
                 var done = rows.Count(x => x.State is { } s && s.IsTerminal());
-                RunPercent = Math.Min(99, (done + (u.Fraction ?? 0)) * 100.0 / _runTotal);
+                var percent = Math.Min(99, (done + (u.Fraction ?? 0)) * 100.0 / _runTotal);
+                RunPercent = Math.Max(RunPercent, percent);
             }
             else if (u.State == TaskState.Pending && !string.IsNullOrWhiteSpace(u.Message))
             {
@@ -506,7 +508,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             else if (u.State.IsTerminal())
             {
                 _runDone = rows.Count(x => x.State is { } s && s.IsTerminal());
-                RunPercent = _runDone * 100.0 / _runTotal;
+                RunPercent = Math.Max(RunPercent, _runDone * 100.0 / _runTotal);
             }
 
             DockStep = $"Bước {Math.Min(_runDone + 1, _runTotal)}/{_runTotal}";

@@ -14,8 +14,8 @@ internal static class InstallProgress
     /// <summary>Phần thanh dành cho bước tải.</summary>
     public const double DownloadShare = 0.6;
 
-    /// <summary>Mức tối đa trước khi xác minh xong.</summary>
-    public const double BeforeVerify = 0.95;
+    /// <summary>Mức bắt đầu xác minh; các bước trước luôn thấp hơn mức này.</summary>
+    public const double BeforeVerify = ProgressSteps.Verify;
 
     private static readonly CultureInfo Vi = CultureInfo.GetCultureInfo("vi-VN");
 
@@ -42,7 +42,9 @@ internal static class InstallProgress
                 lastMs = nowMs;
             }
 
-            context.Report(total is > 0 and var size ? DownloadShare * bytes / size : null, DownloadText(bytes, total, prefix));
+            context.Report(
+                total is > 0 and var size ? ProgressSteps.Execute + (DownloadShare - ProgressSteps.Execute) * Math.Min(1.0, (double)bytes / size) : null,
+                DownloadText(bytes, total, prefix));
         };
     }
 
@@ -51,7 +53,7 @@ internal static class InstallProgress
         var mb = (bytes / 1048576.0).ToString("0.0", Vi);
         var text = total is > 0 and var size
             ? $"Đang tải {Math.Min(100, bytes * 100 / size)}%"
-            : $"Đang tải {mb} MB";
+            : bytes > 0 ? $"Đang tải {mb} MB" : "Đang tải";
         return prefix is null ? text : prefix + text;
     }
 
