@@ -84,6 +84,7 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         Route = InstallRoute.None;
         WasAlreadyInstalled = false;
         LastMetrics = null;
+        context.Report(0, "Đang kiểm tra máy…");
 
         if (!Package.IsAvailable)
         {
@@ -93,14 +94,14 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         if (Package.Kind == InstallKind.Web)
         {
             Route = InstallRoute.WebShortcut;
-            return WebShortcutTask.Exists(Package) ? Already("Đã có lối tắt trên màn hình nền.") : PreconditionResult.Met();
+            return WebShortcutTask.Exists(Package) ? Already("Đã có lối tắt trên màn hình nền.", InstallRoute.WebShortcut) : PreconditionResult.Met();
         }
 
         if (PrefersLink)
         {
             if (InstallDetector.FindEvidence(Package) is { } found)
             {
-                return Already($"Đã cài sẵn ({found}).");
+                return Already($"Đã cài sẵn ({found}).", InstallRoute.Link);
             }
 
             Route = InstallRoute.Link;
@@ -116,7 +117,7 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
                     Route = InstallRoute.WinGet;
                     return viaWinGet;
                 case PreconditionOutcome.AlreadyInDesiredState:
-                    return Already(viaWinGet.Reason ?? "Đã cài sẵn.");
+                    return Already(viaWinGet.Reason ?? "Đã cài sẵn.", InstallRoute.WinGet);
                 case PreconditionOutcome.NotMet:
                     // Nhà phát hành không khớp hoặc chạy nhầm tài khoản: không chuyển sang link.
                     return viaWinGet;
@@ -138,7 +139,7 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
 
         if (InstallDetector.FindEvidence(Package) is { } evidence)
         {
-            return Already($"Đã cài sẵn ({evidence}).");
+            return Already($"Đã cài sẵn ({evidence}).", InstallRoute.Link);
         }
 
         Route = InstallRoute.Link;
@@ -204,7 +205,14 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
         return result;
     }
 
-    public Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken) => Route switch
+    public Task<VerifyResult> VerifyAsync(TaskContext context, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        context.Report(InstallProgress.BeforeVerify, "Đang xác minh đã cài…");
+        return VerifyRouteAsync(context, cancellationToken);
+    }
+
+    private Task<VerifyResult> VerifyRouteAsync(TaskContext context, CancellationToken cancellationToken) => Route switch
     {
         InstallRoute.WinGet => _winGetTask!.VerifyAsync(context, cancellationToken),
         InstallRoute.Link => Direct!.VerifyAsync(cancellationToken),
@@ -257,8 +265,11 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
             : "Chưa kiểm tra";
     }
 
-    private PreconditionResult Already(string reason)
+    /// <param name="route">Cách xác minh lại: ứng dụng đã có sẵn vẫn phải qua Verify (lỗi 1.1.4: Route để trống nên
+    /// Verify báo "Không xác minh được. Chưa chạy." — K-Lite đã cài sẵn hiện "Cần kiểm tra").</param>
+    private PreconditionResult Already(string reason, InstallRoute route)
     {
+        Route = route;
         WasAlreadyInstalled = true;
         return PreconditionResult.AlreadyInDesiredState(reason);
     }

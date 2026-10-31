@@ -219,6 +219,12 @@ public sealed class TaskRowViewModel : ObservableObject
             }
             else if (_state == TaskState.Running && _startedAt is { } s)
             {
+                // Việc đang làm (ví dụ "Đang tải 45% · 120,0/277,7 MB"); phần "· mm:ss" của bộ đếm đã có ở cột thời gian.
+                if (!string.IsNullOrWhiteSpace(Message))
+                {
+                    parts.Add(Message.Split(" · ")[0] is var step && step.StartsWith("Đang tải", StringComparison.Ordinal) ? Message : step);
+                }
+
                 parts.Add((DateTimeOffset.Now - s).ToString(@"mm\:ss", CultureInfo.InvariantCulture));
             }
 

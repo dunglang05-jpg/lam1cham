@@ -84,10 +84,39 @@ public sealed class InstallSpeedTests
     }
 
     [Fact]
+    public async Task Already_installed_app_is_verified_not_left_as_needs_attention()
+    {
+        // Lỗi 1.1.4: K-Lite đã cài sẵn hiện "Cần kiểm tra — Không xác minh được. Chưa chạy." vì Verify không biết cách xác minh.
+        var folder = "LamMotCham-test-" + Guid.NewGuid().ToString("N");
+        var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), folder);
+        Directory.CreateDirectory(dir);
+        File.WriteAllBytes(Path.Combine(dir, "app.exe"), [1]);
+        try
+        {
+            var json = $$"""
+            [{"Name":"Có sẵn","Initial":"C","Color":"#123456","Kind":"Exe","DirectUrl":"https://127.0.0.1:1/a.exe","SilentArgs":"/S",
+              "WingetId":"Google.Chrome","Publisher":"Google LLC","DetectPaths":["%LocalAppData%\\{{folder}}\\app.exe"],"Category":"Thử"}]
+            """;
+            var task = new AppInstallTask(RemoteCatalog.Parse(json).Packages.Single(), new WinGetClient(() => null));
+
+            var pre = await task.CheckPreconditionsAsync(Context(), CancellationToken.None);
+            var verify = await task.VerifyAsync(Context(), CancellationToken.None);
+
+            Assert.Equal(PreconditionOutcome.AlreadyInDesiredState, pre.Outcome);
+            Assert.True(task.WasAlreadyInstalled);
+            Assert.Equal(VerifyOutcome.Passed, verify.Outcome);
+        }
+        finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Prefetched_file_is_handed_over_once_then_task_downloads_itself()
     {
         var direct = new DirectInstallTask(Packages()["App Link"]);
-        using var prefetcher = new LinkPrefetcher((_, _) => Task.FromResult<(DownloadedFile?, string)>((FakeFile(), "Link trực tiếp.")));
+        using var prefetcher = new LinkPrefetcher((_, _, _) => Task.FromResult<(DownloadedFile?, string)>((FakeFile(), "Link trực tiếp.")));
 
         Assert.Equal(1, prefetcher.Start([direct]));
         var first = await prefetcher.TakeAsync(direct, CancellationToken.None);
@@ -107,7 +136,7 @@ public sealed class InstallSpeedTests
         var package = Packages()["Nhiều bản"];
         var direct = new DirectInstallTask(package);
         DownloadedFile? made = null;
-        using var prefetcher = new LinkPrefetcher((_, _) =>
+        using var prefetcher = new LinkPrefetcher((_, _, _) =>
         {
             made = FakeFile();
             return Task.FromResult<(DownloadedFile?, string)>((made, ""));
@@ -126,7 +155,7 @@ public sealed class InstallSpeedTests
     {
         var p = Packages();
         var made = new List<DownloadedFile>();
-        var prefetcher = new LinkPrefetcher((_, _) =>
+        var prefetcher = new LinkPrefetcher((_, _, _) =>
         {
             var f = FakeFile();
             lock (made)
@@ -155,7 +184,7 @@ public sealed class InstallSpeedTests
         var running = 0;
         var peak = 0;
         var gate = new TaskCompletionSource();
-        using var prefetcher = new LinkPrefetcher(async (_, ct) =>
+        using var prefetcher = new LinkPrefetcher(async (_, _, ct) =>
         {
             var now = Interlocked.Increment(ref running);
             InterlockedMax(ref peak, now);
