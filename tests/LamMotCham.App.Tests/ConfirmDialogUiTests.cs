@@ -4,7 +4,6 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
 using LamMotCham.App.Views.Dialogs;
 using LamMotCham.Presentation.ViewModels;
 using Xunit;
@@ -74,7 +73,6 @@ public class ConfirmDialogUiTests
             view.Arrange(new Rect(0, 0, 640, 760));
             view.UpdateLayout();
             _stage = "bố cục xong " + primaryText;
-            Pump();
             _stage = "kiểm tra " + primaryText;
             var checkBox = Descendants<CheckBox>(view).Single();
             var confirm = Descendants<Button>(view).Single(b => Equals(b.Content, primaryText));
@@ -86,19 +84,16 @@ public class ConfirmDialogUiTests
 
             var toggle = (IToggleProvider)new CheckBoxAutomationPeer(checkBox).GetPattern(PatternInterface.Toggle);
             toggle.Toggle();
-            Pump();
             Assert.Equal(ToggleState.On, toggle.ToggleState);
             Assert.True(vm.Agreed, "Tick trên giao diện phải cập nhật Agreed.");
             Assert.True(confirm.IsEnabled, "Đã tick thì nút xác nhận phải sáng (lỗi 1.1.1).");
             Assert.True(new ButtonAutomationPeer(confirm).IsEnabled(), "UI Automation cũng phải thấy nút bấm được.");
 
             toggle.Toggle();
-            Pump();
             Assert.False(vm.Agreed);
             Assert.False(confirm.IsEnabled, "Bỏ tick thì nút xác nhận mờ lại.");
 
             toggle.Toggle();
-            Pump();
             Assert.True(confirm.IsEnabled, "Tick lại thì nút sáng lại.");
         }
         finally
@@ -112,14 +107,6 @@ public class ConfirmDialogUiTests
         public object? Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
 
         public object? ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
-    }
-
-    private static void Pump()
-    {
-        _stage += " · chờ dispatcher";
-        var frame = new DispatcherFrame();
-        Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => frame.Continue = false));
-        Dispatcher.PushFrame(frame);
     }
 
     private static IEnumerable<T> Descendants<T>(DependencyObject root)
