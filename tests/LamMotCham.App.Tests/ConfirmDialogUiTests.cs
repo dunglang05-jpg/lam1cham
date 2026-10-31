@@ -108,11 +108,16 @@ public class ConfirmDialogUiTests
         }
     }
 
-    internal sealed class NoIcon : System.Windows.Data.IValueConverter
+    /// <summary>Bộ nạp icon rỗng, dùng được cho cả binding đơn ("Icon") lẫn MultiBinding ("LogoOrIcon").</summary>
+    internal sealed class NoIcon : System.Windows.Data.IValueConverter, System.Windows.Data.IMultiValueConverter
     {
         public object? Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
 
         public object? ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
+
+        public object? Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) => [];
     }
 
     internal static IEnumerable<T> Descendants<T>(DependencyObject root)
