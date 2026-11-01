@@ -1,0 +1,33 @@
+ControlType.Text: Làm 1 Chạm
+ControlType.Text: Một chạm – Sẵn sàng sử dụng
+ControlType.Text: v1.1.7
+ControlType.Text: ThietLapMay.cs
+ControlType.Text: 1
+2
+3
+4
+5
+6
+7
+ControlType.Text: // Làm 1 Chạm: một chạm là xong
+var may = await Quet.MayMoi();
+foreach (var app in GoiThietYeu)
+    await WinGet.Cai(app);
+ToiUu.Windows();
+KiemTra.PhanCung();
+BaoCao.Xuat(); // ✓ Sẵn sàng  
+ControlType.Text: Thiết lập laptop mới chỉ với một chạm
+ControlType.Text: Cài phần mềm thiết yếu, tối ưu Windows, kiểm tra phần cứng và xuất báo cáo bàn giao — tự động, xác minh từng bước.
+ControlType.RadioButton: Chế độ đăng nhập
+ControlType.Text: Đăng nhập
+ControlType.RadioButton: Chế độ đăng ký
+ControlType.Text: Đăng ký tài khoản mới
+ControlType.Text: Đăng nhập
+ControlType.Text: Dùng tài khoản do quản trị viên cấp hoặc đã được duyệt.
+ControlType.Text: Tên đăng nhập / mã kho
+ControlType.Edit: Tên đăng nhập hoặc mã kho
+ControlType.Text: Mật khẩu
+ControlType.Edit: Mật khẩu
+ControlType.Button: Đăng nhập
+ControlType.Text: Đăng nhập
+ControlType.Text: Máy chủ: dunglam.top   ·   Mã máy: lmc-4e1d25effe29cd53e26c
