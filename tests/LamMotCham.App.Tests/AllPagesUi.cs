@@ -169,6 +169,7 @@ internal static class AllPagesUi
         bitmap.Render(visual);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using var file = File.Create(path);
         encoder.Save(file);
     }
