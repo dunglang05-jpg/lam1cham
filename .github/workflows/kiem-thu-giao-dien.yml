@@ -42,7 +42,15 @@ jobs:
         shell: pwsh
         env:
           L1C_ANH_CHUP: ${{ runner.temp }}\anh\giao-dien
-        run: dotnet test tests/LamMotCham.App.Tests -c Release --logger "console;verbosity=normal"
+        run: |
+          dotnet test tests/LamMotCham.App.Tests -c Release --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath ui-test.log
+          if ($LASTEXITCODE -ne 0) {
+            $text = (Get-Content ui-test.log -Raw) -replace "`r", ''
+            $i = $text.IndexOf('Error Message')
+            $msg = if ($i -ge 0) { $text.Substring($i, [Math]::Min(3000, $text.Length - $i)) } else { $text.Substring([Math]::Max(0, $text.Length - 3000)) }
+            Write-Output ("::error title=Kiểm thử giao diện::" + ($msg -replace "`n", ' | '))
+            exit 1
+          }
 
       - name: Chạy thử LamMotCham.exe của bản phát hành mới nhất
         shell: pwsh
