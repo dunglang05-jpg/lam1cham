@@ -21,6 +21,10 @@ on:
         description: 'Đường dẫn file để nhận biết (tùy chọn), ví dụ %LocalAppData%\Programs\Zalo\Zalo.exe'
         required: false
         default: ''
+      winget_id:
+        description: 'Mã WinGet (tùy chọn): in link bộ cài chính thức mà WinGet dùng để so sánh'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -34,6 +38,16 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
+      - name: Link bộ cài theo WinGet
+        if: ${{ inputs.winget_id != '' }}
+        shell: pwsh
+        continue-on-error: true
+        env:
+          WID: ${{ inputs.winget_id }}
+        run: |
+          $out = winget show --id $env:WID --exact --source winget --accept-source-agreements --disable-interactivity 2>&1 | Out-String
+          $out
+          foreach ($line in ($out -split "`n")) { if ($line -match '(Installer (Url|Type|Locale)|Publisher|Version|Phiên bản)\s*:') { "::notice title=WinGet $env:WID::$($line.Trim())" } }
       - name: Thử link
         shell: pwsh
         env:
