@@ -128,17 +128,17 @@ internal static class AllPagesUi
             if (Environment.GetEnvironmentVariable("L1C_ANH_CHUP") is { Length: > 0 } shots)
             {
                 Directory.CreateDirectory(shots);
-                var window = new MainWindow();
-                var root = (FrameworkElement)window.Content;
-                window.Content = null;
-                root.DataContext = vm;
+                // Trang dựng riêng (MainWindow cần icon trong gói EXE, trình chạy test không có): bề rộng = màn hình trừ thanh bên.
                 foreach (var (w, h) in new[] { (1366, 768), (1920, 1080) })
                 {
                     foreach (var page in Enum.GetValues<LamMotCham.Presentation.ViewModels.Page>())
                     {
                         stage($"chụp {page} {w}x{h}");
                         vm.CurrentPage = page;
-                        Save(root, w, h, Path.Combine(shots, $"{w}x{h}-{(int)page}-{page}.png"));
+                        var pageVm = vm.CurrentPageViewModel;
+                        var view = views[pageVm.GetType()]();
+                        view.DataContext = pageVm;
+                        Save(view, w - 260, h - 70, Path.Combine(shots, $"{w}x{h}-{(int)page}-{page}.png"));
                     }
                 }
 
