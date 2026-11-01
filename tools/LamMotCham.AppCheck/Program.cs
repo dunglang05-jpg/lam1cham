@@ -39,7 +39,7 @@ internal static class Program
         var summaryPath = Arg(args, "--summary");
         var jsonPath = Arg(args, "--json");
         var install = args.Contains("--install", StringComparer.Ordinal);
-        using var stop = new CancellationTokenSource(TimeSpan.FromMinutes(args.Contains("--e2e-all", StringComparer.Ordinal) ? 100 : 50));
+        using var stop = new CancellationTokenSource(TimeSpan.FromMinutes(args.Any(a => a is "--e2e-all" or "--e2e-nang") ? 100 : 50));
         var ct = stop.Token;
 
         var (json, source) = await LoadListAsync(snapshot, ct);
@@ -49,6 +49,12 @@ internal static class Program
         foreach (var w in parsed.Warnings)
         {
             Console.WriteLine("Cảnh báo danh sách: " + w);
+        }
+
+        Console.WriteLine($"::notice title=Nguồn danh sách ứng dụng::{source}, {parsed.Packages.Count} ứng dụng.");
+        if (args.Contains("--e2e-nang", StringComparer.Ordinal))
+        {
+            return await E2EAll.HeavyAsync(summaryPath, ct);
         }
 
         if (args.Contains("--e2e-all", StringComparer.Ordinal))

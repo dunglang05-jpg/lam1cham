@@ -1,0 +1,121 @@
+# Soát giao diện bằng ảnh chụp (PO 01/11/2026: "kiểm thử thật kĩ, mình không có máy mới test"):
+# 1) chụp mọi trang của ứng dụng ở 1366×768 và 1920×1080 cùng hộp tiến độ khi đang chạy (kiểm thử giao diện WPF);
+# 2) chạy đúng file LamMotCham.exe của bản phát hành mới nhất trên máy Windows sạch, chụp màn hình, đọc các chữ trên cửa sổ, lấy log.
+# Ảnh và log được đẩy lên nhánh anh-chup/<lần chạy> để xem lại (artifact của GitHub không mở được từ môi trường kiểm thử).
+name: kiem-thu-giao-dien
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/LamMotCham.App/**'
+      - 'src/LamMotCham.Presentation/**'
+      - 'tests/LamMotCham.App.Tests/**'
+      - '.github/workflows/kiem-thu-giao-dien.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kiem-thu-giao-dien-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  anh-chup:
+    name: Chụp giao diện và chạy thử EXE
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Cài .NET SDK theo global.json
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Chụp mọi trang (kiểm thử giao diện WPF)
+        shell: pwsh
+        env:
+          L1C_ANH_CHUP: ${{ runner.temp }}\anh\giao-dien
+        run: |
+          dotnet test tests/LamMotCham.App.Tests -c Release --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath ui-test.log
+          if ($LASTEXITCODE -ne 0) {
+            $text = (Get-Content ui-test.log -Raw) -replace "`r", ''
+            $i = $text.IndexOf('Error Message')
+            $msg = if ($i -ge 0) { $text.Substring($i, [Math]::Min(3000, $text.Length - $i)) } else { $text.Substring([Math]::Max(0, $text.Length - 3000)) }
+            Write-Output ("::error title=Kiểm thử giao diện::" + ($msg -replace "`n", ' | '))
+            exit 1
+          }
+
+      - name: Chạy thử LamMotCham.exe của bản phát hành mới nhất
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'anh\exe'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          gh release download -R $env:GITHUB_REPOSITORY -p 'LamMotCham.exe*' -D exe
+          $expected = (Get-Content exe\LamMotCham.exe.sha256).Split(' ')[0]
+          $actual = (Get-FileHash exe\LamMotCham.exe -Algorithm SHA256).Hash.ToLower()
+          "SHA-256 $actual (mong đợi $expected)" | Tee-Object -FilePath "$out\ket-qua.txt"
+          if ($actual -ne $expected) { throw 'Sai SHA-256' }
+          (Get-Item exe\LamMotCham.exe).VersionInfo | Format-List ProductVersion, FileVersion | Out-File -Append "$out\ket-qua.txt"
+
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing, UIAutomationClient, UIAutomationTypes
+          function Chup($name) {
+            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            $g = [System.Drawing.Graphics]::FromImage($bmp)
+            $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+            $bmp.Save((Join-Path $out $name))
+          }
+
+          $p = Start-Process -FilePath exe\LamMotCham.exe -PassThru
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          while ($sw.Elapsed.TotalSeconds -lt 60) {
+            Start-Sleep -Milliseconds 500
+            $p.Refresh()
+            if ($p.HasExited -or $p.MainWindowHandle -ne 0) { break }
+          }
+          "Mở cửa sổ sau $([int]$sw.Elapsed.TotalSeconds) giây; đã thoát: $($p.HasExited); tiêu đề: $($p.MainWindowTitle)" | Tee-Object -Append -FilePath "$out\ket-qua.txt"
+          Start-Sleep -Seconds 6
+          Chup 'exe-1-mo-ung-dung.png'
+          if (-not $p.HasExited -and $p.MainWindowHandle -ne 0) {
+            $root = [System.Windows.Automation.AutomationElement]::FromHandle($p.MainWindowHandle)
+            $all = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition)
+            $names = foreach ($e in $all) { $n = $e.Current.Name; if ($n) { "$($e.Current.ControlType.ProgrammaticName): $n" } }
+            $names | Out-File -Encoding utf8 "$out\exe-chu-tren-cua-so.txt"
+            "Số phần tử có chữ: $($names.Count)" | Tee-Object -Append -FilePath "$out\ket-qua.txt"
+          }
+          Start-Sleep -Seconds 4
+          $p.Refresh()
+          "Sau 10 giây vẫn chạy: $(-not $p.HasExited); bộ nhớ: $([int]($p.WorkingSet64/1MB)) MB" | Tee-Object -Append -FilePath "$out\ket-qua.txt"
+          if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+          $logs = Join-Path $env:LOCALAPPDATA 'LamMotCham\Logs'
+          if (Test-Path $logs) { Copy-Item "$logs\*" $out -ErrorAction SilentlyContinue }
+          Get-ChildItem $out | Format-Table Name, Length | Out-String | Write-Output
+
+      - name: Đẩy ảnh và log lên nhánh anh-chup
+        if: always()
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'anh'
+          if (-not (Test-Path $src)) { Write-Output 'Không có ảnh.'; exit 0 }
+          $branch = "anh-chup/run-$env:GITHUB_RUN_ID"
+          $work = Join-Path $env:RUNNER_TEMP 'nhanh-anh'
+          git init -q $work
+          Copy-Item -Recurse "$src\*" $work
+          Push-Location $work
+          git config user.name 'l1c-kiem-thu'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -q -b $branch
+          git add -A
+          git commit -q -m "Ảnh chụp kiểm thử giao diện (run $env:GITHUB_RUN_ID)"
+          git push -q "https://x-access-token:${{ github.token }}@github.com/$env:GITHUB_REPOSITORY.git" "HEAD:refs/heads/$branch"
+          Pop-Location
+          "::notice title=Ảnh chụp giao diện::Nhánh $branch"

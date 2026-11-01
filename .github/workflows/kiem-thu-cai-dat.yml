@@ -58,8 +58,12 @@ jobs:
           dotnet run --project tools/LamMotCham.AppCheck -c Release -- --e2e --snapshot tools/LamMotCham.AppCheck/apps-admin.json --summary $env:GITHUB_STEP_SUMMARY
 
   tat-ca:
-    name: Tất cả tính năng (Thiết lập đầy đủ ×2, tùy chọn, hoàn tác, tài khoản, đổi tên máy)
-    runs-on: windows-latest
+    name: Tất cả tính năng trên ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 110
     env:
       LMC_API_KEY: ${{ secrets.LMC_API_KEY }}
@@ -98,4 +102,22 @@ jobs:
         shell: pwsh
         run: |
           dotnet run --project tools/LamMotCham.AppCheck -c Release -- --e2e-all --snapshot tools/LamMotCham.AppCheck/apps-admin.json --summary $env:GITHUB_STEP_SUMMARY
+
+  nang:
+    name: Ứng dụng nặng (Office, Microsoft 365, Kaspersky, ESET)
+    runs-on: windows-latest
+    timeout-minutes: 110
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Cài .NET SDK theo global.json
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Kiểm thử ứng dụng nặng
+        shell: pwsh
+        run: |
+          dotnet run --project tools/LamMotCham.AppCheck -c Release -- --e2e-nang --snapshot tools/LamMotCham.AppCheck/apps-admin.json --summary $env:GITHUB_STEP_SUMMARY
 

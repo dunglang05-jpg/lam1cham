@@ -162,12 +162,19 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
             {
                 var result = await Direct!.ExecuteAsync(context, Descriptor.Id, cancellationToken).ConfigureAwait(false);
                 LastMetrics = Direct.LastMetrics;
-                if (result.Outcome != ExecuteOutcome.Failed || Direct.InstallerStarted || _winGetTask is null || !_winGet.IsAvailable)
+                // Lỗi trước khi chạy trình cài (dò link, tải, chữ ký) hoặc trình cài báo đã hủy (1602, chưa cài gì):
+                // chưa thay đổi gì trên máy nên chuyển sang WinGet. Trình cài đã chạy và báo lỗi khác thì không cài chồng.
+                var canFallBack = result.Outcome == ExecuteOutcome.Failed && (!Direct.InstallerStarted || DirectInstallTask.InstallerCancelled(result));
+                if (!canFallBack || _winGetTask is null)
                 {
                     return result;
                 }
 
-                // Lỗi trước khi chạy trình cài (dò link, tải, chữ ký): chưa thay đổi gì trên máy nên chuyển sang WinGet.
+                if (!_winGet.IsAvailable)
+                {
+                    return result with { Reason = result.Reason + " Máy không có WinGet để cài dự phòng." };
+                }
+
                 return await FallBackToWinGetAsync(context, result, cancellationToken).ConfigureAwait(false);
             }
 

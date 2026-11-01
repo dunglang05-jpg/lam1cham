@@ -2,6 +2,27 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.8 — 01/11/2026
+
+Sửa các lỗi tìm ra khi kiểm thử kỹ trên máy Windows sạch (Windows Server 2022 không có WinGet và Windows Server 2025 có WinGet).
+
+**Phần mềm thiết yếu (`software`) 0.6.3**
+- Link tải sai (404, 403…) không còn bị thử lại 3 lần (mất khoảng 30 giây): báo lỗi ngay và chuyển sang WinGet. Chỉ thử lại khi mất mạng, hết giờ, máy chủ lỗi 5xx, 408 hoặc 429.
+- Trình cài bằng link báo đã hủy (mã 1602, chưa cài gì lên máy, ví dụ Viber với tham số `/S`) thì tự chuyển sang WinGet thay vì báo Thất bại.
+- Link không dùng được mà máy không có WinGet: lý do ghi rõ "Máy không có WinGet để cài dự phòng."
+- Trình cài chưa có tham số cài im lặng trên Admin (Office, Kaspersky, ESET…) sẽ mở cửa sổ chờ kỹ thuật viên bấm: dòng tác vụ nay ghi "Làm theo trình cài trên màn hình" thay vì "Đang chạy trình cài", để không tưởng phần mềm bị treo.
+
+**Khung ứng dụng (`shell`) 0.12.3** — dùng chung
+- Khi chờ thử lại, dòng tác vụ ghi "Lỗi tạm thời, thử lại sau N giây" thay vì đứng yên.
+- Bỏ chữ "qua WinGet" đã lỗi thời ở trang Tổng quan, hộp xác nhận và trang Phần mềm (từ 1.1.3 ưu tiên link chính thức có chữ ký số).
+
+**Tổng quan & Gói nhanh (`overview`) 0.7.3**
+- Chữ mô tả gói phần mềm cập nhật theo cách cài mới.
+
+**Công cụ kiểm thử**
+- `kiem-thu-cai-dat`: chạy trên Windows Server 2022 và 2025; thêm dừng giữa chừng, link hỏng → WinGet, máy không có WinGet, mọi ứng dụng tùy chọn (kể cả lối tắt web, ứng dụng hiện mờ), job riêng cho Office/Microsoft 365/Kaspersky/ESET.
+- `kiem-thu-giao-dien`: chụp mọi trang ở 1366×768 và 1920×1080; chạy đúng file LamMotCham.exe của bản phát hành, chụp màn hình, đọc chữ trên cửa sổ, lấy log.
+
 ## 1.1.7 — 01/11/2026
 
 Kiểm thử đầu-cuối trước khi giao PO (PO yêu cầu: "kiểm thử ok xong hết rồi thì báo").

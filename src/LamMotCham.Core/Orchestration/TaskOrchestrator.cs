@@ -366,6 +366,7 @@ public sealed class TaskOrchestrator
             {
                 var wait = d.Retry.GetDelayBeforeAttempt(attempt + 1);
                 _log.Warning($"Lỗi tạm thời: {result.Reason}. Thử lại sau {wait.TotalSeconds:0.#} giây.", d.Id);
+                progress?.Report(new TaskStatusUpdate(d.Id, TaskState.Running, $"Lỗi tạm thời, thử lại sau {wait.TotalSeconds:0} giây", attempt));
                 try
                 {
                     await _delay.DelayAsync(wait, userToken).ConfigureAwait(false);
