@@ -4,7 +4,10 @@ Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-
 
 ## 1.1.9 — 01/11/2026
 
-Giao diện trang Phần mềm theo góp ý PO.
+Giao diện trang Phần mềm và tính năng mới theo yêu cầu PO.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.8.0**
+- Mới: **Đưa Word, Excel, PowerPoint ra desktop** (nhóm Trải nghiệm Windows, chọn sẵn). Chép lối tắt Office trong Start Menu ra desktop chung của máy (mọi tài khoản đều thấy); Office cũ hoặc không có lối tắt Start Menu thì tạo lối tắt tới file chạy tìm qua App Paths. Chỉ tạo lối tắt còn thiếu. Máy chưa cài Office thì báo "Không hỗ trợ", không làm gì. Hoàn tác chỉ xóa đúng các lối tắt Làm 1 Chạm đã tạo.
 
 **Phần mềm thiết yếu (`software`) 0.7.0**
 - Bỏ bảng 1 hàng dọc (cột tên quá rộng): ứng dụng dàn thành thẻ nằm ngang, tự xuống dòng theo bề rộng màn hình (khoảng 3 thẻ mỗi hàng ở 1366×768, 5 thẻ ở 1920×1080). Mỗi thẻ có ô chọn, logo, tên, nhóm, Khuyến nghị/Tùy chọn, mô tả, trạng thái; thẻ đang chọn có viền xanh.

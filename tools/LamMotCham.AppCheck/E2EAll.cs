@@ -32,6 +32,8 @@ internal static class E2EAll
     /// <summary>Ứng dụng nặng (bộ Office, phần mềm diệt virus): chạy ở job riêng (--e2e-nang) để lỗi không kéo theo phần khác.</summary>
     internal static readonly string[] Heavy = ["Microsoft 365", "Microsoft Office", "Kaspersky", "ESET"];
 
+    private static readonly string[] OfficeNames = ["Word", "Excel", "PowerPoint"];
+
     /// <summary>Phát hiện về dữ liệu trên Admin (link không ký số, tham số cài sai…): báo PO, không làm đỏ kiểm thử phần mềm.</summary>
     private static readonly List<string> Findings = [];
 
@@ -232,6 +234,27 @@ internal static class E2EAll
             }
 
             await RunBatchAsync(entry.Module.Descriptor.DisplayName, [entry], md, problems, ct);
+        }
+
+        // Office vừa cài (Microsoft 365): thử thật tính năng đưa Word, Excel, PowerPoint ra desktop, chạy lại, rồi hoàn tác.
+        var office = WindowsCatalog.Build(services).Single(e => e.Id == "win.officedesktop");
+        var first = await RunBatchAsync("Đưa Word, Excel, PowerPoint ra desktop", [office], md, problems, ct);
+        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+        var links = OfficeNames.Select(n => Path.Combine(desktop, n + ".lnk")).ToList();
+        var present = links.Where(File.Exists).Select(Path.GetFileName).ToList();
+        Console.WriteLine($"::notice title=Lối tắt Office trên desktop::{(present.Count == 0 ? "không có" : string.Join(", ", present))}");
+        if (first.Results[0].Outcome.State == TaskState.Success && present.Count != 3)
+        {
+            problems.Add($"Đưa Office ra desktop: báo Thành công nhưng chỉ thấy {present.Count}/3 lối tắt.");
+        }
+
+        var again = await RunBatchAsync("Đưa Word, Excel, PowerPoint ra desktop — lượt 2", [WindowsCatalog.Build(services).Single(e => e.Id == "win.officedesktop")], md, problems, ct);
+        var undoOffice = await office.Module.RollbackAsync(new TaskContext(new InMemoryRunLogger(), 1), ct);
+        var afterUndo = links.Count(File.Exists);
+        Console.WriteLine($"::notice title=Hoàn tác lối tắt Office::{undoOffice.Outcome} — {undoOffice.Detail}; còn {afterUndo} lối tắt");
+        if (undoOffice.Outcome != VerifyOutcome.Passed || afterUndo != 0)
+        {
+            problems.Add($"Hoàn tác lối tắt Office: {undoOffice.Outcome}, còn {afterUndo} lối tắt.");
         }
 
         md.Append(problems.Count == 0 ? "**Kết quả: Đạt.**\n" : "**Kết quả: Lỗi**\n\n" + string.Join("\n", problems.Select(p => "- " + p)) + "\n");

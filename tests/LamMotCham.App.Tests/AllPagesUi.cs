@@ -68,6 +68,13 @@ internal static class AllPagesUi
         try
         {
             stage("tạo dịch vụ ứng dụng");
+
+            // Dùng danh sách ứng dụng giống Admin (có Office, Kaspersky, ESET nhiều phiên bản) để dựng trang Phần mềm như thật.
+            if (FindUp("tools/LamMotCham.AppCheck/apps-admin.json") is { } adminList)
+            {
+                LamMotCham.Windows.Software.SoftwareCatalog.Use(LamMotCham.Windows.Software.RemoteCatalog.Parse(File.ReadAllText(adminList)).Packages);
+            }
+
             using var services = AppServices.Create();
             using var vm = new MainViewModel(services, new NullUi());
             var views = new Dictionary<Type, Func<FrameworkElement>>
@@ -142,6 +149,17 @@ internal static class AllPagesUi
                     }
                 }
 
+                // Trang Phần mềm khi mở ô chọn phiên bản của Kaspersky (mặc định chỉ hiện "Phiên bản ▾").
+                if (vm.Rows.Values.FirstOrDefault(r => r.HasVariants) is { } multi)
+                {
+                    multi.VariantsOpen = true;
+                    vm.CurrentPage = LamMotCham.Presentation.ViewModels.Page.Software;
+                    var view = views[vm.CurrentPageViewModel.GetType()]();
+                    view.DataContext = vm.CurrentPageViewModel;
+                    Save(view, 1366 - 260, 1400, Path.Combine(shots, "1366x768-1b-Software-mo-phien-ban.png"));
+                    multi.VariantsOpen = false;
+                }
+
                 vm.CurrentPage = LamMotCham.Presentation.ViewModels.Page.Overview;
             }
 
@@ -173,6 +191,20 @@ internal static class AllPagesUi
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using var file = File.Create(path);
         encoder.Save(file);
+    }
+
+    private static string? FindUp(string relative)
+    {
+        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
+        {
+            var candidate = Path.Combine(dir.FullName, relative);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
     private static void Layout(FrameworkElement view)
