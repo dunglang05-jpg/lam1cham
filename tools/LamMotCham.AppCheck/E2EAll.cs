@@ -7,6 +7,7 @@ using LamMotCham.Core.Orchestration;
 using LamMotCham.Core.Resources;
 using LamMotCham.Core.Tasks;
 using LamMotCham.Windows;
+using LamMotCham.Windows.Config;
 using LamMotCham.Windows.Infrastructure;
 using LamMotCham.Windows.Probe;
 using LamMotCham.Windows.Resources;
@@ -243,9 +244,12 @@ internal static class E2EAll
         var links = OfficeNames.Select(n => Path.Combine(desktop, n + ".lnk")).ToList();
         var present = links.Where(File.Exists).Select(Path.GetFileName).ToList();
         Console.WriteLine($"::notice title=Lối tắt Office trên desktop::{(present.Count == 0 ? "không có" : string.Join(", ", present))}");
-        if (first.Results[0].Outcome.State == TaskState.Success && present.Count != 3)
+        // Microsoft 365 vừa cài thành công thì tác vụ phải tạo đủ 3 lối tắt (không được "Không hỗ trợ").
+        var officeInstalled = OfficeDesktopShortcutsTask.IsOfficeInstalled();
+        Console.WriteLine($"::warning title=Kết quả lối tắt Office::Office trên máy: {(officeInstalled ? "có" : "không")}; tác vụ: {first.Results[0].Outcome.State} — {first.Results[0].Outcome.Reason}; lối tắt: {present.Count}/3");
+        if (officeInstalled && (first.Results[0].Outcome.State != TaskState.Success || present.Count != 3))
         {
-            problems.Add($"Đưa Office ra desktop: báo Thành công nhưng chỉ thấy {present.Count}/3 lối tắt.");
+            problems.Add($"Đưa Office ra desktop: {first.Results[0].Outcome.State}, thấy {present.Count}/3 lối tắt.");
         }
 
         var again = await RunBatchAsync("Đưa Word, Excel, PowerPoint ra desktop — lượt 2", [WindowsCatalog.Build(services).Single(e => e.Id == "win.officedesktop")], md, problems, ct);

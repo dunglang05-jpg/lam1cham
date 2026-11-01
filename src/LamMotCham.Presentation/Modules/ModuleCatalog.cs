@@ -26,7 +26,7 @@ public static class ModuleCatalog
 {
     public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.12.3", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
-    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.2.0", "user", "Đăng nhập, lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
+    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.3.0", "user", "Đăng nhập (hoặc vào thẳng qua Wi-Fi cửa hàng), lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
 
     public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.3", "home", "Thông tin máy, chọn gói thiết lập");
 

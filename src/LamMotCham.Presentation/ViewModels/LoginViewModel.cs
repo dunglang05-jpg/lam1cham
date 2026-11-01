@@ -193,6 +193,57 @@ public sealed class LoginViewModel : ObservableObject
         return AccountValidation.CheckUsername(_username) ?? AccountValidation.CheckLoginPassword(_password);
     }
 
+    /// <summary>
+    /// Mở phần mềm khi đang nối Wi-Fi nằm trong danh sách "Wi-Fi miễn đăng nhập" trên Admin thì vào thẳng (PO 02/11/2026).
+    /// Không đọc được tên Wi-Fi hoặc Wi-Fi không có trong danh sách: giữ màn hình đăng nhập như thường, không báo lỗi.
+    /// </summary>
+    /// <param name="readSsids">Đọc tên các Wi-Fi đang kết nối (chạy nền).</param>
+    public async Task TryWifiSignInAsync(Func<IReadOnlyList<string>> readSsids)
+    {
+        ArgumentNullException.ThrowIfNull(readSsids);
+        if (!IsConfigured || IsBusy)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var ssids = await Task.Run(readSsids);
+            if (ssids.Count == 0)
+            {
+                return;
+            }
+
+            Notice = "Đang kiểm tra Wi-Fi " + string.Join(", ", ssids) + "…";
+            var result = await _account.TrySignInByWifiAsync(ssids);
+            Notice = "";
+            if (result?.Session is not { } session)
+            {
+                return;
+            }
+
+            if (_afterSignIn is not null)
+            {
+                Notice = "Đang tải danh sách phần mềm…";
+                await _afterSignIn();
+                Notice = "";
+            }
+
+            SignedIn?.Invoke(this, session);
+        }
+#pragma warning disable CA1031 // Vào qua Wi-Fi chỉ là lối tắt: lỗi bất kỳ thì vẫn đăng nhập bằng tài khoản như thường.
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            Notice = "";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     private async Task SignInAsync()
     {
         var result = await _account.SignInAsync(_username, _password);

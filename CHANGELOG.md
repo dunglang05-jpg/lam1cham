@@ -6,6 +6,11 @@ Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-
 
 Giao diện trang Phần mềm và tính năng mới theo yêu cầu PO.
 
+**Tài khoản & Đăng nhập (`account`) 0.3.0**
+- Mới: **Wi-Fi miễn đăng nhập** (PO duyệt 02/11/2026). Admin › Cài đặt có ô "Wi-Fi miễn đăng nhập" (mỗi dòng một tên Wi-Fi) và chọn tài khoản dùng khi vào qua Wi-Fi. Mở phần mềm khi đang nối một trong các Wi-Fi đó thì vào thẳng, không hỏi mật khẩu; danh sách ứng dụng và Lịch sử cài vẫn chạy như thường. Máy chủ quyết định (action `wifiLogin`), giới hạn số lần thử theo IP, ghi Nhật ký. PO chấp nhận rủi ro: tên Wi-Fi có thể bị giả.
+- Tên Wi-Fi đọc bằng Native Wifi API của Windows. Windows 11 24H2 cần bật Vị trí (Location) mới đọc được; không đọc được thì hiện màn hình đăng nhập như cũ và ghi lý do vào log.
+- Vừa bấm Đăng xuất thì không tự vào lại qua Wi-Fi, để đăng nhập tài khoản khác được.
+
 **Cài đặt & Tối ưu Windows (`windows`) 0.8.0**
 - Mới: **Đưa Word, Excel, PowerPoint ra desktop** (nhóm Trải nghiệm Windows, chọn sẵn). Chép lối tắt Office trong Start Menu ra desktop chung của máy (mọi tài khoản đều thấy); Office cũ hoặc không có lối tắt Start Menu thì tạo lối tắt tới file chạy tìm qua App Paths. Chỉ tạo lối tắt còn thiếu. Máy chưa cài Office thì báo "Không hỗ trợ", không làm gì. Hoàn tác chỉ xóa đúng các lối tắt Làm 1 Chạm đã tạo.
 

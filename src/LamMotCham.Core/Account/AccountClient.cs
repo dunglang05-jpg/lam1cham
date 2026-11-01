@@ -25,6 +25,12 @@ public interface IAccountClient
 
     Task<AccountResult> RegisterAsync(string fullName, string username, string password, string machineId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Vào không cần mật khẩu khi máy đang kết nối Wi-Fi nằm trong danh sách "Wi-Fi miễn đăng nhập" trên Web Admin
+    /// (action=wifiLogin, PO duyệt 01/11/2026). Máy chủ quyết định và cấp phiên của tài khoản Wi-Fi đã chọn trên Admin.
+    /// </summary>
+    Task<AccountResult> WifiLoginAsync(string ssid, string machineId, CancellationToken cancellationToken = default);
+
     /// <summary>Danh sách ứng dụng đang bật trên Web Admin (action=listApps). Cần mã phiên của lần đăng nhập này.</summary>
     Task<AppListResult> ListAppsAsync(string token, string machineId, CancellationToken cancellationToken = default);
 
@@ -96,6 +102,46 @@ public sealed class AccountClient : IAccountClient
             reply.Token!,
             now);
         return new AccountResult(AccountResultKind.Success, Or(reply.Message, "Đăng nhập thành công."), session);
+    }
+
+    public async Task<AccountResult> WifiLoginAsync(string ssid, string machineId, CancellationToken cancellationToken = default)
+    {
+        var name = (ssid ?? "").Trim();
+        if (name.Length is 0 or > 64)
+        {
+            return new AccountResult(AccountResultKind.BadCredentials, "Tên Wi-Fi không hợp lệ.");
+        }
+
+        var reply = await SendAsync(
+            [
+                ("action", "wifiLogin"),
+                ("ssid", name),
+                ("machine", machineId ?? ""),
+            ],
+            cancellationToken).ConfigureAwait(false);
+
+        if (reply.Failure is not null)
+        {
+            return reply.Failure;
+        }
+
+        if (!reply.Ok)
+        {
+            return Fail(reply.Code, reply.Message);
+        }
+
+        if (!AccountValidation.IsValidToken(reply.Token))
+        {
+            return new AccountResult(AccountResultKind.ServerError, "Máy chủ trả về phiên không hợp lệ.");
+        }
+
+        var session = new AccountSession(
+            "wifi",
+            string.IsNullOrWhiteSpace(reply.Name) ? "Wi-Fi " + name : reply.Name.Trim(),
+            ParseRole(reply.Role),
+            reply.Token!,
+            _time.GetUtcNow());
+        return new AccountResult(AccountResultKind.Success, Or(reply.Message, "Đã vào qua Wi-Fi " + name + "."), session);
     }
 
     public async Task<AccountResult> RegisterAsync(string fullName, string username, string password, string machineId, CancellationToken cancellationToken = default)

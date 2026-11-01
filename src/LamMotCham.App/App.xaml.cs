@@ -17,6 +17,9 @@ public partial class App : Application, IUiPlatform
     private const string SignOutArgument = "--after-signout";
 
     private Mutex? _singleInstance;
+
+    /// <summary>Mở lại sau khi bấm Đăng xuất: không tự vào qua Wi-Fi nữa, để đăng nhập tài khoản khác được.</summary>
+    private bool _afterSignOut;
     private AppServices? _services;
     private MainViewModel? _main;
     private bool _showingError;
@@ -26,6 +29,7 @@ public partial class App : Application, IUiPlatform
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        _afterSignOut = e.Args.Contains(SignOutArgument);
 
         // Chỉ một bản chạy tại một thời điểm để không có hai hàng đợi cài đặt chạy chồng.
         _singleInstance = new Mutex(true, @"Local\LamMotCham.SingleInstance", out var created);
@@ -87,6 +91,24 @@ public partial class App : Application, IUiPlatform
         };
         MainWindow = window;
         window.Show();
+
+        // Wi-Fi miễn đăng nhập (Admin › Cài đặt): đang nối Wi-Fi của cửa hàng thì vào thẳng.
+        // Vừa đăng xuất thì không tự vào lại (người dùng muốn đổi tài khoản).
+        if (_afterSignOut)
+        {
+            return;
+        }
+
+        window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, async () => await vm.TryWifiSignInAsync(() =>
+        {
+            var ssids = LamMotCham.Windows.Network.WifiInfo.ConnectedSsids();
+            if (ssids.Count == 0 && LamMotCham.Windows.Network.WifiInfo.LastProblem is { } why)
+            {
+                services.Log.Info("Không dùng được Wi-Fi miễn đăng nhập: " + why);
+            }
+
+            return ssids;
+        }));
     }
 
     private void ShowMain()

@@ -90,6 +90,34 @@ public sealed class AccountService : IDisposable
         return result;
     }
 
+    /// <summary>
+    /// Thử vào bằng Wi-Fi đang kết nối (danh sách "Wi-Fi miễn đăng nhập" trên Admin). Không được thì trả null
+    /// và màn hình đăng nhập hiện như thường. Chỉ ghi tên Wi-Fi vào log, không ghi mã phiên.
+    /// </summary>
+    public async Task<AccountResult?> TrySignInByWifiAsync(IReadOnlyList<string> ssids, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ssids);
+        if (!IsConfigured)
+        {
+            return null;
+        }
+
+        foreach (var ssid in ssids.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct(StringComparer.Ordinal))
+        {
+            var result = await _client.WifiLoginAsync(ssid, MachineId, cancellationToken).ConfigureAwait(false);
+            if (result.Kind == AccountResultKind.Success && result.Session is not null)
+            {
+                Current = result.Session;
+                _log.Info($"Vào không cần đăng nhập qua Wi-Fi \"{ssid}\" (tài khoản {result.Session.DisplayName}).");
+                return result;
+            }
+
+            _log.Info($"Wi-Fi \"{ssid}\" không nằm trong danh sách miễn đăng nhập ({result.Kind}).");
+        }
+
+        return null;
+    }
+
     public async Task<AccountResult> RegisterAsync(string fullName, string username, string password, CancellationToken cancellationToken = default)
     {
         var result = await _client.RegisterAsync(fullName, username, password, MachineId, cancellationToken).ConfigureAwait(false);

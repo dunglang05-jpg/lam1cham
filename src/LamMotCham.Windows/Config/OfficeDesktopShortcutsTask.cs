@@ -145,6 +145,9 @@ public sealed class OfficeDesktopShortcutsTask(RollbackStore store, Func<string>
 
     private string Target(string name) => System.IO.Path.Combine(_desktop(), name + ".lnk");
 
+    /// <summary>Máy có ít nhất một trong Word, Excel, PowerPoint.</summary>
+    public static bool IsOfficeInstalled() => FindSources().Count > 0;
+
     /// <summary>Tìm Word, Excel, PowerPoint đã cài: lối tắt Start Menu chung trước, sau đó App Paths.</summary>
     internal static List<Source> FindSources()
     {
