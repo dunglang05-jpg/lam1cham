@@ -1,0 +1,6 @@
+SHA-256 69812e04d77030e22b7cc8596adb4182b2f868233614672e8ab0e91abc6e5e38 (mong đợi 69812e04d77030e22b7cc8596adb4182b2f868233614672e8ab0e91abc6e5e38)
+
+ProductVersion : 1.1.7+9cbef2759aa4b7f658a31c82293d8400364965ad
+FileVersion    : 1.1.7.0
+
+Mở cửa sổ sau 1 giây; đã thoát: False; tiêu đề: Làm 1 Chạm · Đăng nhập
