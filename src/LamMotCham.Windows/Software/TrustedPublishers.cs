@@ -29,6 +29,9 @@ public static class TrustedPublishers
         "Rakuten Viber",
         "DUC FABULOUS CO.,LTD",
         "VNG Corporation",
+
+        // Zalo ký bằng tên mới của VNG — PO duyệt 02/11/2026 sau khi thử link zalo.me trên CI.
+        "VNG GROUP JSC",
         "Zhuhai Kingsoft Office Software Co., Ltd.",
 
         // Tác giả UniKey (chứng chỉ cá nhân) — PO duyệt 30/10/2026 sau kiểm tra tự động trên CI.

@@ -2,6 +2,21 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.10 — 02/11/2026
+
+Zalo cài bằng link chính thức (PO gửi link zalo.me).
+
+**Phần mềm thiết yếu (`software`) 0.7.1**
+- Tải file cài với nhận diện như trình duyệt Chrome trên Windows (kèm "LamMotCham"). Trước đây zalo.me trả về trang web cho trình tải của phần mềm, nên báo nhầm "chữ ký số không hợp lệ".
+- Link dẫn tới trang web thay vì file cài thì báo rõ "Link dẫn tới trang web … chứ không phải file cài" và chuyển sang WinGet.
+- Mạng đứt giữa chừng khi đang tải (ví dụ file 207 MB đứt ở 109 MB) nay được tính là lỗi tạm thời, thử lại được.
+
+**Danh mục (`catalog`) 2026.11.02.1**
+- Thêm "VNG GROUP JSC" (tên mới của VNG, ký bộ cài Zalo) vào danh sách hãng tin cậy — PO duyệt 02/11/2026. Đã thử trên máy sạch: tải 207 MB, chữ ký hợp lệ, cài im lặng bằng `/S` trong 17 giây, nhận biết được Zalo sau cài.
+
+**Công cụ**
+- Workflow `thu-link`: thử một link tải trước khi nhập lên Admin (trình tải và trình duyệt nhận được gì, chữ ký số, cài im lặng, nhận biết sau cài).
+
 ## 1.1.9 — 01/11/2026
 
 Giao diện trang Phần mềm và tính năng mới theo yêu cầu PO.

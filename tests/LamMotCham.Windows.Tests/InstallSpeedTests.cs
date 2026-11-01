@@ -137,6 +137,7 @@ public sealed class InstallSpeedTests
         Assert.True(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("x", null, System.Net.HttpStatusCode.TooManyRequests)));
         Assert.True(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("mất mạng")));
         Assert.True(DirectInstallTask.IsTransientDownloadError(new TaskCanceledException()));
+        Assert.True(DirectInstallTask.IsTransientDownloadError(new HttpIOException(HttpRequestError.ResponseEnded)));
         Assert.False(DirectInstallTask.IsTransientDownloadError(new InvalidDataException()));
     }
 

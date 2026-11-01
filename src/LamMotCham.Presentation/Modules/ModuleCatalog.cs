@@ -30,7 +30,7 @@ public static class ModuleCatalog
 
     public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.3", "home", "Thông tin máy, chọn gói thiết lập");
 
-    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.7.0", "download", "Danh sách từ Web Admin; ưu tiên link có chữ ký số (tải trước khi đang cài), WinGet dự phòng; xác minh sau khi cài");
+    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.7.1", "download", "Danh sách từ Web Admin; ưu tiên link có chữ ký số (tải trước khi đang cài), WinGet dự phòng; xác minh sau khi cài");
 
     public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.8.0", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
 

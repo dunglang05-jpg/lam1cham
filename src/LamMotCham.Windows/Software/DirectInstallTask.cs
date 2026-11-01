@@ -211,6 +211,9 @@ public sealed class DirectInstallTask
     {
         HttpRequestException { StatusCode: { } code } => (int)code >= 500 || code is System.Net.HttpStatusCode.RequestTimeout or System.Net.HttpStatusCode.TooManyRequests,
         HttpRequestException => true,
+
+        // Mạng đứt giữa chừng khi đang tải (kiểm thử 02/11/2026: Zalo 207 MB đứt ở 109 MB) — thử lại được.
+        HttpIOException => true,
         TaskCanceledException => true,
         _ => false,
     };

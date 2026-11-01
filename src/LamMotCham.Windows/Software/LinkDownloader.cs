@@ -121,6 +121,9 @@ public static class LinkDownloader
     }
 
     /// <param name="onBytes">Báo số byte đã tải và tổng dung lượng (null nếu máy chủ không báo) để hiện tiến độ.</param>
+    /// <summary>Chuỗi nhận diện khi tải: như Chrome trên Windows 64-bit, kèm "LamMotCham".</summary>
+    internal const string BrowserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 LamMotCham/1";
+
     public static async Task<DownloadedFile> DownloadAsync(Uri url, InstallKind kind, CancellationToken cancellationToken, Action<long, long?>? onBytes = null)
     {
         ArgumentNullException.ThrowIfNull(url);
@@ -139,6 +142,12 @@ public static class LinkDownloader
             if (final.Scheme != Uri.UriSchemeHttps)
             {
                 throw new InvalidDataException("Link tải chuyển hướng sang địa chỉ không mã hóa (http); không tải.");
+            }
+
+            // Link dẫn tới trang web (đăng nhập, trang tải, lỗi) chứ không phải file cài: báo rõ, không đem đi kiểm tra chữ ký.
+            if (response.Content.Headers.ContentType?.MediaType is "text/html" or "application/xhtml+xml")
+            {
+                throw new InvalidDataException($"Link dẫn tới trang web ({final.Host}) chứ không phải file cài.");
             }
 
             if (response.Content.Headers.ContentLength is > MaxBytes)
@@ -244,7 +253,9 @@ public static class LinkDownloader
         {
             Timeout = Timeout.InfiniteTimeSpan,
         };
-        http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("LamMotCham", "1"));
+        // Giống trình duyệt Chrome trên Windows: nhiều hãng chọn file theo trình duyệt (zalo.me trả trang web cho trình tải lạ —
+        // kiểm thử 02/11/2026). Vẫn kèm tên Làm 1 Chạm để hãng nhận biết.
+        http.DefaultRequestHeaders.UserAgent.ParseAdd(BrowserUserAgent);
         http.DefaultRequestHeaders.AcceptLanguage.ParseAdd("vi-VN,vi;q=0.9,en;q=0.5");
         return http;
     }
