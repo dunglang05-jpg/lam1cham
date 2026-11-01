@@ -162,7 +162,8 @@ internal static class AllPagesUi
         using (var dc = visual.RenderOpen())
         {
             dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, width, height));
-            dc.DrawRectangle(new VisualBrush(view), null, new Rect(0, 0, width, height));
+            // Không co giãn: ảnh đúng kích thước thật của giao diện.
+            dc.DrawRectangle(new VisualBrush(view) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top }, null, new Rect(0, 0, width, height));
         }
 
         var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);

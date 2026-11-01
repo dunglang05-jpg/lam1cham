@@ -141,7 +141,15 @@ public sealed class DirectInstallTask
             var watch = Stopwatch.StartNew();
             InstallerStarted = true;
             ProcessResult result;
-            using (InstallProgress.Pulse(context, InstallProgress.DownloadShare, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(30), "Đang chạy trình cài"))
+            // Admin chưa khai báo tham số cài im lặng (Office, Kaspersky, ESET…): trình cài hiện cửa sổ và chờ kỹ thuật viên bấm.
+            // Ghi rõ để người dùng không tưởng phần mềm bị treo (kiểm thử 01/11/2026: ESET chờ 60 phút không ai bấm).
+            var interactive = args.Count == 0 && EffectiveKind != InstallKind.Msi;
+            if (interactive)
+            {
+                context.Log.Info("Trình cài không có tham số cài im lặng: làm theo hướng dẫn trên cửa sổ trình cài.", taskId);
+            }
+
+            using (InstallProgress.Pulse(context, InstallProgress.DownloadShare, InstallProgress.BeforeVerify, TimeSpan.FromSeconds(30), interactive ? "Làm theo trình cài trên màn hình" : "Đang chạy trình cài"))
             {
                 if (EffectiveKind == InstallKind.Msi)
                 {

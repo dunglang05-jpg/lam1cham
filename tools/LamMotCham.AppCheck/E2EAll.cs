@@ -195,6 +195,42 @@ internal static class E2EAll
         var md = new StringBuilder("## Kiểm thử ứng dụng nặng\n\n");
         foreach (var entry in WindowsCatalog.Build(services).Where(e => e.Category == TaskCategory.Software && Heavy.Contains(e.Module.Descriptor.DisplayName)))
         {
+            // Trình cài không có tham số im lặng cần người bấm qua từng bước: trên máy CI chỉ tải và kiểm tra chữ ký số
+            // của mọi phiên bản, không chạy (lần trước ESET chờ 60 phút vì không ai bấm).
+            var app = (AppInstallTask)entry.Module;
+            var variants = app.Package.Variants.Where(v => v.Kind != InstallKind.Web).ToList();
+            if (variants.Count > 0 && variants.All(v => string.IsNullOrWhiteSpace(v.SilentArgs)))
+            {
+                md.Append(CultureInfo.InvariantCulture, $"### {app.Package.Name} — trình cài cần thao tác tay: chỉ tải và kiểm tra chữ ký\n\n");
+                foreach (var v in variants)
+                {
+                    string line;
+                    try
+                    {
+                        using var file = await LinkDownloader.DownloadAsync(v.Url, v.Kind, ct);
+                        var sig = Authenticode.Check(file.Path);
+                        line = $"{v.Label}: {file.Bytes / 1048576.0:0.0} MB, {(sig.IsTrusted ? "chữ ký hợp lệ của hãng tin cậy" : "KHÔNG đạt chữ ký: " + sig.Detail)}";
+                        if (!sig.IsTrusted)
+                        {
+                            problems.Add($"{app.Package.Name} · {line}");
+                        }
+                    }
+#pragma warning disable CA1031 // Ghi nhận mọi lỗi tải thành kết quả kiểm thử.
+                    catch (Exception ex)
+#pragma warning restore CA1031
+                    {
+                        line = $"{v.Label}: không tải được — {ex.Message}";
+                        problems.Add($"{app.Package.Name} · {line}");
+                    }
+
+                    md.Append("- ").Append(line).Append('\n');
+                    Console.WriteLine($"::notice title={app.Package.Name}::{line}");
+                }
+
+                md.Append('\n');
+                continue;
+            }
+
             await RunBatchAsync(entry.Module.Descriptor.DisplayName, [entry], md, problems, ct);
         }
 

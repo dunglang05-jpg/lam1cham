@@ -10,6 +10,7 @@ Sửa các lỗi tìm ra khi kiểm thử kỹ trên máy Windows sạch (Window
 - Link tải sai (404, 403…) không còn bị thử lại 3 lần (mất khoảng 30 giây): báo lỗi ngay và chuyển sang WinGet. Chỉ thử lại khi mất mạng, hết giờ, máy chủ lỗi 5xx, 408 hoặc 429.
 - Trình cài bằng link báo đã hủy (mã 1602, chưa cài gì lên máy, ví dụ Viber với tham số `/S`) thì tự chuyển sang WinGet thay vì báo Thất bại.
 - Link không dùng được mà máy không có WinGet: lý do ghi rõ "Máy không có WinGet để cài dự phòng."
+- Trình cài chưa có tham số cài im lặng trên Admin (Office, Kaspersky, ESET…) sẽ mở cửa sổ chờ kỹ thuật viên bấm: dòng tác vụ nay ghi "Làm theo trình cài trên màn hình" thay vì "Đang chạy trình cài", để không tưởng phần mềm bị treo.
 
 **Khung ứng dụng (`shell`) 0.12.3** — dùng chung
 - Khi chờ thử lại, dòng tác vụ ghi "Lỗi tạm thời, thử lại sau N giây" thay vì đứng yên.
