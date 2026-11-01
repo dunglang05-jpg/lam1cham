@@ -2,6 +2,14 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.9 — 01/11/2026
+
+Giao diện trang Phần mềm theo góp ý PO.
+
+**Phần mềm thiết yếu (`software`) 0.7.0**
+- Bỏ bảng 1 hàng dọc (cột tên quá rộng): ứng dụng dàn thành thẻ nằm ngang, tự xuống dòng theo bề rộng màn hình (khoảng 3 thẻ mỗi hàng ở 1366×768, 5 thẻ ở 1920×1080). Mỗi thẻ có ô chọn, logo, tên, nhóm, Khuyến nghị/Tùy chọn, mô tả, trạng thái; thẻ đang chọn có viền xanh.
+- Ứng dụng nhiều phiên bản (Office, Kaspersky, ESET): mặc định chỉ hiện "Phiên bản ▾"; bấm vào mới sổ ra ô chọn phiên bản.
+
 ## 1.1.8 — 01/11/2026
 
 Sửa các lỗi tìm ra khi kiểm thử kỹ trên máy Windows sạch (Windows Server 2022 không có WinGet và Windows Server 2025 có WinGet).

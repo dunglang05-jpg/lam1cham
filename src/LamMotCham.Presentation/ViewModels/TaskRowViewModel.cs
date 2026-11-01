@@ -87,6 +87,15 @@ public sealed class TaskRowViewModel : ObservableObject
         }
     }
 
+    private bool _variantsOpen;
+
+    /// <summary>Đang mở ô chọn phiên bản (PO 01/11/2026: mặc định chỉ hiện mũi tên, bấm vào mới sổ ra).</summary>
+    public bool VariantsOpen
+    {
+        get => _variantsOpen;
+        set => Set(ref _variantsOpen, value);
+    }
+
     public bool IsReadOnly => Entry.IsReadOnly;
 
     /// <summary>Nằm trong bộ chọn sẵn (thiết kế: cột "Đề xuất" — Khuyến nghị / Tùy chọn).</summary>
