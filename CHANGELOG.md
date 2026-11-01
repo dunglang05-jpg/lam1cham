@@ -15,6 +15,9 @@ Sửa các lỗi tìm ra khi kiểm thử kỹ trên máy Windows sạch (Window
 - Khi chờ thử lại, dòng tác vụ ghi "Lỗi tạm thời, thử lại sau N giây" thay vì đứng yên.
 - Bỏ chữ "qua WinGet" đã lỗi thời ở trang Tổng quan, hộp xác nhận và trang Phần mềm (từ 1.1.3 ưu tiên link chính thức có chữ ký số).
 
+**Tổng quan & Gói nhanh (`overview`) 0.7.3**
+- Chữ mô tả gói phần mềm cập nhật theo cách cài mới.
+
 **Công cụ kiểm thử**
 - `kiem-thu-cai-dat`: chạy trên Windows Server 2022 và 2025; thêm dừng giữa chừng, link hỏng → WinGet, máy không có WinGet, mọi ứng dụng tùy chọn (kể cả lối tắt web, ứng dụng hiện mờ), job riêng cho Office/Microsoft 365/Kaspersky/ESET.
 - `kiem-thu-giao-dien`: chụp mọi trang ở 1366×768 và 1920×1080; chạy đúng file LamMotCham.exe của bản phát hành, chụp màn hình, đọc chữ trên cửa sổ, lấy log.

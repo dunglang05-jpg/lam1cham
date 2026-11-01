@@ -28,7 +28,7 @@ public static class ModuleCatalog
 
     public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.2.0", "user", "Đăng nhập, lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
 
-    public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.2", "home", "Thông tin máy, chọn gói thiết lập");
+    public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.3", "home", "Thông tin máy, chọn gói thiết lập");
 
     public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.6.3", "download", "Danh sách từ Web Admin; ưu tiên link có chữ ký số (tải trước khi đang cài), WinGet dự phòng; xác minh sau khi cài");
 
