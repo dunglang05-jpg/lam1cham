@@ -42,6 +42,11 @@ internal static class Program
         using var stop = new CancellationTokenSource(TimeSpan.FromMinutes(args.Any(a => a is "--e2e-all" or "--e2e-nang") ? 100 : 50));
         var ct = stop.Token;
 
+        if (Arg(args, "--thu-link") is { } testUrl)
+        {
+            return await ThuLink.RunAsync(new Uri(testUrl), Arg(args, "--ten") ?? "Ứng dụng thử", Arg(args, "--tham-so") ?? "", Arg(args, "--nhan-biet") ?? "", Arg(args, "--duong-dan") ?? "", ct);
+        }
+
         var (json, source) = await LoadListAsync(snapshot, ct);
         var parsed = RemoteCatalog.Parse(json);
         SoftwareCatalog.Use(parsed.Packages);

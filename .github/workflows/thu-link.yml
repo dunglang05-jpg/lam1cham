@@ -1,0 +1,45 @@
+# Thử một link tải trước khi nhập lên Admin: trình tải trả về gì, chữ ký số, cài im lặng và nhận biết sau cài.
+name: thu-link
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Link tải (https)'
+        required: true
+      ten:
+        description: 'Tên ứng dụng'
+        required: true
+      tham_so:
+        description: 'Tham số cài im lặng, ví dụ /S'
+        required: false
+        default: ''
+      nhan_biet:
+        description: 'Tên hiển thị trong Installed apps để nhận biết'
+        required: true
+      duong_dan:
+        description: 'Đường dẫn file để nhận biết (tùy chọn), ví dụ %LocalAppData%\Programs\Zalo\Zalo.exe'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  thu:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Thử link
+        shell: pwsh
+        env:
+          URL: ${{ inputs.url }}
+          TEN: ${{ inputs.ten }}
+          THAM_SO: ${{ inputs.tham_so }}
+          NHAN_BIET: ${{ inputs.nhan_biet }}
+          DUONG_DAN: ${{ inputs.duong_dan }}
+        run: dotnet run --project tools/LamMotCham.AppCheck -c Release -- --thu-link $env:URL --ten $env:TEN --tham-so $env:THAM_SO --nhan-biet $env:NHAN_BIET --duong-dan $env:DUONG_DAN
