@@ -1,0 +1,8 @@
+SHA-256 4ffb2eb9c24fb3c092214bb8f284468f3cbb72e3b2a89672d3ca8e51feb8ad27 (mong đợi 4ffb2eb9c24fb3c092214bb8f284468f3cbb72e3b2a89672d3ca8e51feb8ad27)
+
+ProductVersion : 1.1.9+73b96cad7389d751fa3fd979472f49d3ca3eb08d
+FileVersion    : 1.1.9.0
+
+Mở cửa sổ sau 2 giây; đã thoát: False; tiêu đề: Làm 1 Chạm · Đăng nhập
+Số phần tử có chữ: 21
+Sau 10 giây vẫn chạy: True; bộ nhớ: 232 MB
