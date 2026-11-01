@@ -2,6 +2,8 @@ using System.Text;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using LamMotCham.App.Views;
 using LamMotCham.App.Views.Pages;
 using LamMotCham.Core.Orchestration;
@@ -111,14 +113,63 @@ internal static class AllPagesUi
             Assert.Contains(texts, t => t == "Chờ đến lượt");
             Assert.Contains(texts, t => t.StartsWith("Đang thực hiện · ", StringComparison.Ordinal));
             Assert.DoesNotContain(texts, t => t.Contains(" · ", StringComparison.Ordinal) && t.Split(" · ").Length > 2);
+            if (Environment.GetEnvironmentVariable("L1C_ANH_CHUP") is { Length: > 0 } dir)
+            {
+                Save(overlay, 1366, 768, Path.Combine(dir, "1366x768-9-HopTienDo.png"));
+            }
 
             stage("kiểm tra lỗi binding");
             Assert.True(errors.Errors.Count == 0, "Lỗi binding trên giao diện:\n" + string.Join("\n", errors.Errors.Distinct().Take(20)));
+
+            // Chụp sau khi đã kiểm tra lỗi binding: khung chính dựng ngoài cửa sổ nên các binding tìm cửa sổ cha báo lỗi giả.
+            PresentationTraceSources.DataBindingSource.Listeners.Remove(errors);
+            // Ảnh chụp toàn bộ khung ứng dụng (thanh bên + trang) ở 2 cỡ màn hình laptop phổ biến, để soát giao diện bằng mắt.
+            if (Environment.GetEnvironmentVariable("L1C_ANH_CHUP") is { Length: > 0 } shots)
+            {
+                Directory.CreateDirectory(shots);
+                var window = new MainWindow();
+                var root = (FrameworkElement)window.Content;
+                window.Content = null;
+                root.DataContext = vm;
+                foreach (var (w, h) in new[] { (1366, 768), (1920, 1080) })
+                {
+                    foreach (var page in Enum.GetValues<LamMotCham.Presentation.ViewModels.Page>())
+                    {
+                        stage($"chụp {page} {w}x{h}");
+                        vm.CurrentPage = page;
+                        Save(root, w, h, Path.Combine(shots, $"{w}x{h}-{(int)page}-{page}.png"));
+                    }
+                }
+
+                vm.CurrentPage = LamMotCham.Presentation.ViewModels.Page.Overview;
+            }
+
         }
         finally
         {
             PresentationTraceSources.DataBindingSource.Listeners.Remove(errors);
         }
+    }
+
+    /// <summary>Bố cục rồi vẽ ra PNG (nền trắng như cửa sổ).</summary>
+    private static void Save(FrameworkElement view, int width, int height, string path)
+    {
+        view.Measure(new Size(width, height));
+        view.Arrange(new Rect(0, 0, width, height));
+        view.UpdateLayout();
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, width, height));
+            dc.DrawRectangle(new VisualBrush(view), null, new Rect(0, 0, width, height));
+        }
+
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        using var file = File.Create(path);
+        encoder.Save(file);
     }
 
     private static void Layout(FrameworkElement view)
