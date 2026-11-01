@@ -32,6 +32,9 @@ internal static class E2EAll
     /// <summary>Ứng dụng nặng (bộ Office, phần mềm diệt virus): chạy ở job riêng (--e2e-nang) để lỗi không kéo theo phần khác.</summary>
     internal static readonly string[] Heavy = ["Microsoft 365", "Microsoft Office", "Kaspersky", "ESET"];
 
+    /// <summary>Phát hiện về dữ liệu trên Admin (link không ký số, tham số cài sai…): báo PO, không làm đỏ kiểm thử phần mềm.</summary>
+    private static readonly List<string> Findings = [];
+
     private static readonly string[] CrashMarkers = ["dừng bất thường", "Exception", "Lỗi không mong đợi", "Lỗi khi xác minh"];
 
     public static async Task<int> RunAsync(string? summaryPath, CancellationToken ct)
@@ -74,7 +77,9 @@ internal static class E2EAll
         await StopMidwayAsync(services, md, problems, ct);
 
         // 3c. Link hỏng (404) → tự chuyển WinGet trong cùng lượt.
-        if (SoftwareCatalog.Current.FirstOrDefault(p => p.Name == "VLC media player" && p.UsesWinGet) is { } vlc)
+        var hasWinGet = WinGetClient.ParseVersion(await services.WinGet.GetVersionAsync(ct)) is not null;
+        Console.WriteLine("::notice title=WinGet trên máy kiểm thử::" + (hasWinGet ? "có" : "KHÔNG có — kiểm thử luôn tình huống máy thiếu WinGet"));
+        if (hasWinGet && SoftwareCatalog.Current.FirstOrDefault(p => p.Name == "VLC media player" && p.UsesWinGet) is { } vlc)
         {
             var broken = vlc with { DirectUrl = new Uri("https://dunglam.top/khong-ton-tai-l1c-kiem-thu.exe"), PageUrl = null, PageRegex = null, SilentArgs = "/S" };
             var set = await RunBatchAsync("Link hỏng → tự chuyển WinGet (VLC)", [SoftwareEntry(new AppInstallTask(broken, services.WinGet))], md, problems, ct);
@@ -88,6 +93,14 @@ internal static class E2EAll
         if (SoftwareCatalog.Current.FirstOrDefault(p => p.Name == "UltraViewer" && p.HasLink) is { } ultra)
         {
             await RunBatchAsync("Máy không có WinGet (UltraViewer bằng link)", [SoftwareEntry(new AppInstallTask(ultra, new WinGetClient(() => null)))], md, problems, ct);
+        }
+
+        // 3d'. Thử tham số cài im lặng đề xuất sửa trên Admin: Viber là bộ cài WiX Burn, "/S" làm trình cài tự hủy (1602).
+        if (SoftwareCatalog.Current.FirstOrDefault(p => p.Name == "Viber" && p.HasLink) is { } viber)
+        {
+            var fixedArgs = viber with { SilentArgs = "/quiet /norestart" };
+            var set = await RunBatchAsync("Đề xuất Admin: Viber với /quiet /norestart (chỉ link)", [SoftwareEntry(new AppInstallTask(fixedArgs, new WinGetClient(() => null)))], md, notes, ct);
+            Console.WriteLine($"::notice title=Đề xuất Admin · Viber::Tham số /quiet /norestart → {set.Results[0].Outcome.State} — {set.Results[0].Outcome.Reason}");
         }
 
         // 3e. Mọi ứng dụng tùy chọn còn lại (trừ ứng dụng nặng): WinGet, link, lối tắt web, ứng dụng hiện mờ.
@@ -149,6 +162,12 @@ internal static class E2EAll
             problems,
             ct);
         await RunBatchAsync("Đổi tên máy", [WindowsCatalog.Rename("L1C-KIEMTHU")], md, problems, ct, rebootExpected: true);
+
+        foreach (var f in Findings.Distinct())
+        {
+            Console.WriteLine("::warning title=Phát hiện về danh sách ứng dụng trên Admin::" + f);
+            notes.Add(f);
+        }
 
         notes.Add("Chia ổ đĩa không chạy trên máy CI (ổ hệ thống của máy ảo không thu nhỏ an toàn được); đã có kiểm thử đơn vị cho kế hoạch chia ổ.");
         md.Append("### Ghi chú\n\n").Append(string.Join("\n", notes.Select(n => "- " + n))).Append("\n\n");
@@ -215,6 +234,8 @@ internal static class E2EAll
             return;
         }
 
+        // Máy CI có sẵn vài ứng dụng (ví dụ 7-Zip): chỉ coi là "bị cài dù đã dừng" khi trước đó chưa có.
+        var preexisting = tasks.Where(t => InstallDetector.FindEvidence(t.Package) is not null).Select(t => t.Package.Name).ToHashSet(StringComparer.Ordinal);
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var log = new InMemoryRunLogger();
         var orchestrator = new TaskOrchestrator(log, new ResourceGovernor(new WindowsResourceMonitor()));
@@ -224,7 +245,7 @@ internal static class E2EAll
         var line = string.Join("; ", tasks.Select((t, i) => $"{t.Package.Name}={states[i]}"));
         Console.WriteLine($"::notice title=Dừng giữa chừng::{line}; Halt={report.HaltReason}");
         md.Append(CultureInfo.InvariantCulture, $"### Dừng giữa chừng\n\n{line}; lý do dừng hàng đợi: {report.HaltReason}\n\n");
-        if (states[0] != TaskState.Success)
+        if (states[0] != TaskState.Success && !(states[0] == TaskState.NotSupported && !services.WinGet.IsAvailable))
         {
             problems.Add($"Dừng giữa chừng: ứng dụng đang cài phải được cài xong, nhưng là {states[0]} — {report.Tasks[0].Reason}");
         }
@@ -234,7 +255,7 @@ internal static class E2EAll
             problems.Add($"Dừng giữa chừng: các bước sau phải \"Đã hủy\" ({line}; {report.HaltReason}).");
         }
 
-        foreach (var t in tasks.Skip(1))
+        foreach (var t in tasks.Skip(1).Where(t => !preexisting.Contains(t.Package.Name)))
         {
             if (InstallDetector.FindEvidence(t.Package) is { } found)
             {
@@ -296,7 +317,16 @@ internal static class E2EAll
             lines.Add($"{d.DisplayName}={outcome.State}");
             Console.WriteLine($"[{outcome.State}] {entry.Category} · {d.DisplayName} · {outcome.Duration?.TotalSeconds:0}s · {reason}");
 
-            if (!Acceptable(entry, outcome, rebootExpected))
+            foreach (var w in log.Snapshot().Where(e => e.TaskId == d.Id && e.Message.StartsWith("Cài bằng link chưa được", StringComparison.Ordinal)))
+            {
+                Findings.Add($"{d.DisplayName}: {w.Message}");
+            }
+
+            if (outcome.Reason?.Contains("Máy không có WinGet để cài dự phòng", StringComparison.Ordinal) == true)
+            {
+                Findings.Add($"{d.DisplayName}: {outcome.Reason}");
+            }
+            else if (!Acceptable(entry, outcome, rebootExpected))
             {
                 problems.Add($"{title} · {d.DisplayName}: {outcome.State} — {reason}");
             }

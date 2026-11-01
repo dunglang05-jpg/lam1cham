@@ -129,6 +129,26 @@ public sealed class InstallSpeedTests
     }
 
     [Fact]
+    public void Wrong_links_are_not_retried_but_network_errors_are()
+    {
+        Assert.False(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("x", null, System.Net.HttpStatusCode.NotFound)));
+        Assert.False(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("x", null, System.Net.HttpStatusCode.Forbidden)));
+        Assert.True(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("x", null, System.Net.HttpStatusCode.ServiceUnavailable)));
+        Assert.True(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("x", null, System.Net.HttpStatusCode.TooManyRequests)));
+        Assert.True(DirectInstallTask.IsTransientDownloadError(new HttpRequestException("mất mạng")));
+        Assert.True(DirectInstallTask.IsTransientDownloadError(new TaskCanceledException()));
+        Assert.False(DirectInstallTask.IsTransientDownloadError(new InvalidDataException()));
+    }
+
+    [Fact]
+    public void Installer_cancelled_1602_allows_fallback()
+    {
+        Assert.True(DirectInstallTask.InstallerCancelled(DirectInstallTask.Classify(1602)));
+        Assert.False(DirectInstallTask.InstallerCancelled(DirectInstallTask.Classify(1603)));
+        Assert.False(DirectInstallTask.InstallerCancelled(DirectInstallTask.Classify(0)));
+    }
+
+    [Fact]
     public void Progress_errors_never_break_a_task()
     {
         var context = new TaskContext(new InMemoryRunLogger(), 1, new ThrowingProgress());

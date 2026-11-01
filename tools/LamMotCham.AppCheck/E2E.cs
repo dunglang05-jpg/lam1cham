@@ -212,7 +212,9 @@ internal static class E2E
         for (var i = 1; i < running.Count; i++)
         {
             var gap = running[i].At - running[i - 1].At;
-            if (gap > TimeSpan.FromSeconds(20))
+
+            // Đang chờ thử lại (10–60 giây) thì dòng tác vụ ghi rõ "thử lại sau N giây" — không phải treo.
+            if (gap > TimeSpan.FromSeconds(20) && running[i - 1].Data.Message?.Contains("thử lại sau", StringComparison.Ordinal) != true)
             {
                 yield return $"{where}: {gap.TotalSeconds:0} giây không cập nhật tiến độ (sau \"{running[i - 1].Data.Message}\").";
                 break;

@@ -110,7 +110,7 @@ public sealed class DirectInstallTask
             }
             catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
             {
-                return ExecuteResult.Failed($"Không tải được file cài từ {url.Host}: {ex.Message}", isTransient: ex is HttpRequestException or TaskCanceledException);
+                return ExecuteResult.Failed($"Không tải được file cài từ {url.Host}: {ex.Message}", isTransient: IsTransientDownloadError(ex));
             }
 
             waited = file.Elapsed;
@@ -194,6 +194,22 @@ public sealed class DirectInstallTask
             await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
         }
     }
+
+    /// <summary>
+    /// Lỗi tải đáng thử lại: mất mạng, hết giờ, máy chủ lỗi 5xx, 408, 429. Link sai (404, 403…) thử lại vô ích
+    /// (kiểm thử 01/11/2026: link 404 bị thử 3 lần, chờ 30 giây).
+    /// </summary>
+    internal static bool IsTransientDownloadError(Exception ex) => ex switch
+    {
+        HttpRequestException { StatusCode: { } code } => (int)code >= 500 || code is System.Net.HttpStatusCode.RequestTimeout or System.Net.HttpStatusCode.TooManyRequests,
+        HttpRequestException => true,
+        TaskCanceledException => true,
+        _ => false,
+    };
+
+    /// <summary>Trình cài báo đã hủy (1602): chưa cài gì lên máy, nên được phép thử cách cài dự phòng.</summary>
+    internal static bool InstallerCancelled(ExecuteResult result) =>
+        result.ErrorCode == UserCancelled.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     internal static ExecuteResult Classify(int exitCode) => exitCode switch
     {
