@@ -114,7 +114,7 @@ public sealed class OverviewViewModel : ObservableObject
         var full = main.Rows.Values.Where(r => r.Entry.IsInPack(TaskPack.FullSetup)).ToList();
         FullSetupLines =
         [
-            new("download", full.Count(r => r.Entry.Category == TaskCategory.Software).ToString(System.Globalization.CultureInfo.InvariantCulture), "phần mềm thiết yếu qua WinGet"),
+            new("download", full.Count(r => r.Entry.Category == TaskCategory.Software).ToString(System.Globalization.CultureInfo.InvariantCulture), "phần mềm thiết yếu, xác minh sau cài"),
             new("gear", full.Count(r => r.Entry.Category == TaskCategory.WindowsSettings && !r.IsReadOnly).ToString(System.Globalization.CultureInfo.InvariantCulture), "thiết lập Windows, lưu để hoàn tác"),
             new("sparkle", full.Count(r => r.Entry.Category == TaskCategory.Cleanup).ToString(System.Globalization.CultureInfo.InvariantCulture), "nhóm file tạm được dọn an toàn"),
             new("clipboard", full.Count(r => r.IsReadOnly).ToString(System.Globalization.CultureInfo.InvariantCulture), "mục kiểm tra và báo cáo bàn giao"),
@@ -229,7 +229,7 @@ public sealed class OverviewViewModel : ObservableObject
         {
             TaskPack.FullSetup => new(this, option, "Phần mềm + tối ưu Windows + kiểm tra", "Phù hợp laptop mới", "bolt", apps,
                 $"+ {changes} thiết lập Windows + {checks} mục kiểm tra", "blue"),
-            TaskPack.SoftwareOnly => new(this, option, "Cài các ứng dụng cơ bản qua WinGet", "Khi máy đã ổn định", "download", apps,
+            TaskPack.SoftwareOnly => new(this, option, "Cài các ứng dụng cơ bản", "Khi máy đã ổn định", "download", apps,
                 "Ứng dụng đã có trên máy sẽ được bỏ qua", "green"),
             TaskPack.WindowsOnly => new(this, option, "Cấu hình hệ thống và dọn dẹp", "Khi đã cài sẵn phần mềm", "gear", apps,
                 $"{changes} thiết lập và dọn dẹp — thiết lập lưu giá trị cũ để hoàn tác", "amber"),
@@ -293,7 +293,7 @@ public sealed class OverviewViewModel : ObservableObject
             Items = [.. extras.Select(r => new DialogItem(r.Name, IsIrreversibleChange(r) ? "Chọn thêm ngoài gói — không hoàn tác được" : "Chọn thêm ngoài gói", IsIrreversibleChange(r) ? "review" : r.ImpactKey))],
             Facts =
             [
-                new DialogFact("Phần mềm", installs == 0 ? "Không cài phần mềm." : $"{installs} gói qua WinGet, cài im lặng; gói đã có sẽ được bỏ qua."),
+                new DialogFact("Phần mềm", installs == 0 ? "Không cài phần mềm." : $"{installs} ứng dụng, cài im lặng bằng link chính thức có chữ ký số hoặc WinGet; ứng dụng đã có sẽ được bỏ qua."),
                 new DialogFact("Thay đổi Windows", changes == 0 ? "Không thay đổi cấu hình." : bitLocker
                     ? $"{changes} thay đổi, gồm tắt BitLocker. Thiết lập lưu giá trị cũ để hoàn tác (trừ dọn file và BitLocker)."
                     : $"{changes} thay đổi, đều lưu giá trị cũ để hoàn tác (trừ dọn file)."),

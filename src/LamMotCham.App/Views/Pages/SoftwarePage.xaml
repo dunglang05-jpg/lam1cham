@@ -191,7 +191,7 @@
                     </DockPanel>
                     <Border Style="{StaticResource Note}" Margin="12">
                         <TextBlock Style="{StaticResource NoteText}">
-                            <Run Text="ⓘ  " /><Run Text="{Binding CatalogSource, Mode=OneWay}" /><Run Text=". Cài qua WinGet (ưu tiên bản tiếng Việt) hoặc link chính thức có chữ ký số của hãng tin cậy; ứng dụng mờ chưa cài tự động được. Hủy giữa chừng sẽ dừng sau ứng dụng đang cài, không ép tắt trình cài đặt." />
+                            <Run Text="ⓘ  " /><Run Text="{Binding CatalogSource, Mode=OneWay}" /><Run Text=". Ưu tiên link chính thức có chữ ký số của hãng tin cậy (tải trước trong lúc cài app khác), dự phòng bằng WinGet; ứng dụng mờ chưa cài tự động được. Hủy giữa chừng sẽ dừng sau ứng dụng đang cài, không ép tắt trình cài đặt." />
                         </TextBlock>
                     </Border>
                 </StackPanel>
