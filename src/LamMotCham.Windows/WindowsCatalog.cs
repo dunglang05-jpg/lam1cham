@@ -130,6 +130,10 @@ public static class WindowsCatalog
             GroupExperience, "Hiện ba biểu tượng hệ thống trên desktop.", "monitor",
             new TaskDetails("Bật hiển thị ba biểu tượng hệ thống trên desktop.", "Quen thuộc với người dùng phổ thông.", "Không có.",
                 "Người dùng thường", "Không ảnh hưởng file trên desktop.", "Giá trị cũ được lưu lại."));
+        yield return Setting(new OfficeDesktopShortcutsTask(store), GroupExperience, "Tạo lối tắt Word, Excel, PowerPoint trên desktop chung của máy.", "doc",
+            new TaskDetails("Chép lối tắt Word, Excel, PowerPoint của Office ra desktop chung (mọi tài khoản đều thấy); chỉ tạo lối tắt còn thiếu.",
+                "Khách mở ngay Word, Excel, PowerPoint sau khi nhận máy.", "Máy đã cài Microsoft Office; chưa cài thì báo “Không hỗ trợ”, không làm gì.",
+                "Quản trị viên", "Chỉ thêm lối tắt, không đổi Office.", "Hoàn tác xóa đúng các lối tắt Làm 1 Chạm đã tạo."));
         yield return Setting(Reg(store, "win.taskbarleft", "Căn trái thanh Taskbar", [new(Advanced, "TaskbarAl", 0)],
                 v => v[0] == 0 ? "căn trái" : "căn giữa",
                 () => Environment.OSVersion.Version.Build >= 22000 ? PreconditionResult.Met() : PreconditionResult.NotSupported("Chỉ áp dụng cho Windows 11.")),

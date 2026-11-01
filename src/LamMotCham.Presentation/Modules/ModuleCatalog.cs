@@ -26,13 +26,13 @@ public static class ModuleCatalog
 {
     public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.12.3", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
-    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.2.0", "user", "Đăng nhập, lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
+    public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.3.0", "user", "Đăng nhập (hoặc vào thẳng qua Wi-Fi cửa hàng), lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
 
     public static AppModule Overview { get; } = new("overview", "Tổng quan & Gói nhanh", "Tổng quan", "0.7.3", "home", "Thông tin máy, chọn gói thiết lập");
 
-    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.6.3", "download", "Danh sách từ Web Admin; ưu tiên link có chữ ký số (tải trước khi đang cài), WinGet dự phòng; xác minh sau khi cài");
+    public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.7.0", "download", "Danh sách từ Web Admin; ưu tiên link có chữ ký số (tải trước khi đang cài), WinGet dự phòng; xác minh sau khi cài");
 
-    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.7.1", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
+    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.8.0", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
 
     public static AppModule Disk { get; } = new("disk", "Ổ đĩa & Tài khoản", "Ổ đĩa", "0.6.2", "disk", "Ổ đĩa, chia ổ, đổi tên máy, sửa tài khoản");
 

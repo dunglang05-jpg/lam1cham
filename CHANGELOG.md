@@ -2,6 +2,22 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.9 — 01/11/2026
+
+Giao diện trang Phần mềm và tính năng mới theo yêu cầu PO.
+
+**Tài khoản & Đăng nhập (`account`) 0.3.0**
+- Mới: **Wi-Fi miễn đăng nhập** (PO duyệt 02/11/2026). Admin › Cài đặt có ô "Wi-Fi miễn đăng nhập" (mỗi dòng một tên Wi-Fi) và chọn tài khoản dùng khi vào qua Wi-Fi. Mở phần mềm khi đang nối một trong các Wi-Fi đó thì vào thẳng, không hỏi mật khẩu; danh sách ứng dụng và Lịch sử cài vẫn chạy như thường. Máy chủ quyết định (action `wifiLogin`), giới hạn số lần thử theo IP, ghi Nhật ký. PO chấp nhận rủi ro: tên Wi-Fi có thể bị giả.
+- Tên Wi-Fi đọc bằng Native Wifi API của Windows. Windows 11 24H2 cần bật Vị trí (Location) mới đọc được; không đọc được thì hiện màn hình đăng nhập như cũ và ghi lý do vào log.
+- Vừa bấm Đăng xuất thì không tự vào lại qua Wi-Fi, để đăng nhập tài khoản khác được.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.8.0**
+- Mới: **Đưa Word, Excel, PowerPoint ra desktop** (nhóm Trải nghiệm Windows, chọn sẵn). Chép lối tắt Office trong Start Menu ra desktop chung của máy (mọi tài khoản đều thấy); Office cũ hoặc không có lối tắt Start Menu thì tạo lối tắt tới file chạy tìm qua App Paths. Chỉ tạo lối tắt còn thiếu. Máy chưa cài Office thì báo "Không hỗ trợ", không làm gì. Hoàn tác chỉ xóa đúng các lối tắt Làm 1 Chạm đã tạo.
+
+**Phần mềm thiết yếu (`software`) 0.7.0**
+- Bỏ bảng 1 hàng dọc (cột tên quá rộng): ứng dụng dàn thành thẻ nằm ngang, tự xuống dòng theo bề rộng màn hình (khoảng 3 thẻ mỗi hàng ở 1366×768, 5 thẻ ở 1920×1080). Mỗi thẻ có ô chọn, logo, tên, nhóm, Khuyến nghị/Tùy chọn, mô tả, trạng thái; thẻ đang chọn có viền xanh.
+- Ứng dụng nhiều phiên bản (Office, Kaspersky, ESET): mặc định chỉ hiện "Phiên bản ▾"; bấm vào mới sổ ra ô chọn phiên bản.
+
 ## 1.1.8 — 01/11/2026
 
 Sửa các lỗi tìm ra khi kiểm thử kỹ trên máy Windows sạch (Windows Server 2022 không có WinGet và Windows Server 2025 có WinGet).

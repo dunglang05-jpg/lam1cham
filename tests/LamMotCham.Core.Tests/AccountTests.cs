@@ -29,6 +29,39 @@ public sealed class AccountClientTests
     }
 
     [Fact]
+    public async Task Wifi_login_success_gives_session_of_the_wifi_account()
+    {
+        var (client, handler) = Create("""{"ok":true,"code":"ok","message":"Đã vào qua Wi-Fi TGDD-190B.","role":"user","name":"Wi-Fi cửa hàng","token":"TOKEN"}""".Replace("TOKEN", Token, StringComparison.Ordinal));
+
+        var result = await client.WifiLoginAsync(" TGDD-190B ", "lmc-abc");
+
+        Assert.Equal(AccountResultKind.Success, result.Kind);
+        Assert.Equal("wifi", result.Session!.Username);
+        Assert.Equal("Wi-Fi cửa hàng", result.Session.DisplayName);
+        Assert.Equal(Token, result.Session.Token);
+        Assert.Contains("\"action\":\"wifiLogin\"", handler.LastBody, StringComparison.Ordinal);
+        Assert.Contains("\"ssid\":\"TGDD-190B\"", handler.LastBody, StringComparison.Ordinal);
+        Assert.Contains("\"key\":\"khoa-thu\"", handler.LastBody, StringComparison.Ordinal);
+        Assert.DoesNotContain("password", handler.LastBody, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Wifi_not_in_admin_list_is_rejected_and_bad_names_never_sent()
+    {
+        var (client, handler) = Create("""{"ok":false,"code":"bad","message":"Wi-Fi này chưa được miễn đăng nhập."}""");
+
+        var rejected = await client.WifiLoginAsync("Quan-Cafe", "lmc-abc");
+        var empty = await client.WifiLoginAsync("   ", "lmc-abc");
+        var tooLong = await client.WifiLoginAsync(new string('x', 65), "lmc-abc");
+
+        Assert.Equal(AccountResultKind.BadCredentials, rejected.Kind);
+        Assert.Null(rejected.Session);
+        Assert.Equal(AccountResultKind.BadCredentials, empty.Kind);
+        Assert.Equal(AccountResultKind.BadCredentials, tooLong.Kind);
+        Assert.Equal(1, handler.Calls);
+    }
+
+    [Fact]
     public async Task Login_sends_protocol_fields_with_api_key()
     {
         var (client, handler) = Create("""{"ok":false,"code":"bad","message":"Sai tên đăng nhập hoặc mật khẩu."}""");

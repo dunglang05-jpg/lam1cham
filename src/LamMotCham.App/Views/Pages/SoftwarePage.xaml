@@ -85,105 +85,120 @@
                         <TextBlock Text="Danh mục ứng dụng" FontSize="13" FontWeight="ExtraBold" VerticalAlignment="Center" />
                     </DockPanel>
 
-                    <Border Margin="16,0,16,0" BorderBrush="#EDF1F7" BorderThickness="1" CornerRadius="11">
-                        <StackPanel>
-                            <!-- Tiêu đề cột -->
-                            <Border Background="#F7F9FD" BorderBrush="#E8EEF6" BorderThickness="0,0,0,1" CornerRadius="11,11,0,0" Padding="11,10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="40" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="100" />
-                                        <ColumnDefinition Width="96" />
-                                        <ColumnDefinition Width="140" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="CHỌN" Style="{StaticResource Th}" />
-                                    <TextBlock Grid.Column="1" Text="PHẦN MỀM" Style="{StaticResource Th}" />
-                                    <TextBlock Grid.Column="2" Text="NHÓM" Style="{StaticResource Th}" />
-                                    <TextBlock Grid.Column="3" Text="ĐỀ XUẤT" Style="{StaticResource Th}" />
-                                    <TextBlock Grid.Column="4" Text="TRẠNG THÁI" Style="{StaticResource Th}" />
-                                </Grid>
-                            </Border>
+                    <!-- PO 01/11/2026: bỏ bảng 1 hàng dọc (cột tên quá rộng); dàn ứng dụng thành thẻ nằm ngang, tự xuống dòng theo bề rộng màn hình. -->
+                    <TextBlock Text="Không có ứng dụng nào khớp với bộ lọc." Style="{StaticResource Secondary}" Margin="16,4,16,12"
+                               Visibility="{Binding NoResults, Converter={StaticResource Vis}}" />
 
-                            <TextBlock Text="Không có ứng dụng nào khớp với bộ lọc." Style="{StaticResource Secondary}" Margin="12,16"
-                                       Visibility="{Binding NoResults, Converter={StaticResource Vis}}" />
-
-                            <ItemsControl ItemsSource="{Binding Visible}" Focusable="False">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
-                                        <Border BorderBrush="{StaticResource LineSoftBrush}" BorderThickness="0,0,0,1" Padding="11,9">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsAvailable}" Value="False">
-                                                            <Setter Property="Opacity" Value="0.55" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="40" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="100" />
-                                                    <ColumnDefinition Width="96" />
-                                                    <ColumnDefinition Width="140" />
-                                                </Grid.ColumnDefinitions>
-                                                <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsAvailable}" VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}" />
-                                                <DockPanel Grid.Column="1" Margin="0,0,10,0">
-                                                    <Grid DockPanel.Dock="Left" Width="29" Height="29" Margin="0,0,10,0" VerticalAlignment="Center">
-                                                        <Border CornerRadius="9" Background="#F0F5FF" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}, ConverterParameter=invert}">
-                                                            <Image Width="20" Height="20" Style="{StaticResource IconImage}">
-                                                                <Image.Source>
-                                                                    <MultiBinding Converter="{StaticResource LogoOrIcon}">
-                                                                        <Binding Path="LogoKey" />
-                                                                        <Binding Path="IconKey" />
-                                                                    </MultiBinding>
-                                                                </Image.Source>
-                                                            </Image>
-                                                        </Border>
-                                                        <Border CornerRadius="9" Background="{Binding ColorHex, Converter={StaticResource HexBrush}}" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}}">
-                                                            <TextBlock Text="{Binding Initial}" Foreground="White" FontSize="12" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                        </Border>
-                                                    </Grid>
-                                                    <StackPanel VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
-                                                        <TextBlock Text="{Binding UnavailableReason}" FontSize="11" Foreground="{StaticResource Text2Brush}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,2,0,0"
-                                                                   Visibility="{Binding UnavailableReason, Converter={StaticResource NotEmpty}}" />
-                                                        <ComboBox ItemsSource="{Binding VariantLabels}" SelectedItem="{Binding SelectedVariantLabel, Mode=TwoWay}" FontSize="12" Margin="0,5,0,0" MaxWidth="320" HorizontalAlignment="Left"
-                                                                  AutomationProperties.Name="Chọn phiên bản" Visibility="{Binding HasVariants, Converter={StaticResource Vis}}" />
-                                                        <TextBlock Text="{Binding PackageId}" FontFamily="{StaticResource MonoFont}" FontSize="11" Foreground="{StaticResource Text2Brush}"
-                                                                   Visibility="{Binding DataContext.TechOpen, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Vis}}" />
-                                                        <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" Margin="0,2,0,0"
-                                                                   Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                                                    </StackPanel>
-                                                </DockPanel>
-                                                <TextBlock Grid.Column="2" Text="{Binding Group}" FontSize="12" Foreground="{StaticResource Text3Brush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                <Grid Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                                    <Border Style="{StaticResource TagGreen}" Visibility="{Binding IsRecommended, Converter={StaticResource Vis}}">
-                                                        <TextBlock Text="Khuyến nghị" Style="{StaticResource TagGreenText}" />
-                                                    </Border>
-                                                    <Border Style="{StaticResource Tag}" Visibility="{Binding IsRecommended, Converter={StaticResource Vis}, ConverterParameter=invert}">
-                                                        <TextBlock Text="Tùy chọn" Style="{StaticResource TagText}" />
-                                                    </Border>
-                                                </Grid>
-                                                <StackPanel Grid.Column="4" VerticalAlignment="Center">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22" />
-                                                        <Button Style="{StaticResource LinkButton}" Content="Xem lỗi" Margin="4,0,0,0"
-                                                                Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
-                                                                Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
-                                                    </StackPanel>
-                                                    <TextBlock Text="{Binding MetaText}" Style="{StaticResource Meta}" Margin="2,3,0,0" Visibility="{Binding MetaText, Converter={StaticResource NotEmpty}}" />
-                                                </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Visible}" Focusable="False" Margin="16,0,6,0" AutomationProperties.Name="Danh mục ứng dụng">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" ItemWidth="262" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:TaskRowViewModel}">
+                                <Border CornerRadius="12" BorderThickness="1" Padding="12,11" Margin="0,0,10,10" MinHeight="118">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+                                            <Setter Property="Background" Value="White" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                                                    <Setter Property="Background" Value="#F7FAFF" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsAvailable}" Value="False">
+                                                    <Setter Property="Opacity" Value="0.55" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <DockPanel>
+                                        <!-- Hàng trên: chọn + logo + tên + nhãn đề xuất -->
+                                        <DockPanel DockPanel.Dock="Top">
+                                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsAvailable}" VerticalAlignment="Center" Margin="0,0,8,0"
+                                                      AutomationProperties.Name="{Binding Name}" />
+                                            <Grid DockPanel.Dock="Left" Width="30" Height="30" Margin="0,0,9,0" VerticalAlignment="Center">
+                                                <Border CornerRadius="9" Background="#F0F5FF" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}, ConverterParameter=invert}">
+                                                    <Image Width="20" Height="20" Style="{StaticResource IconImage}">
+                                                        <Image.Source>
+                                                            <MultiBinding Converter="{StaticResource LogoOrIcon}">
+                                                                <Binding Path="LogoKey" />
+                                                                <Binding Path="IconKey" />
+                                                            </MultiBinding>
+                                                        </Image.Source>
+                                                    </Image>
+                                                </Border>
+                                                <Border CornerRadius="9" Background="{Binding ColorHex, Converter={StaticResource HexBrush}}" Visibility="{Binding ShowInitial, Converter={StaticResource Vis}}">
+                                                    <TextBlock Text="{Binding Initial}" Foreground="White" FontSize="12" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
                                             </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                                                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                    <TextBlock Text="{Binding Group}" FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
+                                                    <TextBlock Text=" · " FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Khuyến nghị" FontSize="11" FontWeight="Bold" Foreground="#0F8A5F" VerticalAlignment="Center"
+                                                               Visibility="{Binding IsRecommended, Converter={StaticResource Vis}}" />
+                                                    <TextBlock Text="Tùy chọn" FontSize="11" Foreground="{StaticResource Text2Brush}" VerticalAlignment="Center"
+                                                               Visibility="{Binding IsRecommended, Converter={StaticResource Vis}, ConverterParameter=invert}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DockPanel>
+
+                                        <!-- Hàng dưới: trạng thái -->
+                                        <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <c:StatusChip State="{Binding StateKey}" Text="{Binding StateText}" Height="22" />
+                                                <Button Style="{StaticResource LinkButton}" Content="Xem lỗi" Margin="4,0,0,0"
+                                                        Command="{Binding DataContext.ShowErrorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding MetaText}" Style="{StaticResource Meta}" Margin="2,3,0,0" TextTrimming="CharacterEllipsis"
+                                                       Visibility="{Binding MetaText, Converter={StaticResource NotEmpty}}" />
+                                        </StackPanel>
+
+                                        <!-- Giữa: mô tả, phiên bản (gập), lý do mờ, nguồn cài, lỗi -->
+                                        <StackPanel Margin="0,7,0,0">
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextWrapping="Wrap" MaxHeight="30" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding Description}" />
+                                            <TextBlock Text="{Binding UnavailableReason}" FontSize="11" Foreground="{StaticResource Text2Brush}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                       Visibility="{Binding UnavailableReason, Converter={StaticResource NotEmpty}}" />
+
+                                            <!-- PO 01/11/2026: phiên bản chỉ hiện mũi tên; bấm vào mới sổ ra ô chọn. -->
+                                            <StackPanel Margin="0,4,0,0" Visibility="{Binding HasVariants, Converter={StaticResource Vis}}">
+                                                <ToggleButton IsChecked="{Binding VariantsOpen}" HorizontalAlignment="Left" Cursor="Hand" Focusable="True"
+                                                              AutomationProperties.Name="Chọn phiên bản" ToolTip="{Binding SelectedVariantLabel}">
+                                                    <ToggleButton.Template>
+                                                        <ControlTemplate TargetType="ToggleButton">
+                                                            <Border Background="Transparent" Padding="0,2">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="Phiên bản" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" />
+                                                                    <TextBlock x:Name="Chevron" Text=" ▾" FontSize="12" Foreground="{StaticResource PrimaryBrush}" VerticalAlignment="Center" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Setter TargetName="Chevron" Property="Text" Value=" ▴" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </ToggleButton.Template>
+                                                </ToggleButton>
+                                                <ComboBox ItemsSource="{Binding VariantLabels}" SelectedItem="{Binding SelectedVariantLabel, Mode=TwoWay}" FontSize="12" Margin="0,4,0,0"
+                                                          AutomationProperties.Name="Phiên bản" Visibility="{Binding VariantsOpen, Converter={StaticResource Vis}}" />
+                                            </StackPanel>
+
+                                            <TextBlock Text="{Binding PackageId}" FontFamily="{StaticResource MonoFont}" FontSize="11" Foreground="{StaticResource Text2Brush}" TextTrimming="CharacterEllipsis"
+                                                       Visibility="{Binding DataContext.TechOpen, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Vis}}" />
+                                            <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource ErrorTextBrush}" TextWrapping="Wrap" Margin="0,2,0,0" MaxHeight="45"
+                                                       TextTrimming="CharacterEllipsis" Visibility="{Binding IsProblem, Converter={StaticResource Vis}}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
                     <DockPanel Margin="16,10,16,0">
                         <Button DockPanel.Dock="Right" Style="{StaticResource LinkButton}" Command="{Binding ToggleTechCommand}" Content="Hiện/ẩn nguồn cài" />
