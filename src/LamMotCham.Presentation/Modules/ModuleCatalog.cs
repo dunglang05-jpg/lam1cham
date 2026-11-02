@@ -24,7 +24,7 @@ public sealed record AppModule(string Id, string Name, string ShortName, string 
 /// </summary>
 public static class ModuleCatalog
 {
-    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.12.3", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
+    public static AppModule Shell { get; } = new("shell", "Khung ứng dụng", "Khung", "0.12.4", "laptop", "Thanh tiêu đề, điều hướng, hộp thoại, tiến độ chạy");
 
     public static AppModule Account { get; } = new("account", "Tài khoản & Đăng nhập", "Tài khoản", "0.3.0", "user", "Đăng nhập (hoặc vào thẳng qua Wi-Fi cửa hàng), lấy danh sách ứng dụng, gửi báo cáo cài; phiên chỉ trong lần chạy");
 
@@ -32,13 +32,13 @@ public static class ModuleCatalog
 
     public static AppModule Software { get; } = new("software", "Phần mềm thiết yếu", "Phần mềm", "0.7.2", "download", "Danh sách từ Web Admin; ưu tiên link có chữ ký số (tải trước khi đang cài), WinGet dự phòng; xác minh sau khi cài");
 
-    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.8.0", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
+    public static AppModule Windows { get; } = new("windows", "Cài đặt & Tối ưu Windows", "Windows", "0.8.1", "gear", "Thiết lập Windows có hoàn tác, gồm tắt BitLocker");
 
-    public static AppModule Disk { get; } = new("disk", "Ổ đĩa & Tài khoản", "Ổ đĩa", "0.6.3", "disk", "Ổ đĩa, chia ổ, đổi tên máy, sửa tài khoản");
+    public static AppModule Disk { get; } = new("disk", "Ổ đĩa & Tài khoản", "Ổ đĩa", "0.6.4", "disk", "Ổ đĩa, chia ổ, đổi tên máy, sửa tài khoản");
 
     public static AppModule Cleanup { get; } = new("cleanup", "Dọn dẹp & Hiệu năng", "Dọn dẹp", "0.4.1", "sparkle", "Quét và xem trước trước khi xóa");
 
-    public static AppModule Handover { get; } = new("handover", "Kiểm tra & Bàn giao", "Bàn giao", "0.5.2", "clipboard", "Kiểm tra máy, thử phần cứng, báo cáo");
+    public static AppModule Handover { get; } = new("handover", "Kiểm tra & Bàn giao", "Bàn giao", "0.5.3", "clipboard", "Kiểm tra máy, thử phần cứng, báo cáo");
 
     public static AppModule Engine { get; } = new("engine", "Lõi điều phối tác vụ", "Lõi", "0.4.1", "listcheck", "Hàng đợi, xác minh, nhật ký");
 

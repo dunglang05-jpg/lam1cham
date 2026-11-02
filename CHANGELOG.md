@@ -2,6 +2,19 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.12 — 02/11/2026
+
+Sửa các lỗi tìm ra khi chạy lại bản 1.1.11 trên máy mới của PO (máy vừa cài lại Windows).
+
+**Khung ứng dụng (`shell`) 0.12.4 · Ổ đĩa & Tài khoản (`disk`) 0.6.4**
+- Tác vụ thay đổi máy vừa xong thì các kiểm tra chạy sau đọc lại thông tin máy. Trước đây kiểm tra BitLocker dùng dữ liệu đọc trước khi "Tắt BitLocker" chạy, nên báo "đang mã hóa (92%)" trong khi ổ đã chuyển sang giải mã.
+
+**Cài đặt & Tối ưu Windows (`windows`) 0.8.1**
+- Windows Update trên máy vừa cài lại trả ngày cập nhật 01/01/1601 (nghĩa là "chưa từng"), nên báo "cài bản cập nhật gần nhất 155533 ngày trước". Nay bỏ các ngày trước năm 2000 và báo "chưa thấy lần cài cập nhật nào".
+
+**Kiểm tra & Bàn giao (`handover`) 0.5.3**
+- Pin: đọc báo cáo pin của powercfg theo tên thẻ (không phụ thuộc namespace XML); không đọc được thì ghi rõ lý do vào log ("Thu thập thông tin: batteryCapacity: …") để tìm nguyên nhân trên máy Dell.
+
 ## 1.1.11 — 02/11/2026
 
 Sửa các lỗi tìm ra khi chạy thử trên máy mới của PO (Dell Inspiron 15 3530, Windows 11 Home 25H2).

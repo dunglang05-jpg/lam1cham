@@ -72,13 +72,23 @@ internal static class InventoryScript
             $x = Join-Path $env:TEMP ('l1c-pin-' + [guid]::NewGuid().ToString('N') + '.xml')
             try {
               $null = & "$env:SystemRoot\System32\powercfg.exe" /batteryreport /xml /output $x 2>$null
+              $code = $LASTEXITCODE
               if (Test-Path $x) {
-                $b = ([xml](Get-Content -LiteralPath $x -Raw)).BatteryReport.Batteries.Battery | Select-Object -First 1
-                if ($b -and [int64]$b.DesignCapacity -gt 0 -and [int64]$b.FullChargeCapacity -gt 0) {
-                  $r.batteryCapacity = [ordered]@{ design = [int64]$b.DesignCapacity; full = [int64]$b.FullChargeCapacity }
+                $doc = [xml](Get-Content -LiteralPath $x -Raw)
+                $b = @($doc.GetElementsByTagName('Battery'))[0]
+                $dc = if ($b) { [int64]('0' + $b['DesignCapacity'].InnerText) } else { 0 }
+                $fc = if ($b) { [int64]('0' + $b['FullChargeCapacity'].InnerText) } else { 0 }
+                if ($dc -gt 0 -and $fc -gt 0) {
+                  $r.batteryCapacity = [ordered]@{ design = $dc; full = $fc }
+                } else {
+                  [void]$errs.Add("batteryCapacity: báo cáo pin không có dung lượng (thiết kế $dc, sạc đầy $fc)")
                 }
+              } else {
+                [void]$errs.Add("batteryCapacity: powercfg không tạo được báo cáo pin (mã $code)")
               }
-            } catch { } finally { Remove-Item -LiteralPath $x -Force -ErrorAction SilentlyContinue }
+            } catch {
+              [void]$errs.Add("batteryCapacity: $($_.Exception.Message)")
+            } finally { Remove-Item -LiteralPath $x -Force -ErrorAction SilentlyContinue }
           }
         }
 
