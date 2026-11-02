@@ -26,7 +26,13 @@ public sealed record TaskOutcome
 
     public DateTimeOffset? FinishedAt { get; init; }
 
-    public TimeSpan? Duration => StartedAt is { } s && FinishedAt is { } f ? f - s : null;
+    /// <summary>
+    /// Thời gian chạy đo bằng đồng hồ đơn điệu (không đổi khi giờ hệ thống bị chỉnh). 02/11/2026: tác vụ Đồng bộ thời gian
+    /// chỉnh giờ máy lùi 15 tiếng giữa lượt chạy, báo cáo hiện "-53992 giây" vì lấy giờ kết thúc trừ giờ bắt đầu.
+    /// </summary>
+    public TimeSpan? Elapsed { get; init; }
+
+    public TimeSpan? Duration => Elapsed ?? (StartedAt is { } s && FinishedAt is { } f ? f - s : null);
 }
 
 public enum RunHaltReason

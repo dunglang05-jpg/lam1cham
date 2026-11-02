@@ -163,8 +163,10 @@ public sealed class AppInstallTask : ITaskModule, IDescribesCurrentState
                 var result = await Direct!.ExecuteAsync(context, Descriptor.Id, cancellationToken).ConfigureAwait(false);
                 LastMetrics = Direct.LastMetrics;
                 // Lỗi trước khi chạy trình cài (dò link, tải, chữ ký) hoặc trình cài báo đã hủy (1602, chưa cài gì):
-                // chưa thay đổi gì trên máy nên chuyển sang WinGet. Trình cài đã chạy và báo lỗi khác thì không cài chồng.
-                var canFallBack = result.Outcome == ExecuteOutcome.Failed && (!Direct.InstallerStarted || DirectInstallTask.InstallerCancelled(result));
+                // chưa thay đổi gì trên máy nên chuyển sang WinGet. Trình cài tự đổ vỡ (0xC0000005…) cũng chuyển sang WinGet,
+                // vì WinGet dùng bộ cài khác (PO 02/11/2026: Chrome crash trên máy mới). Trình cài báo lỗi khác thì không cài chồng.
+                var canFallBack = result.Outcome == ExecuteOutcome.Failed
+                    && (!Direct.InstallerStarted || DirectInstallTask.InstallerCancelled(result) || DirectInstallTask.InstallerCrashed(result));
                 if (!canFallBack || _winGetTask is null)
                 {
                     return result;

@@ -47,7 +47,9 @@ internal static class InventoryScript
 
         Sec 'bitlocker' {
           $r.bitlocker = @(Get-CimInstance -Namespace 'root\cimv2\Security\MicrosoftVolumeEncryption' -ClassName Win32_EncryptableVolume -ErrorAction Stop | ForEach-Object {
-            [ordered]@{ drive = [string]$_.DriveLetter; protection = [int]$_.ProtectionStatus } })
+            $cv = $null; $pc = $null
+            try { $cs = Invoke-CimMethod -InputObject $_ -MethodName GetConversionStatus -ErrorAction Stop; $cv = [int]$cs.ConversionStatus; $pc = [int][math]::Round([double]$cs.EncryptionPercentage) } catch { }
+            [ordered]@{ drive = [string]$_.DriveLetter; protection = [int]$_.ProtectionStatus; conversion = $cv; percent = $pc } })
         }
 
         Sec 'reboot' {
@@ -65,6 +67,19 @@ internal static class InventoryScript
             $full = (Get-CimInstance -Namespace 'root\WMI' -ClassName BatteryFullChargedCapacity -ErrorAction Stop | Select-Object -First 1).FullChargedCapacity
             if ($design -and $full) { $r.batteryCapacity = [ordered]@{ design = [int64]$design; full = [int64]$full } }
           } catch { }
+          # Một số máy (Dell Inspiron 15 3530, 02/11/2026) không có lớp WMI trên: đọc từ báo cáo pin của powercfg.
+          if (-not $r.batteryCapacity) {
+            $x = Join-Path $env:TEMP ('l1c-pin-' + [guid]::NewGuid().ToString('N') + '.xml')
+            try {
+              $null = & "$env:SystemRoot\System32\powercfg.exe" /batteryreport /xml /output $x 2>$null
+              if (Test-Path $x) {
+                $b = ([xml](Get-Content -LiteralPath $x -Raw)).BatteryReport.Batteries.Battery | Select-Object -First 1
+                if ($b -and [int64]$b.DesignCapacity -gt 0 -and [int64]$b.FullChargeCapacity -gt 0) {
+                  $r.batteryCapacity = [ordered]@{ design = [int64]$b.DesignCapacity; full = [int64]$b.FullChargeCapacity }
+                }
+              }
+            } catch { } finally { Remove-Item -LiteralPath $x -Force -ErrorAction SilentlyContinue }
+          }
         }
 
         Sec 'brightness' {
