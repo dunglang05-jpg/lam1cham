@@ -99,7 +99,7 @@ public static class InventoryChecks
             problems.Add("đang chờ khởi động lại để hoàn tất cập nhật");
         }
 
-        var lastText = last is { } d ? $"cài bản cập nhật gần nhất {(DateTimeOffset.UtcNow - d).Days} ngày trước" : "chưa rõ lần cập nhật gần nhất";
+        var lastText = last is { } d ? $"cài bản cập nhật gần nhất {(DateTimeOffset.UtcNow - d).Days} ngày trước" : "chưa thấy lần cài cập nhật nào";
         if (last is { } l && DateTimeOffset.UtcNow - l > TimeSpan.FromDays(45))
         {
             problems.Add("đã hơn 45 ngày chưa cập nhật");

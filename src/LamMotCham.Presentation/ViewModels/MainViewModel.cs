@@ -521,7 +521,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             var modules = rows.Select(r => r.Entry.Module).ToList();
             var token = _runCts.Token;
-            report = await Task.Run(() => S.Orchestrator.RunAsync(modules, confirmed, progress, token));
+            // Tác vụ thay đổi máy xong thì kiểm tra chạy sau đọc lại thông tin máy (ví dụ BitLocker sau khi Tắt BitLocker).
+            var changing = rows.Where(r => !r.IsReadOnly).Select(r => r.Id).ToHashSet(StringComparer.Ordinal);
+            var runProgress = new LamMotCham.Windows.Probe.InventoryRefreshProgress(progress, changing, S.Inventory.Invalidate);
+            report = await Task.Run(() => S.Orchestrator.RunAsync(modules, confirmed, runProgress, token));
             foreach (var outcome in report.Tasks)
             {
                 if (byId.TryGetValue(outcome.TaskId, out var row))

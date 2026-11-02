@@ -69,8 +69,12 @@ public sealed class InventorySnapshot
             }
             : null;
 
+    /// <summary>
+    /// Ngày giờ hợp lệ, hoặc null. Bỏ các mốc "chưa từng" Windows trả về (01/01/1601, 01/01/0001…): 02/11/2026 trên máy
+    /// vừa cài lại, Windows Update trả LastInstallationSuccessDate = 1601 nên báo "cài bản cập nhật gần nhất 155533 ngày trước".
+    /// </summary>
     public static DateTimeOffset? Date(JsonElement e, string name) =>
-        Str(e, name) is { } s && DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var d)
+        Str(e, name) is { } s && DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var d) && d.Year >= 2000
             ? d
             : null;
 

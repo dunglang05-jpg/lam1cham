@@ -241,6 +241,42 @@ public sealed class InventoryCheckTests
     }
 
     [Fact]
+    public void Windows_update_ignores_never_dates_from_a_fresh_install()
+    {
+        // 02/11/2026, máy vừa cài lại: LastInstallationSuccessDate = 1601 → báo "155533 ngày trước".
+        var r = InventoryChecks.WindowsUpdate(Snap("""{"update":{"startType":"Manual","status":"Running","lastSuccess":"1601-01-01T00:00:00.0000000Z","lastHotfix":null},"pendingReboot":[],"errors":[]}"""));
+        Assert.DoesNotContain("155", r.Detail ?? "", StringComparison.Ordinal);
+        Assert.Contains("chưa thấy lần cài cập nhật nào", r.Detail, StringComparison.Ordinal);
+
+        var recent = DateTimeOffset.UtcNow.AddDays(-3).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+        var ok = InventoryChecks.WindowsUpdate(Snap("{\"update\":{\"startType\":\"Manual\",\"lastSuccess\":\"1601-01-01T00:00:00Z\",\"lastHotfix\":\"" + recent + "\"},\"pendingReboot\":[],\"errors\":[]}"));
+        Assert.Equal(VerifyOutcome.Passed, ok.Outcome);
+        Assert.Contains("3 ngày trước", ok.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Inventory_is_refreshed_right_after_a_machine_changing_task_finishes()
+    {
+        // 02/11/2026: kiểm tra BitLocker dùng dữ liệu đọc trước khi "Tắt BitLocker" chạy → báo "đang mã hóa (92%)".
+        var invalidated = 0;
+        var forwarded = new List<TaskStatusUpdate>();
+        var p = new InventoryRefreshProgress(new SyncProgress(forwarded), new HashSet<string>(StringComparer.Ordinal) { "win.bitlocker.off" }, () => invalidated++);
+
+        p.Report(new TaskStatusUpdate("win.bitlocker.off", TaskState.Running, "Đang giải mã", 1));
+        Assert.Equal(0, invalidated);
+        p.Report(new TaskStatusUpdate("win.bitlocker.off", TaskState.Success, null, 1));
+        Assert.Equal(1, invalidated);
+        p.Report(new TaskStatusUpdate("disk.bitlocker", TaskState.Success, null, 1));
+        Assert.Equal(1, invalidated);
+        Assert.Equal(3, forwarded.Count);
+    }
+
+    private sealed class SyncProgress(List<TaskStatusUpdate> sink) : IProgress<TaskStatusUpdate>
+    {
+        public void Report(TaskStatusUpdate value) => sink.Add(value);
+    }
+
+    [Fact]
     public void Battery_without_capacity_data_does_not_blame_admin_rights()
     {
         // Phần mềm luôn chạy quyền quản trị; máy Dell không có lớp WMI độ chai thì không được báo "cần quyền quản trị".
