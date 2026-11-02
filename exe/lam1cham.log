@@ -1,0 +1,4 @@
+{"t":"2026-11-02T05:43:06.5654962+00:00","level":"Warning","task":null,"msg":"Bản build chưa có khóa máy chủ đăng nhập (LmcApiKey): không đăng nhập được."}
+{"t":"2026-11-02T05:43:06.5859278+00:00","level":"Info","task":null,"msg":"Khởi động Làm 1 Chạm."}
+{"t":"2026-11-02T05:43:20.6367833+00:00","level":"Info","task":null,"msg":"Khởi động Làm 1 Chạm."}
+{"t":"2026-11-02T05:43:21.5637775+00:00","level":"Info","task":null,"msg":"Không dùng được Wi-Fi miễn đăng nhập: Máy không có Wi-Fi hoặc dịch vụ WLAN đang tắt."}
