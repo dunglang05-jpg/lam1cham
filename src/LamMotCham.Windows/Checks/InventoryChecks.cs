@@ -267,7 +267,7 @@ public static class InventoryChecks
                 : VerifyResult.Passed(text + ".");
         }
 
-        return VerifyResult.Passed(text + ". Không đọc được độ chai (cần quyền quản trị).");
+        return VerifyResult.Passed(text + ". Máy không cung cấp số liệu độ chai pin cho Windows.");
     }
 
     public static VerifyResult Brightness(InventorySnapshot s) =>
@@ -287,6 +287,22 @@ public static class InventoryChecks
         if (vol.ValueKind == JsonValueKind.Undefined)
         {
             return VerifyResult.Inconclusive("Không thấy thông tin mã hóa của ổ hệ thống.");
+        }
+
+        // Đang mã hóa/giải mã thì ProtectionStatus = 0 dù ổ vẫn còn mã hóa một phần (02/11/2026: báo nhầm "không mã hóa"
+        // ngay sau khi tác vụ Tắt BitLocker bắt đầu giải mã). Đọc thêm GetConversionStatus.
+        var percent = InventorySnapshot.Num(vol, "percent") is { } pc ? string.Create(Vi, $"{pc:0}%") : "?";
+        switch (InventorySnapshot.Num(vol, "conversion"))
+        {
+            case 2:
+                return VerifyResult.Attention($"Ổ {system} đang mã hóa ({percent}). BitLocker đang bật dần; bảo đảm khách hàng biết nơi lấy khóa khôi phục.");
+            case 3:
+                return VerifyResult.Passed($"Ổ {system} đang giải mã, còn {percent} mã hóa. Giải mã chạy nền; không tắt nguồn đột ngột cho đến khi xong.");
+            case 4:
+            case 5:
+                return VerifyResult.Attention($"Ổ {system} đang tạm dừng {(InventorySnapshot.Num(vol, "conversion") == 4 ? "mã hóa" : "giải mã")} ({percent} mã hóa).");
+            case 1 when InventorySnapshot.Num(vol, "protection") == 0:
+                return VerifyResult.Attention($"Ổ {system} đã mã hóa nhưng BitLocker đang tạm ngưng bảo vệ.");
         }
 
         return InventorySnapshot.Num(vol, "protection") switch

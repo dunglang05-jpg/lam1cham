@@ -4,14 +4,23 @@ Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-
 
 ## 1.1.11 — 02/11/2026
 
-Sửa lỗi Chrome không cài được trên máy mới (PO báo trên Dell Inspiron 15 3530, Windows 11 Home 25H2).
+Sửa các lỗi tìm ra khi chạy thử trên máy mới của PO (Dell Inspiron 15 3530, Windows 11 Home 25H2).
 
 **Phần mềm thiết yếu (`software`) 0.7.2**
 - Trình cài tự đổ vỡ (mã lỗi nghiêm trọng của Windows từ 0xC0000000, ví dụ 0xC0000005) nay tự chuyển sang WinGet, vì WinGet dùng bộ cài khác. Trước đây chỉ báo "Trình cài đặt báo lỗi (mã -1073741819)" và dừng ở đó.
 - Thông báo lỗi ghi mã dạng 0xC0000005 cho dễ tra cứu.
 
+**Ổ đĩa & Tài khoản (`disk`) 0.6.3**
+- Kiểm tra BitLocker đọc thêm trạng thái mã hóa/giải mã. Trước đây ổ đang giải mã (vừa chạy Tắt BitLocker, còn 21%) bị báo "Ổ C: không mã hóa"; nay báo "đang giải mã, còn N%", đang mã hóa hoặc tạm dừng thì báo Cần chú ý.
+
+**Kiểm tra & Bàn giao (`handover`) 0.5.2**
+- Pin: máy không có số liệu độ chai qua WMI (Dell Inspiron 15 3530) thì đọc từ báo cáo pin của Windows (powercfg). Không còn báo nhầm "cần quyền quản trị" vì phần mềm luôn chạy quyền quản trị.
+
+**Lõi điều phối (`engine`) 0.4.1**
+- Thời gian chạy mỗi tác vụ đo bằng đồng hồ đơn điệu. Trước đây tác vụ Đồng bộ thời gian chỉnh giờ máy lùi 15 tiếng nên báo cáo hiện "-53992 giây". Báo cáo ghi chú khi giờ máy được chỉnh trong lượt chạy.
+
 **Web Admin (dữ liệu)**
-- Chrome: đổi link sang bộ cài MSI doanh nghiệp của Google (`googlechromestandaloneenterprise64.msi`, cùng bộ cài WinGet đang dùng, chuyên để cài im lặng) — PO duyệt 02/11/2026.
+- Chrome: đổi link sang bộ cài MSI doanh nghiệp của Google (`googlechromestandaloneenterprise64.msi`, cùng bộ cài WinGet đang dùng, chuyên để cài im lặng) — PO duyệt 02/11/2026. Đã thử trên máy thật: cài xong trong 27 giây.
 
 **Công cụ**
 - Workflow `thu-link` nhận link `.msi` (cài bằng msiexec như phần mềm).

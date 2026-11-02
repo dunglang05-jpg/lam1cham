@@ -129,8 +129,9 @@ public static class ReportWriter
             </style></head><body>
             """);
         sb.Append("<h1>Báo cáo thiết lập máy</h1>");
+        var clockNote = report.FinishedAt < report.StartedAt ? " (giờ máy đã được chỉnh lại trong lượt chạy)" : "";
         sb.Append(CultureInfo.InvariantCulture,
-            $"<div class=\"meta\">Làm 1 Chạm {E(appVersion)} · Bắt đầu {E(T(report.StartedAt))} · Kết thúc {E(T(report.FinishedAt))}</div>");
+            $"<div class=\"meta\">Làm 1 Chạm {E(appVersion)} · Bắt đầu {E(T(report.StartedAt))} · Kết thúc {E(T(report.FinishedAt))}{clockNote}</div>");
 
         if (report.HaltReason != RunHaltReason.None)
         {

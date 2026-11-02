@@ -220,6 +220,36 @@ public sealed class InventoryCheckTests
     }
 
     [Fact]
+    public void Bitlocker_in_progress_is_not_reported_as_unencrypted()
+    {
+        // 02/11/2026, máy mới của PO: tác vụ Tắt BitLocker vừa bắt đầu giải mã (còn 21%) mà kiểm tra báo "Ổ C: không mã hóa".
+        var decrypting = InventoryChecks.BitLocker(Snap("""{"systemDrive":"C:","bitlocker":[{"drive":"C:","protection":0,"conversion":3,"percent":21}],"errors":[]}"""));
+        Assert.Equal(VerifyOutcome.Passed, decrypting.Outcome);
+        Assert.Contains("đang giải mã", decrypting.Detail, StringComparison.Ordinal);
+        Assert.Contains("21%", decrypting.Detail, StringComparison.Ordinal);
+
+        var encrypting = InventoryChecks.BitLocker(Snap("""{"systemDrive":"C:","bitlocker":[{"drive":"C:","protection":0,"conversion":2,"percent":40}],"errors":[]}"""));
+        Assert.Equal(VerifyOutcome.Attention, encrypting.Outcome);
+        Assert.Contains("đang mã hóa", encrypting.Detail, StringComparison.Ordinal);
+
+        var suspended = InventoryChecks.BitLocker(Snap("""{"systemDrive":"C:","bitlocker":[{"drive":"C:","protection":0,"conversion":1,"percent":100}],"errors":[]}"""));
+        Assert.Equal(VerifyOutcome.Attention, suspended.Outcome);
+
+        var clear = InventoryChecks.BitLocker(Snap("""{"systemDrive":"C:","bitlocker":[{"drive":"C:","protection":0,"conversion":0,"percent":0}],"errors":[]}"""));
+        Assert.Equal(VerifyOutcome.Passed, clear.Outcome);
+        Assert.Contains("không mã hóa", clear.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Battery_without_capacity_data_does_not_blame_admin_rights()
+    {
+        // Phần mềm luôn chạy quyền quản trị; máy Dell không có lớp WMI độ chai thì không được báo "cần quyền quản trị".
+        var r = InventoryChecks.Battery(Snap("""{"battery":[{"charge":100,"status":2}],"errors":[]}"""));
+        Assert.Equal(VerifyOutcome.Passed, r.Outcome);
+        Assert.DoesNotContain("quyền quản trị", r.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Low_disk_space_and_unhealthy_disks_need_attention()
     {
         var low = Snap("""{"systemDrive":"C:","volumes":[{"drive":"C:","size":256000000000,"free":10000000000}],"physicalDisks":[{"name":"SSD","health":"Healthy"}],"errors":[]}""");

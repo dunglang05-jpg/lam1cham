@@ -278,7 +278,7 @@ public sealed class TaskOrchestrator
         CancellationToken userToken)
     {
         var d = task.Descriptor;
-        var startedAt = _time.GetUtcNow();
+        var startedAt = new StartMark(_time.GetUtcNow(), _time.GetTimestamp());
         var attempt = 0;
 
         while (true)
@@ -620,12 +620,16 @@ public sealed class TaskOrchestrator
         return null;
     }
 
-    private TaskOutcome Finish(ITaskModule task, TaskState state, string? reason, int attempts, DateTimeOffset? startedAt) =>
+    /// <summary>Lúc task bắt đầu: giờ hệ thống để ghi báo cáo, và mốc đồng hồ đơn điệu để đo thời gian chạy.</summary>
+    private readonly record struct StartMark(DateTimeOffset At, long Timestamp);
+
+    private TaskOutcome Finish(ITaskModule task, TaskState state, string? reason, int attempts, StartMark? startedAt) =>
         NewOutcome(task, state, reason) with
         {
             Attempts = attempts,
-            StartedAt = startedAt,
+            StartedAt = startedAt?.At,
             FinishedAt = state == TaskState.Pending ? null : _time.GetUtcNow(),
+            Elapsed = state == TaskState.Pending || startedAt is not { } mark ? null : _time.GetElapsedTime(mark.Timestamp),
         };
 
     private static TaskOutcome NewOutcome(ITaskModule task, TaskState state, string? reason) => new()
