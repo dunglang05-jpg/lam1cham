@@ -1,0 +1,8 @@
+SHA-256 af1de6e434ab08a91559e96561ea9d7d0ce3383f942e3ee387b66575f5492096 (mong đợi af1de6e434ab08a91559e96561ea9d7d0ce3383f942e3ee387b66575f5492096)
+
+ProductVersion : 1.1.11+52ec758bb6ae42716745c102144f19ac3b9c7692
+FileVersion    : 1.1.11.0
+
+Mở cửa sổ sau 2 giây; đã thoát: False; tiêu đề: Làm 1 Chạm · Đăng nhập
+Số phần tử có chữ: 21
+Sau 10 giây vẫn chạy: True; bộ nhớ: 233 MB
