@@ -228,8 +228,21 @@ public sealed class DirectInstallTask
         RebootRequired or RebootInitiated => ExecuteResult.RebootRequired($"Trình cài đặt yêu cầu khởi động lại máy (mã {exitCode})."),
         AnotherInstallRunning => ExecuteResult.Failed("Đang có một trình cài đặt khác chạy trên máy (mã 1618).", isTransient: true, errorCode: "1618"),
         UserCancelled => ExecuteResult.Failed("Trình cài đặt bị hủy (mã 1602).", errorCode: "1602"),
+        _ when IsCrashCode(exitCode) => ExecuteResult.Failed(
+            $"Trình cài đặt bị lỗi đột ngột (mã 0x{unchecked((uint)exitCode):X8}).",
+            errorCode: exitCode.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         _ => ExecuteResult.Failed($"Trình cài đặt báo lỗi (mã {exitCode}).", errorCode: exitCode.ToString(System.Globalization.CultureInfo.InvariantCulture)),
     };
+
+    /// <summary>
+    /// Mã thoát là mã lỗi nghiêm trọng của Windows (NTSTATUS 0xC0000000 trở lên, ví dụ 0xC0000005 truy cập bộ nhớ sai):
+    /// trình cài tự đổ vỡ chứ không phải báo lỗi có kiểm soát. PO gặp 02/11/2026 với ChromeStandaloneSetup64.exe trên Dell Inspiron 15 3530.
+    /// </summary>
+    internal static bool IsCrashCode(int exitCode) => unchecked((uint)exitCode) >= 0xC0000000u;
+
+    /// <summary>Trình cài tự đổ vỡ (xem <see cref="IsCrashCode"/>): được phép thử cách cài dự phòng (WinGet dùng bộ cài khác).</summary>
+    internal static bool InstallerCrashed(ExecuteResult result) =>
+        int.TryParse(result.ErrorCode, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var code) && IsCrashCode(code);
 
     /// <summary>Tách tham số theo khoảng trắng. Ký tự đã được giới hạn (chữ, số, / - _ = . và khoảng trắng) nên không cần xử lý ngoặc.</summary>
     internal static IReadOnlyList<string> SplitArgs(string args) =>

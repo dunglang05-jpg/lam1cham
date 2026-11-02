@@ -46,7 +46,7 @@ internal static class ThuLink
         {
             new Dictionary<string, object>
             {
-                ["Name"] = name, ["Initial"] = "T", ["Color"] = "#0068FF", ["Kind"] = "Exe", ["Checked"] = true,
+                ["Name"] = name, ["Initial"] = "T", ["Color"] = "#0068FF", ["Kind"] = url.AbsolutePath.EndsWith(".msi", StringComparison.OrdinalIgnoreCase) ? "Msi" : "Exe", ["Checked"] = true,
                 ["DirectUrl"] = url.AbsoluteUri, ["SilentArgs"] = silentArgs, ["WingetId"] = "",
                 ["DetectNames"] = new[] { detectName }, ["DetectPaths"] = string.IsNullOrEmpty(detectPath) ? Array.Empty<string>() : new[] { detectPath },
                 ["Category"] = "Thử",

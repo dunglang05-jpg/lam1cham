@@ -2,6 +2,20 @@
 
 Ghi theo bản ứng dụng, chia theo mô-đun (xem `docs/decisions/QD-002-Cau-Truc-Mo-Dun-Va-Cap-Nhat.md`).
 
+## 1.1.11 — 02/11/2026
+
+Sửa lỗi Chrome không cài được trên máy mới (PO báo trên Dell Inspiron 15 3530, Windows 11 Home 25H2).
+
+**Phần mềm thiết yếu (`software`) 0.7.2**
+- Trình cài tự đổ vỡ (mã lỗi nghiêm trọng của Windows từ 0xC0000000, ví dụ 0xC0000005) nay tự chuyển sang WinGet, vì WinGet dùng bộ cài khác. Trước đây chỉ báo "Trình cài đặt báo lỗi (mã -1073741819)" và dừng ở đó.
+- Thông báo lỗi ghi mã dạng 0xC0000005 cho dễ tra cứu.
+
+**Web Admin (dữ liệu)**
+- Chrome: đổi link sang bộ cài MSI doanh nghiệp của Google (`googlechromestandaloneenterprise64.msi`, cùng bộ cài WinGet đang dùng, chuyên để cài im lặng) — PO duyệt 02/11/2026.
+
+**Công cụ**
+- Workflow `thu-link` nhận link `.msi` (cài bằng msiexec như phần mềm).
+
 ## 1.1.10 — 02/11/2026
 
 Zalo cài bằng link chính thức (PO gửi link zalo.me).

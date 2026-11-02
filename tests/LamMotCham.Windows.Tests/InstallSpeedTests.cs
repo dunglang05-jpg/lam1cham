@@ -150,6 +150,21 @@ public sealed class InstallSpeedTests
     }
 
     [Fact]
+    public void Installer_crash_allows_fallback_and_reads_clearly()
+    {
+        // 02/11/2026: ChromeStandaloneSetup64.exe thoát với mã -1073741819 (0xC0000005) trên máy mới của PO.
+        var crash = DirectInstallTask.Classify(-1073741819);
+        Assert.True(DirectInstallTask.InstallerCrashed(crash));
+        Assert.Contains("0xC0000005", crash.Reason, StringComparison.Ordinal);
+        Assert.False(crash.IsTransient);
+        Assert.True(DirectInstallTask.InstallerCrashed(DirectInstallTask.Classify(unchecked((int)0xC0000409))));
+        Assert.False(DirectInstallTask.InstallerCrashed(DirectInstallTask.Classify(1603)));
+        Assert.False(DirectInstallTask.InstallerCrashed(DirectInstallTask.Classify(-1)));
+        Assert.False(DirectInstallTask.InstallerCrashed(DirectInstallTask.Classify(1602)));
+        Assert.False(DirectInstallTask.InstallerCrashed(DirectInstallTask.Classify(0)));
+    }
+
+    [Fact]
     public void Progress_errors_never_break_a_task()
     {
         var context = new TaskContext(new InMemoryRunLogger(), 1, new ThrowingProgress());
