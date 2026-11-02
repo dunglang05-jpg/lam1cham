@@ -235,10 +235,11 @@ public sealed class DirectInstallTask
     };
 
     /// <summary>
-    /// Mã thoát là mã lỗi nghiêm trọng của Windows (NTSTATUS 0xC0000000 trở lên, ví dụ 0xC0000005 truy cập bộ nhớ sai):
-    /// trình cài tự đổ vỡ chứ không phải báo lỗi có kiểm soát. PO gặp 02/11/2026 với ChromeStandaloneSetup64.exe trên Dell Inspiron 15 3530.
+    /// Mã thoát là mã lỗi nghiêm trọng của chính Windows (NTSTATUS 0xC0000000–0xC00FFFFF, ví dụ 0xC0000005 truy cập bộ nhớ sai,
+    /// 0xC0000409, 0xC00000FD): trình cài tự đổ vỡ chứ không phải báo lỗi có kiểm soát. Không tính -1 (0xFFFFFFFF) vì nhiều
+    /// trình cài dùng -1 làm mã lỗi thông thường. PO gặp 02/11/2026 với ChromeStandaloneSetup64.exe trên Dell Inspiron 15 3530.
     /// </summary>
-    internal static bool IsCrashCode(int exitCode) => unchecked((uint)exitCode) >= 0xC0000000u;
+    internal static bool IsCrashCode(int exitCode) => unchecked((uint)exitCode) is >= 0xC0000000u and <= 0xC00FFFFFu;
 
     /// <summary>Trình cài tự đổ vỡ (xem <see cref="IsCrashCode"/>): được phép thử cách cài dự phòng (WinGet dùng bộ cài khác).</summary>
     internal static bool InstallerCrashed(ExecuteResult result) =>
